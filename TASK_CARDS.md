@@ -298,6 +298,24 @@
 - Created recovery log for tracking fallback activations
 - Added support for error context preservation in fallback tasks
 
+#### TASK-023A: Build Learning Engine & Agent Scorecards
+- **Status**: ✅ Done
+- **Owner**: CA
+- **Description**: Created learning engine to analyze agent behavior and generate performance scorecards
+- **Files**: 
+  - `/insights/learning_engine.py`
+  - `/insights/agent_learning_snapshot.json`
+- **Implementation Details**:
+  - Implemented log parsing for task, router, and recovery logs
+  - Created agent scorecard generation with key metrics:
+    - Tasks completed
+    - Average response time
+    - Failure counts
+    - Retry rates
+  - Added failure pattern analysis across agents
+  - Implemented JSON snapshot generation
+  - Added comprehensive error message analysis
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 2: Coordination Layer
