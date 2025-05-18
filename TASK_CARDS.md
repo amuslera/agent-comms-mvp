@@ -173,17 +173,33 @@
 - Provides proper error handling and validation feedback
 **File**: `/router/router.py`
 
-### TASK-013: Inbox Monitor Tool
+### TASK-013: Create Inbox Monitor CLI
 **Status**: ✅ Done
 **Owner**: WA
-**Description**: Built a CLI tool to monitor and display agent inbox messages.
+**Description**: Created a CLI tool to monitor and inspect agent inboxes.
 **Details**:
-- Created `/tools/inbox_monitor.py` script
-- Shows unread messages from specified agent's inbox
-- Displays message type, sender, and content
-- Provides count statistics and formatting
-- Supports all agents via command-line argument
-**File**: `/tools/inbox_monitor.py`
+- Interactive interface for viewing messages
+- Support for all agent inboxes
+- Message filtering and detailed inspection
+- Simulation mode for message processing preview
+- Colorized output for better readability
+- Support for both interactive and non-interactive modes
+**Files**:
+- `/tools/inbox_monitor.py`
+
+### TASK-030: Create Task Status Tracker CLI
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Created a CLI tool to track task statuses across all agents.
+**Details**:
+- Scans all agent outboxes for task status updates
+- Real-time status reporting with color-coded output
+- Watch mode for continuous monitoring
+- Progress bars for task completion
+- Detailed task history with timestamps
+- Support for filtering and verbose output
+**Files**:
+- `/tools/task_status_tracker.py`
 
 ### TASK-014: Outbox Flow Visualizer
 **Status**: ✅ Done
@@ -223,6 +239,18 @@
 - `/CHANGELOG.md`
 - `/docs/RELEASE_NOTES.md`
 - `/TASK_CARDS.md`
+
+### TASK-029: Add Retry and TTL Support to Router
+**Status**: ✅ Done
+**Owner**: CA
+**Description**: Extended central router with retry logic and TTL enforcement.
+**Details**:
+- Added TTL checking for message expiration
+- Implemented retry count tracking and decrementing
+- Added comprehensive logging of routing actions
+- Created router_log.md for tracking
+- Added error handling for invalid TTL formats
+**File**: `/router/router.py`
 
 ## ⏭️ Planned Tasks (Backlog)
 
