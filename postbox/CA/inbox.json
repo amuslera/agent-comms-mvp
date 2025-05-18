@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "type": "task_assignment",
+    "id": "test-TASK-009-2025-05-18T05:50:19.033429",
+    "timestamp": "2025-05-18T05:50:19.033447",
+    "sender": "ARCH",
+    "recipient": "CA",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-009",
+      "handler": "digest",
+      "description": "Test task for digest handler"
+    }
+  }
+]
