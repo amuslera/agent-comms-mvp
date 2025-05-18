@@ -90,5 +90,58 @@
         "Expanded backlog with Phase 2-4 descriptions"
       ]
     }
+  },
+  {
+    "type": "task_status",
+    "id": "e9f0a1b2-c3d4-5678-90ab-cdef01234567",
+    "timestamp": "2025-05-18T13:00:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-028",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully completed TASK-028: Declared v1.0 milestone and created comprehensive documentation. Created CHANGELOG.md with v1.0.0 release details, /docs/RELEASE_NOTES.md with system overview and roadmap, and Git tag v1.0.0-agent-core. Phase 1 is officially complete!"
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "feat/TASK-028-version-1.0-milestone",
+      "pr_url": "https://github.com/amuslera/agent-comms-mvp/pull/new/feat/TASK-028-version-1.0-milestone",
+      "git_tag": "v1.0.0-agent-core",
+      "files_created": [
+        "/CHANGELOG.md",
+        "/docs/RELEASE_NOTES.md"
+      ],
+      "milestone": "Phase 1 Complete - Agent OS Core Operational"
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "f1a2b3c4-d5e6-7890-abcd-ef0123456789",
+    "timestamp": "2025-05-18T14:00:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-029",
+      "status": "in_progress",
+      "progress": 50,
+      "details": "Successfully recreated missing router.py file from TASK-012 with all v1.0 features. The base router is now ready for CA to add retry logic and TTL extensions. File includes: outbox scanning, message validation, routing to inboxes, message archiving, outbox clearing, CLI with --route and --dry-run flags."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "feat/TASK-029-router-retry-ttl",
+      "file_created": "/router/router.py",
+      "features_included": [
+        "Load all outboxes from /postbox/*/outbox.json",
+        "Validate messages against exchange_protocol.json",
+        "Route messages to recipient inboxes",
+        "Archive processed messages to /postbox/archive/",
+        "Clear outboxes after routing",
+        "CLI with --route and --dry-run flags"
+      ],
+      "next_step": "CA to implement retry logic and TTL features"
+    }
   }
 ]
