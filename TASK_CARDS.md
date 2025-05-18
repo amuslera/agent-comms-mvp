@@ -49,3 +49,16 @@
 - `/prompts/Claude_Code_PROMPT_TEMPLATE.md`
 - `/prompts/Cursor_AI_PROMPT_TEMPLATE.md`
 - `/prompts/Web_Assistant_PROMPT_TEMPLATE.md`
+
+### TASK-005: Create shared context file for agent-comms-mvp
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Document the high-level system goals, agent roles, and communication model in a shared file.
+**Details**:
+- Created comprehensive system overview in `CONTEXT_agent_comms.md`
+- Documented project purpose and architecture vision
+- Detailed roles of each agent (CC, CA, WA, ARCH) with references to their profiles
+- Explained file-based postbox communication system
+- Described task assignment and tracking workflow
+- Added references to protocol definition and prompt templates
+**File**: `/agent-comms-mvp/CONTEXT_agent_comms.md`
