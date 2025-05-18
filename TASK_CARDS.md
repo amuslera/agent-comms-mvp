@@ -317,6 +317,32 @@
 - Router supports learning-based routing to high-performing agents
 - Task logs track when learning is applied
 
+### TASK-033A: Define ARCH Orchestration Protocol
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Designed the orchestration protocol and control flow for ARCH — the system orchestrator agent.
+**Details**:
+- Created comprehensive protocol documentation in `ARCH_PROTOCOL.md`
+- Defined ARCH's purpose, responsibilities, and boundaries
+- Documented execution flow including plan loading, task dispatch, and monitoring
+- Specified escalation, error handling, and retry strategies
+- Established completion conditions for tasks (success, partial, failure, timeout)
+- Outlined future extensibility including webhook integration, security, and performance
+**File**: `/ARCH_PROTOCOL.md`
+
+### TASK-033C: Implement ARCH Orchestrator Runtime
+**Status**: ✅ Done
+**Owner**: CA
+**Description**: Implemented the first version of the system orchestrator for executing agent communication plans.
+**Details**:
+- Created `arch_orchestrator.py` with CLI interface
+- Implements plan loading from YAML files
+- Dispatches tasks to agent inboxes
+- Triggers agent runners via subprocess
+- Monitors task completion via outbox and task logs
+- Provides real-time execution status and summary
+- Handles errors and timeouts gracefully
+**File**: `/agent-comms-mvp/arch_orchestrator.py`
 
 ## ⏭️ Planned Tasks (Backlog)
 
@@ -333,6 +359,19 @@
 **TASK-021: Add Retry Logic to Router**
 **Description**: Implement automatic retry mechanisms for failed message deliveries. Include exponential backoff and dead-letter queue handling.
 **Suggested Owner**: CC
+
+**TASK-033B: Define Plan Format and Create Sample Plan**  
+**Status**: ✅ Done  
+**Owner**: WA  
+**Description**: Defined the format for ARCH execution plans and created a working example.  
+**Details**:  
+- Created `/plans/sample_plan.yaml` with comprehensive format and inline documentation  
+- Implemented `/tools/run_plan.py` CLI tool for executing plans  
+- Added support for task dependencies, retries, timeouts, and validation  
+- Integrated with existing `arch_orchestrator.py`  
+**Files**:  
+- `/plans/sample_plan.yaml`  
+- `/tools/run_plan.py`
 
 ### Phase 3: Intelligence Layer
 
