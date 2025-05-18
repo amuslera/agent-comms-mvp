@@ -25,6 +25,47 @@ from tools.context_manager import ContextManager
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Performance threshold for warnings
+LOW_SUCCESS_RATE_THRESHOLD = 0.85
+
+
+def load_learning_data(learning_file='insights/agent_learning_snapshot.json'):
+    """Load agent learning data from snapshot file."""
+    try:
+        with open(learning_file, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.warning(f"Learning data file not found: {learning_file}")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Error parsing learning data: {e}")
+        return None
+
+
+def check_agent_performance(agent, task_type, learning_data):
+    """Check agent's performance for a specific task type."""
+    if not learning_data:
+        return None, None
+    
+    agent_data = learning_data.get('agent_performance', {}).get(agent, {})
+    task_performance = agent_data.get('task_types', {}).get(task_type, {})
+    
+    success_rate = task_performance.get('success_rate')
+    avg_duration = task_performance.get('average_duration')
+    
+    return success_rate, avg_duration
+
+
+def log_performance_warning(agent, task_type, success_rate):
+    """Log a warning if agent has low success rate for task type."""
+    if success_rate and success_rate < LOW_SUCCESS_RATE_THRESHOLD:
+        warning_msg = (f"⚠️  Warning: Agent {agent} has low success rate ({success_rate:.1%}) "
+                      f"for task type '{task_type}'")
+        logger.warning(warning_msg)
+        print(warning_msg)
+        return True
+    return False
+
 
 def load_text_file(filepath):
     """Load text content from a file."""
@@ -174,7 +215,7 @@ def simulate_task_execution(message, agent_context=None):
         return True, f"Task {task_id} executed successfully", agent_context
 
 
-def append_to_task_log(agent, message, success, details):
+def append_to_task_log(agent, message, success, details, learning_applied=False):
     """Append an entry to the agent's task log."""
     log_path = Path(f"postbox/{agent}/task_log.md")
     
@@ -195,6 +236,9 @@ def append_to_task_log(agent, message, success, details):
     
     if message['type'] == 'task_assignment':
         log_entry += f"**Task ID**: {message['content']['task_id']}\n"
+    
+    if learning_applied:
+        log_entry += f"**Learning Applied**: Yes\n"
     
     log_entry += f"**Details**: {details}\n"
     
@@ -228,7 +272,7 @@ def create_status_message(agent, original_message, success, details):
     return status_message
 
 
-def process_inbox(agent, schema, simulate=True, clear=False, force=False, context_dir='context'):
+def process_inbox(agent, schema, simulate=True, clear=False, force=False, context_dir='context', use_learning=False):
     """Process all messages in the agent's inbox.
     
     Args:
@@ -238,6 +282,7 @@ def process_inbox(agent, schema, simulate=True, clear=False, force=False, contex
         clear: Whether to clear processed messages from the inbox
         force: Whether to force execution even if dependencies aren't met
         context_dir: Directory containing context files
+        use_learning: Whether to use learning-based decision making
     """
     inbox_path = Path(f"postbox/{agent}/inbox.json")
     outbox_path = Path(f"postbox/{agent}/outbox.json")
@@ -275,6 +320,15 @@ def process_inbox(agent, schema, simulate=True, clear=False, force=False, contex
     
     print(f"\nProcessing {len(inbox)} message(s) in {agent}'s inbox...")
     
+    # Load learning data if enabled
+    learning_data = None
+    if use_learning:
+        learning_data = load_learning_data()
+        if learning_data:
+            print("Learning data loaded - will make performance-aware decisions")
+        else:
+            print("Warning: --use-learning enabled but no learning data found")
+    
     # Load outbox
     outbox = []
     if outbox_path.exists():
@@ -299,6 +353,13 @@ def process_inbox(agent, schema, simulate=True, clear=False, force=False, contex
                 print(f"Skipping {message.get('id', 'unknown')}: Dependencies not met")
                 continue
             
+            # Check agent performance for this task type if learning is enabled
+            if use_learning and learning_data:
+                task_type = message.get('content', {}).get('task_description', '').split(':')[0].strip()
+                performance = check_agent_performance(learning_data, agent, task_type)
+                if performance and 'success_rate' in performance and performance['success_rate'] < LOW_SUCCESS_RATE_THRESHOLD:
+                    log_performance_warning(agent, task_type, performance)
+            
             # Make a copy of the context for this task
             task_context = json.loads(json.dumps(agent_context)) if agent_context else {}
             
@@ -315,8 +376,9 @@ def process_inbox(agent, schema, simulate=True, clear=False, force=False, contex
                 success = True
                 details = "Simulation skipped"
             
-            # Log the result
-            append_to_task_log(agent, message, success, details)
+            # Log the result (track if learning was applied for this task)
+            learning_applied = use_learning and learning_data is not None
+            append_to_task_log(agent, message, success, details, learning_applied)
             
             # Create status message
             status_msg = create_status_message(agent, message, success, details)
@@ -455,6 +517,8 @@ def main():
                        help='Directory containing context files')
     parser.add_argument('--debug', action='store_true',
                        help='Enable debug logging')
+    parser.add_argument('--use-learning', action='store_true',
+                       help='Enable learning-based decision making')
     
     args = parser.parse_args()
     
@@ -485,12 +549,9 @@ def main():
         simulate=not args.no_simulate,
         clear=args.clear,
         force=args.force,
-        context_dir=args.context_dir
+        context_dir=args.context_dir,
+        use_learning=args.use_learning
     )
-    print(f"   Force execution: {args.force}")
-    
-    # Process the inbox
-    process_inbox(args.agent, schema, args.simulate, args.clear, args.force)
     
     print("\n✨ Agent Runner completed successfully")
 

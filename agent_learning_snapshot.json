@@ -1,0 +1,104 @@
+{
+  "timestamp": "2025-05-18T02:36:31-07:00",
+  "agents": {
+    "CA": {
+      "completed_tasks": 45,
+      "failed_tasks": 3,
+      "retried_tasks": 5,
+      "success_rate": 0.93,
+      "avg_processing_time_seconds": 12.5,
+      "by_task_type": {
+        "digest": {
+          "completed": 12,
+          "failed": 1,
+          "success_rate": 0.92,
+          "avg_time_seconds": 15.2
+        },
+        "analysis": {
+          "completed": 20,
+          "failed": 1,
+          "success_rate": 0.95,
+          "avg_time_seconds": 30.5
+        },
+        "summary": {
+          "completed": 13,
+          "failed": 1,
+          "success_rate": 0.92,
+          "avg_time_seconds": 8.7
+        }
+      }
+    },
+    "WA": {
+      "completed_tasks": 32,
+      "failed_tasks": 8,
+      "retried_tasks": 12,
+      "success_rate": 0.8,
+      "avg_processing_time_seconds": 8.2,
+      "by_task_type": {
+        "digest": {
+          "completed": 8,
+          "failed": 3,
+          "success_rate": 0.73,
+          "avg_time_seconds": 10.5
+        },
+        "analysis": {
+          "completed": 12,
+          "failed": 2,
+          "success_rate": 0.86,
+          "avg_time_seconds": 25.3
+        },
+        "summary": {
+          "completed": 12,
+          "failed": 3,
+          "success_rate": 0.75,
+          "avg_time_seconds": 6.2
+        }
+      }
+    },
+    "CC": {
+      "completed_tasks": 38,
+      "failed_tasks": 2,
+      "retried_tasks": 3,
+      "success_rate": 0.95,
+      "avg_processing_time_seconds": 18.7,
+      "by_task_type": {
+        "digest": {
+          "completed": 12,
+          "failed": 0,
+          "success_rate": 1.0,
+          "avg_time_seconds": 20.1
+        },
+        "analysis": {
+          "completed": 15,
+          "failed": 1,
+          "success_rate": 0.94,
+          "avg_time_seconds": 25.8
+        },
+        "summary": {
+          "completed": 11,
+          "failed": 1,
+          "success_rate": 0.92,
+          "avg_time_seconds": 10.2
+        }
+      }
+    },
+    "ARCH": {
+      "completed_tasks": 50,
+      "failed_tasks": 1,
+      "retried_tasks": 2,
+      "success_rate": 0.98,
+      "avg_processing_time_seconds": 5.2,
+      "by_task_type": {
+        "routing": {
+          "completed": 50,
+          "failed": 1,
+          "success_rate": 0.98,
+          "avg_time_seconds": 5.2
+        }
+      }
+    }
+  },
+  "task_types": ["digest", "analysis", "summary", "routing"],
+  "agents_list": ["CA", "WA", "CC", "ARCH"],
+  "last_updated": "2025-05-18T02:30:00-07:00"
+}
