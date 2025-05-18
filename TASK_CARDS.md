@@ -198,6 +198,18 @@
 - Rich terminal UI using curses
 **File**: `/tools/flow_visualizer.py`
 
+### TASK-018: Rewrite and Renumber TASK_CARDS.md
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Fixed task numbering conflicts and reorganized TASK_CARDS.md to reflect completed tasks and future roadmap.
+**Details**:
+- Moved TASK-011 through TASK-014 to completed section with proper descriptions
+- Fixed numbering conflicts in backlog (now starts at TASK-019)
+- Organized future tasks into Phase 2 (Coordination), Phase 3 (Intelligence), and Phase 4 (UI/Visualization)
+- Added detailed descriptions for each planned task
+- Ensured consistent formatting throughout the document
+**File**: `/agent-comms-mvp/TASK_CARDS.md`
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 2: Coordination Layer
