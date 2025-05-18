@@ -252,6 +252,35 @@
 - Added error handling for invalid TTL formats
 **File**: `/router/router.py`
 
+### TASK-031: Implement Dependency-Aware Execution
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Enable agents to detect and enforce task dependencies before execution
+**Files**:
+- `/agent_runner.py`
+**Implementation Details**:
+- Added dependency checking via depends_on metadata
+- Checks outboxes and task logs for completed dependencies
+- Defers tasks with unmet dependencies
+- Logs deferred status with missing dependency details
+- Added --force flag to override dependency checks
+- Created test_dependency_task.json for testing
+
+### TASK-032: Implement Error Recovery and Fallback Rerouting
+**Status**: ✅ Done
+**Owner**: CA
+**Description**: Added logic to detect error messages and automatically reroute fallback tasks
+**Files**:
+- `/recovery/error_handler.py`
+- `/recovery/recovery_log.md`
+**Implementation Details**:
+- Created error message detection and processing system
+- Implemented fallback task extraction and routing
+- Added comprehensive logging of recovery actions
+- Added error handling for invalid fallback tasks
+- Created recovery log for tracking fallback activations
+- Added support for error context preservation in fallback tasks
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 2: Coordination Layer
