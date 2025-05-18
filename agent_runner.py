@@ -3,6 +3,7 @@
 Agent Runner CLI tool for the agent-comms-mvp system.
 Reads tasks from agent inbox, validates messages, simulates execution,
 and updates task logs and outbox with status messages.
+Supports dependency-aware execution with depends_on metadata.
 """
 
 import json
@@ -12,6 +13,8 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 from jsonschema import validate, ValidationError
+import glob
+import re
 
 
 def load_text_file(filepath):
@@ -53,6 +56,57 @@ def validate_message(message, schema):
         return True, None
     except ValidationError as e:
         return False, str(e)
+
+
+def check_task_completed(task_id):
+    """Check if a task is marked as completed by searching outboxes and task logs."""
+    # Check all agent outboxes for task_status messages
+    outbox_files = glob.glob("postbox/*/outbox.json")
+    
+    for outbox_file in outbox_files:
+        try:
+            with open(outbox_file, 'r') as f:
+                messages = json.load(f)
+                
+            for msg in messages:
+                if (msg.get('type') == 'task_status' and 
+                    msg.get('content', {}).get('task_id') == task_id and
+                    msg.get('content', {}).get('status') == 'completed'):
+                    return True
+        except (json.JSONDecodeError, FileNotFoundError):
+            continue
+    
+    # Check all task logs for completed status
+    log_files = glob.glob("postbox/*/task_log.md")
+    
+    for log_file in log_files:
+        try:
+            with open(log_file, 'r') as f:
+                content = f.read()
+                
+            # Look for completed task entries
+            if re.search(f"\\*\\*Task ID\\*\\*: {re.escape(task_id)}.*?\\*\\*Status\\*\\*:.*?Success", 
+                        content, re.DOTALL):
+                return True
+        except FileNotFoundError:
+            continue
+    
+    return False
+
+
+def check_dependencies_met(message):
+    """Check if all dependencies for a task are met."""
+    depends_on = message.get('metadata', {}).get('depends_on', [])
+    
+    if not depends_on:
+        return True, []
+    
+    missing_deps = []
+    for dep_task_id in depends_on:
+        if not check_task_completed(dep_task_id):
+            missing_deps.append(dep_task_id)
+    
+    return len(missing_deps) == 0, missing_deps
 
 
 def simulate_task_execution(message):
@@ -132,7 +186,7 @@ def create_status_message(agent, original_message, success, details):
     return status_message
 
 
-def process_inbox(agent, schema, simulate=True, clear=False):
+def process_inbox(agent, schema, simulate=True, clear=False, force=False):
     """Process all messages in the agent's inbox."""
     inbox_path = Path(f"postbox/{agent}/inbox.json")
     outbox_path = Path(f"postbox/{agent}/outbox.json")
@@ -185,6 +239,39 @@ def process_inbox(agent, schema, simulate=True, clear=False):
             continue
         
         print("   ✓ Message validated successfully")
+        
+        # Check dependencies
+        if message['type'] == 'task_assignment' and not force:
+            deps_met, missing_deps = check_dependencies_met(message)
+            
+            if not deps_met:
+                print(f"   ⏸️  Task has unmet dependencies: {missing_deps}")
+                reason = f"Task deferred - waiting for dependencies: {', '.join(missing_deps)}"
+                append_to_task_log(agent, message, False, reason)
+                
+                # Create status message for deferred task
+                status_message = {
+                    "type": "task_status",
+                    "id": str(uuid.uuid4()),
+                    "timestamp": datetime.now().isoformat(),
+                    "sender": agent,
+                    "recipient": message['sender'],
+                    "version": "1.0.0",
+                    "content": {
+                        "task_id": message['content'].get('task_id', 'N/A'),
+                        "status": "deferred",
+                        "progress": 0,
+                        "details": reason
+                    },
+                    "metadata": {
+                        "protocol_version": "1.0.0",
+                        "original_message_id": message['id'],
+                        "missing_dependencies": missing_deps
+                    }
+                }
+                outbox.append(status_message)
+                print(f"   📤 Added deferred status to outbox")
+                continue
         
         # Simulate task execution
         if simulate:
@@ -325,6 +412,11 @@ def main():
         action="store_true",
         help="Initialize agent by displaying role, capabilities, and expected behavior"
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force task execution, ignoring dependency checks"
+    )
     
     args = parser.parse_args()
     
@@ -341,9 +433,10 @@ def main():
     print(f"🤖 Agent Runner - Processing inbox for {args.agent}")
     print(f"   Mode: {'Simulation' if args.simulate else 'Real execution'}")
     print(f"   Clear inbox: {args.clear}")
+    print(f"   Force execution: {args.force}")
     
     # Process the inbox
-    process_inbox(args.agent, schema, args.simulate, args.clear)
+    process_inbox(args.agent, schema, args.simulate, args.clear, args.force)
     
     print("\n✨ Agent Runner completed successfully")
 

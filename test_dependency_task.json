@@ -1,0 +1,21 @@
+{
+  "type": "task_assignment",
+  "id": "test-dep-001",
+  "timestamp": "2024-12-01T10:00:00Z",
+  "sender": "ARCH",
+  "recipient": "CC",
+  "version": "1.0.0",
+  "content": {
+    "task_id": "TASK-903",
+    "title": "Test Dependency Task",
+    "description": "This task depends on TASK-901 and TASK-902",
+    "priority": "medium",
+    "deadline": "2024-12-10T00:00:00Z",
+    "requirements": ["Test dependency checking"],
+    "tags": ["test", "dependency"]
+  },
+  "metadata": {
+    "protocol_version": "1.0.0",
+    "depends_on": ["TASK-901", "TASK-902"]
+  }
+}
