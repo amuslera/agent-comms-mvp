@@ -116,7 +116,7 @@
 **File**: `/simulation/task_handlers.py`
 
 ### TASK-009: Build End-to-End Test Validator
-**Status**: ✅ Done
+**Status**: 
 **Owner**: CA
 **Description**: Created end-to-end test validator for agent message processing flow.
 **Details**:
@@ -128,7 +128,7 @@
 **File**: `/tests/test_agent_flow.py`
 
 ### TASK-010: Agent self-initialization system
-**Status**: ✅ Done
+**Status**: 
 **Owner**: CC
 **Description**: Added logic for agents to load and display their profiles, prompt templates, and context.
 **Details**:
