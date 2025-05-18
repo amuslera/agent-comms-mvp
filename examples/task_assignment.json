@@ -1,0 +1,23 @@
+{
+  "type": "task_assignment",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "timestamp": "2024-03-20T10:00:00Z",
+  "sender": "ARCH",
+  "recipient": "CA",
+  "version": "1.0.0",
+  "content": {
+    "task_id": "TASK-003",
+    "description": "Create exchange_protocol.json schema for agent messages",
+    "priority": 2,
+    "deadline": "2024-03-21T10:00:00Z",
+    "requirements": [
+      "Define JSON schema for all message types",
+      "Include validation rules",
+      "Add example messages",
+      "Update TASK_CARDS.md"
+    ]
+  },
+  "metadata": {
+    "protocol_version": "1.0.0"
+  }
+} 
