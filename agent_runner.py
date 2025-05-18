@@ -3,15 +3,68 @@
 Agent Runner CLI tool for the agent-comms-mvp system.
 Reads tasks from agent inbox, validates messages, simulates execution,
 and updates task logs and outbox with status messages.
+Supports dependency-aware execution with depends_on metadata.
 """
 
 import json
 import argparse
 import sys
 import uuid
+import logging
 from datetime import datetime
 from pathlib import Path
 from jsonschema import validate, ValidationError
+import glob
+import re
+
+# Add the parent directory to the path so we can import context_manager
+sys.path.insert(0, str(Path(__file__).parent))
+from tools.context_manager import ContextManager
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Performance threshold for warnings
+LOW_SUCCESS_RATE_THRESHOLD = 0.85
+
+
+def load_learning_data(learning_file='insights/agent_learning_snapshot.json'):
+    """Load agent learning data from snapshot file."""
+    try:
+        with open(learning_file, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.warning(f"Learning data file not found: {learning_file}")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Error parsing learning data: {e}")
+        return None
+
+
+def check_agent_performance(agent, task_type, learning_data):
+    """Check agent's performance for a specific task type."""
+    if not learning_data:
+        return None, None
+    
+    agent_data = learning_data.get('agent_performance', {}).get(agent, {})
+    task_performance = agent_data.get('task_types', {}).get(task_type, {})
+    
+    success_rate = task_performance.get('success_rate')
+    avg_duration = task_performance.get('average_duration')
+    
+    return success_rate, avg_duration
+
+
+def log_performance_warning(agent, task_type, success_rate):
+    """Log a warning if agent has low success rate for task type."""
+    if success_rate and success_rate < LOW_SUCCESS_RATE_THRESHOLD:
+        warning_msg = (f"⚠️  Warning: Agent {agent} has low success rate ({success_rate:.1%}) "
+                      f"for task type '{task_type}'")
+        logger.warning(warning_msg)
+        print(warning_msg)
+        return True
+    return False
 
 
 def load_text_file(filepath):
@@ -55,30 +108,114 @@ def validate_message(message, schema):
         return False, str(e)
 
 
-def simulate_task_execution(message):
-    """Simulate task execution and return execution result."""
-    print(f"\n🚀 Executing task from {message['sender']}...")
-    print(f"   Message ID: {message['id']}")
-    print(f"   Type: {message['type']}")
+def check_task_completed(task_id):
+    """Check if a task is marked as completed by searching outboxes and task logs."""
+    # Check all agent outboxes for task_status messages
+    outbox_files = glob.glob("postbox/*/outbox.json")
     
-    if message['type'] == 'task_assignment':
-        task_id = message['content']['task_id']
-        description = message['content']['description']
-        print(f"   Task ID: {task_id}")
-        print(f"   Description: {description}")
-        print(f"   Priority: {message['content']['priority']}")
-        print(f"   Deadline: {message['content']['deadline']}")
+    for outbox_file in outbox_files:
+        try:
+            with open(outbox_file, 'r') as f:
+                messages = json.load(f)
+                
+            for msg in messages:
+                if (msg.get('type') == 'task_status' and 
+                    msg.get('content', {}).get('task_id') == task_id and
+                    msg.get('content', {}).get('status') == 'completed'):
+                    return True
+        except (json.JSONDecodeError, FileNotFoundError):
+            continue
+    
+    # Check all task logs for completed status
+    log_files = glob.glob("postbox/*/task_log.md")
+    
+    for log_file in log_files:
+        try:
+            with open(log_file, 'r') as f:
+                content = f.read()
+                
+            # Look for completed task entries
+            if re.search(f"\\*\\*Task ID\\*\\*: {re.escape(task_id)}.*?\\*\\*Status\\*\\*:.*?Success", 
+                        content, re.DOTALL):
+                return True
+        except FileNotFoundError:
+            continue
+    
+    return False
+
+
+def check_dependencies_met(message):
+    """Check if all dependencies for a task are met."""
+    depends_on = message.get('metadata', {}).get('depends_on', [])
+    
+    if not depends_on:
+        return True, []
+    
+    missing_deps = []
+    for dep_task_id in depends_on:
+        if not check_task_completed(dep_task_id):
+            missing_deps.append(dep_task_id)
+    
+    return len(missing_deps) == 0, missing_deps
+
+
+def simulate_task_execution(message, agent_context=None):
+    """Simulate task execution and return execution result.
+    
+    Args:
+        message: The task message to process
+        agent_context: The agent's context dictionary (may be modified)
         
-        # Simulate successful execution
-        print(f"   ✅ Task {task_id} executed successfully (simulated)")
-        return True, f"Task {task_id} completed successfully (simulated execution)"
+    Returns:
+        Tuple of (success: bool, details: str, updated_context: dict)
+    """
+    task_type = message.get('content', {}).get('type', 'unknown')
+    task_id = message.get('content', {}).get('task_id', 'unknown')
     
+    print(f"\n{'='*40}")
+    print(f"SIMULATING TASK EXECUTION")
+    print(f"Task ID: {task_id}")
+    print(f"Type: {task_type}")
+    print(f"From: {message.get('sender', 'unknown')}")
+    print(f"To: {message.get('recipient', 'unknown')}")
+    print(f"Agent Context: {'Available' if agent_context else 'Not available'}")
+    print(f"{'='*40}")
+    
+    # Initialize context if not provided
+    if agent_context is None:
+        agent_context = {}
+    
+    # Update context with task information
+    if 'history' not in agent_context:
+        agent_context['history'] = {}
+    if 'tasks' not in agent_context['history']:
+        agent_context['history']['tasks'] = []
+    
+    # Add task to history
+    task_entry = {
+        'task_id': task_id,
+        'type': task_type,
+        'timestamp': datetime.now().isoformat(),
+        'status': 'completed'
+    }
+    agent_context['history']['tasks'].append(task_entry)
+    
+    # Update last active time
+    agent_context['state'] = agent_context.get('state', {})
+    agent_context['state']['last_active'] = datetime.now().isoformat()
+    
+    # Simulate different outcomes based on task type
+    if task_type == 'data_processing':
+        return True, "Data processed successfully", agent_context
+    elif task_type == 'api_call':
+        return True, "API call completed", agent_context
+    elif task_type == 'report_generation':
+        return True, "Report generated", agent_context
     else:
-        print(f"   ℹ️  Processing {message['type']} message")
-        return True, f"Message {message['id']} processed successfully"
+        return True, f"Task {task_id} executed successfully", agent_context
 
 
-def append_to_task_log(agent, message, success, details):
+def append_to_task_log(agent, message, success, details, learning_applied=False):
     """Append an entry to the agent's task log."""
     log_path = Path(f"postbox/{agent}/task_log.md")
     
@@ -99,6 +236,9 @@ def append_to_task_log(agent, message, success, details):
     
     if message['type'] == 'task_assignment':
         log_entry += f"**Task ID**: {message['content']['task_id']}\n"
+    
+    if learning_applied:
+        log_entry += f"**Learning Applied**: Yes\n"
     
     log_entry += f"**Details**: {details}\n"
     
@@ -132,91 +272,152 @@ def create_status_message(agent, original_message, success, details):
     return status_message
 
 
-def process_inbox(agent, schema, simulate=True, clear=False):
-    """Process all messages in the agent's inbox."""
+def process_inbox(agent, schema, simulate=True, clear=False, force=False, context_dir='context', use_learning=False):
+    """Process all messages in the agent's inbox.
+    
+    Args:
+        agent: The agent ID to process messages for
+        schema: The JSON schema to validate messages against
+        simulate: Whether to simulate task execution
+        clear: Whether to clear processed messages from the inbox
+        force: Whether to force execution even if dependencies aren't met
+        context_dir: Directory containing context files
+        use_learning: Whether to use learning-based decision making
+    """
     inbox_path = Path(f"postbox/{agent}/inbox.json")
     outbox_path = Path(f"postbox/{agent}/outbox.json")
     
-    # Load inbox messages
-    messages = load_json_file(inbox_path)
+    # Initialize context manager
+    context_manager = ContextManager(context_dir)
     
-    if not messages:
+    # Load agent context
+    try:
+        agent_context = context_manager.load_context(agent)
+        logger.debug(f"Loaded context for agent {agent}")
+    except Exception as e:
+        logger.error(f"Error loading context for {agent}: {e}")
+        agent_context = {}
+    
+    # Load inbox
+    if not inbox_path.exists():
+        print(f"No inbox found for agent {agent}")
+        return
+    
+    try:
+        with open(inbox_path, 'r') as f:
+            inbox = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error reading inbox for {agent}: {e}")
+        return
+    
+    if not isinstance(inbox, list):
+        print(f"Invalid inbox format for {agent}")
+        return
+    
+    if not inbox:
         print(f"No messages in {agent}'s inbox")
         return
     
-    print(f"Processing {len(messages)} message(s) from {agent}'s inbox...")
+    print(f"\nProcessing {len(inbox)} message(s) in {agent}'s inbox...")
     
-    # Load current outbox
-    outbox = load_json_file(outbox_path)
+    # Load learning data if enabled
+    learning_data = None
+    if use_learning:
+        learning_data = load_learning_data()
+        if learning_data:
+            print("Learning data loaded - will make performance-aware decisions")
+        else:
+            print("Warning: --use-learning enabled but no learning data found")
+    
+    # Load outbox
+    outbox = []
+    if outbox_path.exists():
+        try:
+            with open(outbox_path, 'r') as f:
+                outbox = json.load(f)
+                if not isinstance(outbox, list):
+                    outbox = []
+        except (json.JSONDecodeError, FileNotFoundError):
+            outbox = []
     
     processed_messages = []
+    context_modified = False
     
-    for message in messages:
-        print(f"\n{'='*50}")
-        print(f"Processing message {message['id']}...")
-        
-        # Validate message
-        valid, error = validate_message(message, schema)
-        
-        if not valid:
-            print(f"   ❌ Validation failed: {error}")
-            append_to_task_log(agent, message, False, f"Validation error: {error}")
+    for message in inbox:
+        try:
+            # Validate message against schema
+            validate(instance=message, schema=schema)
             
-            # Create error message for outbox
-            error_message = {
-                "type": "error",
-                "id": str(uuid.uuid4()),
-                "timestamp": datetime.now().isoformat(),
-                "sender": agent,
-                "recipient": message['sender'],
-                "version": "1.0.0",
-                "content": {
-                    "error_code": "INVALID_MESSAGE",
-                    "message": f"Message validation failed: {error}",
-                    "context": {
-                        "original_message_id": message['id']
-                    }
-                },
-                "metadata": {
-                    "protocol_version": "1.0.0"
-                }
-            }
-            outbox.append(error_message)
-            continue
-        
-        print("   ✓ Message validated successfully")
-        
-        # Simulate task execution
-        if simulate:
-            success, details = simulate_task_execution(message)
-        else:
-            print("   ⚠️  Real execution not implemented (using simulation)")
-            success, details = simulate_task_execution(message)
-        
-        # Log the execution result
-        append_to_task_log(agent, message, success, details)
-        
-        # Create status message for outbox
-        if message['type'] == 'task_assignment':
-            status_message = create_status_message(agent, message, success, details)
-            outbox.append(status_message)
-            print(f"   📤 Added status message to outbox")
-        
-        processed_messages.append(message)
+            # Check dependencies if not forcing
+            if not force and not check_dependencies_met(message):
+                print(f"Skipping {message.get('id', 'unknown')}: Dependencies not met")
+                continue
+            
+            # Check agent performance for this task type if learning is enabled
+            if use_learning and learning_data:
+                task_type = message.get('content', {}).get('task_description', '').split(':')[0].strip()
+                performance = check_agent_performance(learning_data, agent, task_type)
+                if performance and 'success_rate' in performance and performance['success_rate'] < LOW_SUCCESS_RATE_THRESHOLD:
+                    log_performance_warning(agent, task_type, performance)
+            
+            # Make a copy of the context for this task
+            task_context = json.loads(json.dumps(agent_context)) if agent_context else {}
+            
+            # Simulate task execution with context
+            if simulate:
+                success, details, updated_context = simulate_task_execution(message, task_context)
+                
+                # Check if context was modified
+                if json.dumps(task_context) != json.dumps(agent_context):
+                    agent_context = updated_context
+                    context_modified = True
+                    logger.debug(f"Context updated during task execution for {agent}")
+            else:
+                success = True
+                details = "Simulation skipped"
+            
+            # Log the result (track if learning was applied for this task)
+            learning_applied = use_learning and learning_data is not None
+            append_to_task_log(agent, message, success, details, learning_applied)
+            
+            # Create status message
+            status_msg = create_status_message(agent, message, success, details)
+            outbox.append(status_msg)
+            
+            print(f"Processed message {message.get('id', 'unknown')}: {'✓' if success else '✗'}")
+            processed_messages.append(message['id'])
+            
+        except ValidationError as e:
+            print(f"Invalid message format: {e}")
+        except Exception as e:
+            print(f"Error processing message: {e}")
     
-    # Save updated outbox
-    save_json_file(outbox_path, outbox)
-    print(f"\n✅ Updated outbox with {len(outbox)} message(s)")
+    # Save updated context if modified
+    if context_modified:
+        try:
+            if context_manager.save_context(agent, agent_context):
+                logger.debug(f"Saved updated context for agent {agent}")
+            else:
+                logger.error(f"Failed to save context for agent {agent}")
+        except Exception as e:
+            logger.error(f"Error saving context for {agent}: {e}")
     
-    # Clear inbox if requested
-    if clear:
-        save_json_file(inbox_path, [])
-        print(f"🗑️  Cleared {agent}'s inbox")
-    else:
-        # Remove processed messages from inbox
-        remaining_messages = [m for m in messages if m not in processed_messages]
-        save_json_file(inbox_path, remaining_messages)
-        print(f"📥 {len(remaining_messages)} message(s) remaining in inbox")
+    # Save outbox
+    try:
+        with open(outbox_path, 'w') as f:
+            json.dump(outbox, f, indent=2)
+    except Exception as e:
+        print(f"Error saving outbox: {e}")
+    
+    # Clear processed messages from inbox if requested
+    if clear and processed_messages:
+        remaining_messages = [msg for msg in inbox if msg.get('id') not in processed_messages]
+        try:
+            with open(inbox_path, 'w') as f:
+                json.dump(remaining_messages, f, indent=2)
+            print(f"\nCleared {len(processed_messages)} processed message(s) from inbox")
+        except Exception as e:
+            print(f"Error clearing inbox: {e}")
 
 
 def agent_init(agent):
@@ -300,50 +501,57 @@ def agent_init(agent):
 
 def main():
     """Main CLI entry point."""
-    parser = argparse.ArgumentParser(
-        description="Agent Runner - Execute tasks from agent inbox"
-    )
-    parser.add_argument(
-        "--agent",
-        required=True,
-        choices=["CC", "CA", "WA", "ARCH"],
-        help="Agent identifier to run tasks for"
-    )
-    parser.add_argument(
-        "--simulate",
-        action="store_true",
-        default=True,
-        help="Simulate task execution (default: True)"
-    )
-    parser.add_argument(
-        "--clear",
-        action="store_true",
-        help="Clear inbox after processing messages"
-    )
-    parser.add_argument(
-        "--init",
-        action="store_true",
-        help="Initialize agent by displaying role, capabilities, and expected behavior"
-    )
+    parser = argparse.ArgumentParser(description='Agent Runner CLI')
+    parser.add_argument('agent', help='Agent ID (e.g., WA, CA, CC)')
+    parser.add_argument('--schema', default='exchange_protocol.json', 
+                       help='Path to JSON schema file')
+    parser.add_argument('--no-simulate', action='store_true', 
+                       help='Skip task simulation')
+    parser.add_argument('--clear', action='store_true',
+                       help='Clear processed messages from inbox')
+    parser.add_argument('--force', '-f', action='store_true',
+                       help='Force execution even if dependencies are not met')
+    parser.add_argument('--init', action='store_true',
+                       help='Initialize agent configuration')
+    parser.add_argument('--context-dir', default='context',
+                       help='Directory containing context files')
+    parser.add_argument('--debug', action='store_true',
+                       help='Enable debug logging')
+    parser.add_argument('--use-learning', action='store_true',
+                       help='Enable learning-based decision making')
     
     args = parser.parse_args()
     
-    # If --init flag is provided, run initialization instead
+    # Configure logging
+    log_level = logging.DEBUG if args.debug else logging.INFO
+    logging.basicConfig(level=log_level, 
+                       format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
     if args.init:
         agent_init(args.agent)
         return
     
-    # Otherwise, proceed with normal inbox processing
-    # Load exchange protocol schema
-    schema_path = Path("exchange_protocol.json")
-    schema = load_json_file(schema_path)
+    # Load schema
+    try:
+        with open(args.schema, 'r') as f:
+            schema = json.load(f)
+    except FileNotFoundError:
+        print(f"Schema file not found: {args.schema}")
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON in schema file: {e}")
+        sys.exit(1)
     
-    print(f"🤖 Agent Runner - Processing inbox for {args.agent}")
-    print(f"   Mode: {'Simulation' if args.simulate else 'Real execution'}")
-    print(f"   Clear inbox: {args.clear}")
-    
-    # Process the inbox
-    process_inbox(args.agent, schema, args.simulate, args.clear)
+    # Process inbox
+    process_inbox(
+        agent=args.agent,
+        schema=schema,
+        simulate=not args.no_simulate,
+        clear=args.clear,
+        force=args.force,
+        context_dir=args.context_dir,
+        use_learning=args.use_learning
+    )
     
     print("\n✨ Agent Runner completed successfully")
 

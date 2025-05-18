@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Central message router with TTL and retry support.
+Central message router with TTL, retry, and learning support.
 
 This module handles message routing between agents, including:
 - TTL enforcement for message expiration
 - Retry countdown and tracking
 - Message archiving and logging
+- Learning-based routing optimization
 """
 
 import argparse
@@ -144,15 +145,98 @@ def archive_message(message: Dict[str, Any], reason: str) -> None:
         logger.error(f"Error archiving message: {e}")
 
 
-def route_message(message: Dict[str, Any], source_agent: str) -> None:
+def load_learning_data() -> Optional[Dict[str, Any]]:
     """
-    Route a message to its recipient's inbox, handling TTL and retries.
+    Load agent learning data from insights directory.
+    
+    Returns:
+        Optional[Dict]: Learning data or None if not found
+    """
+    try:
+        with open('insights/agent_learning_snapshot.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.warning("Learning data not found")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding learning data: {e}")
+        return None
+
+
+def get_best_agent_for_task(task_type: str, learning_data: Dict[str, Any]) -> Optional[str]:
+    """
+    Determine the best agent for a task type based on performance data.
+    
+    Args:
+        task_type: Type of task to route
+        learning_data: Learning snapshot data
+        
+    Returns:
+        Optional[str]: Agent ID or None if no data available
+    """
+    if not learning_data:
+        return None
+    
+    # Extract performance metrics from learning data
+    performances = learning_data.get('agent_performances', {})
+    
+    best_agent = None
+    best_score = -1
+    
+    for agent, metrics in performances.items():
+        if task_type in metrics.get('successful_tasks', []):
+            score = metrics.get('success_rate', 0) * 100 + (100 - metrics.get('avg_duration', 100))
+            if score > best_score:
+                best_score = score
+                best_agent = agent
+    
+    return best_agent
+
+
+def route_with_learning(message: Dict[str, Any], learning_data: Dict[str, Any]) -> Optional[str]:
+    """
+    Use learning data to determine optimal routing.
+    
+    Args:
+        message: Message to route
+        learning_data: Learning snapshot data
+        
+    Returns:
+        Optional[str]: Suggested recipient agent ID
+    """
+    if not learning_data:
+        return None
+    
+    # Extract task type from message
+    task_type = message.get('content', {}).get('task_type')
+    if not task_type:
+        return None
+    
+    # Find best agent for task
+    best_agent = get_best_agent_for_task(task_type, learning_data)
+    
+    return best_agent
+
+
+def route_message(message: Dict[str, Any], source_agent: str, use_learning: bool = False) -> None:
+    """
+    Route a message to its recipient's inbox, handling TTL, retries, and learning.
     
     Args:
         message: Message dictionary to route
         source_agent: ID of the sending agent
+        use_learning: Whether to use learning data for routing
     """
     recipient = message.get('recipient')
+    
+    # Check if learning-based routing should override the recipient
+    if use_learning:
+        learning_data = load_learning_data()
+        learned_recipient = route_with_learning(message, learning_data)
+        if learned_recipient:
+            logger.info(f"Override routing: {recipient} -> {learned_recipient} (learning-based)")
+            recipient = learned_recipient
+    
     if not recipient:
         logger.error(f"Message missing recipient: {message}")
         return
@@ -196,8 +280,12 @@ def route_message(message: Dict[str, Any], source_agent: str) -> None:
         logger.error(f"Error routing message to {recipient}: {e}")
 
 
-def process_outboxes() -> None:
-    """Process all agent outboxes and route messages."""
+def process_outboxes(use_learning: bool = False) -> None:
+    """Process all agent outboxes and route messages.
+    
+    Args:
+        use_learning: Whether to use learning data for routing decisions
+    """
     logger.info("Starting message routing cycle")
     
     # Find all outbox.json files
@@ -212,7 +300,7 @@ def process_outboxes() -> None:
             
             # Route each message
             for msg in messages:
-                route_message(msg, agent_id)
+                route_message(msg, agent_id, use_learning)
             
             # Clear outbox after processing
             with open(outbox_file, 'w') as f:
@@ -225,87 +313,28 @@ def process_outboxes() -> None:
     logger.info("Message routing cycle complete")
 
 
-def route_all_messages(dry_run: bool = False) -> Dict[str, List[str]]:
-    """Route all messages from all agent outboxes."""
-    postbox_dir = Path(__file__).parent.parent / "postbox"
-    processed_dir = postbox_dir / "archive"
-    schema = load_schema()
-    
-    agents = ['CC', 'CA', 'WA', 'ARCH']
-    results = {
-        'routed': [],
-        'failed': [],
-        'errors': []
-    }
-    
-    print(f"🚀 Central Router starting {'(DRY RUN)' if dry_run else ''}...")
-    print(f"📦 Scanning outboxes in {postbox_dir}")
-    
-    for agent in agents:
-        print(f"\n📤 Checking {agent} outbox...")
-        messages = scan_outbox(agent, postbox_dir)
-        
-        if not messages:
-            print(f"   ✓ No messages to route")
-            continue
-        
-        print(f"   Found {len(messages)} message(s)")
-        routed_messages = []
-        
-        for msg in messages:
-            msg_id = msg.get('id', 'unknown')
-            recipient = msg.get('recipient', 'unknown')
-            
-            if dry_run:
-                print(f"   [DRY RUN] Would route {msg_id} to {recipient}")
-                results['routed'].append(f"{agent} -> {recipient}: {msg_id}")
-            else:
-                route_message(msg, agent)
-                results['routed'].append(f"{agent} -> {recipient}: {msg_id}")
-                routed_messages.append(msg)
-        
-        # Clear successfully routed messages from outbox
-        if routed_messages and not dry_run:
-            with open(postbox_dir / agent / "outbox.json", 'w') as f:
-                json.dump([], f)
-            print(f"   ✓ Cleared {len(routed_messages)} routed message(s) from outbox")
-    
-    # Summary
-    print(f"\n📊 Routing Summary:")
-    print(f"   ✓ Successfully routed: {len(results['routed'])}")
-    print(f"   ❌ Failed: {len(results['failed'])}")
-    
-    if results['errors']:
-        print("\n⚠️  Errors encountered:")
-        for error in results['errors']:
-            print(f"   - {error}")
-    
-    return results
-
-
 def main():
-    """Main CLI entry point."""
-    parser = argparse.ArgumentParser(description="Central message router for agent communication")
-    parser.add_argument('--route', action='store_true', help='Route all pending messages')
-    parser.add_argument('--dry-run', action='store_true', help='Preview routing without making changes')
+    """Main entry point for the router."""
+    parser = argparse.ArgumentParser(description='Agent Message Router')
+    parser.add_argument('--continuous', action='store_true',
+                       help='Run continuously, checking every 5 seconds')
+    parser.add_argument('--learning', action='store_true',
+                       help='Enable learning-based routing')
+    parser.add_argument('--interval', type=int, default=5,
+                       help='Interval between checks in continuous mode (seconds)')
     
     args = parser.parse_args()
     
-    if not args.route:
-        print("Usage: router.py --route [--dry-run]")
-        print("\nOptions:")
-        print("  --route    Route all messages from agent outboxes to recipient inboxes")
-        print("  --dry-run  Preview routing without making changes")
-        return
-    
-    try:
-        route_all_messages(dry_run=args.dry_run)
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        return 1
-    
-    return 0
+    if args.continuous:
+        import time
+        logger.info(f"Starting continuous routing (interval: {args.interval}s)")
+        while True:
+            process_outboxes(use_learning=args.learning)
+            time.sleep(args.interval)
+    else:
+        # Single run
+        process_outboxes(use_learning=args.learning)
 
 
 if __name__ == "__main__":
-    exit(main())
+    main()

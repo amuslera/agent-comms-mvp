@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "generated_at": "2025-05-18T04:39:20.800017",
+    "time_range": {
+      "start": "2025-05-18T00:37:07.503521",
+      "end": "2025-05-18T02:41:27.225613"
+    },
+    "total_tasks": 6,
+    "format": "json"
+  },
+  "agents": {
+    "CA": {
+      "total_tasks": 2,
+      "successful_tasks": 1,
+      "failed_tasks": 1,
+      "task_types": {
+        "task_assignment": {
+          "total": 2,
+          "successful": 1,
+          "failed": 1,
+          "success_rate": 0.5
+        }
+      },
+      "success_rate": 0.5
+    },
+    "CC": {
+      "total_tasks": 4,
+      "successful_tasks": 4,
+      "failed_tasks": 0,
+      "task_types": {
+        "task_assignment": {
+          "total": 3,
+          "successful": 3,
+          "failed": 0,
+          "success_rate": 1.0
+        },
+        "task_status": {
+          "total": 1,
+          "successful": 1,
+          "failed": 0,
+          "success_rate": 1.0
+        }
+      },
+      "success_rate": 1.0
+    }
+  },
+  "task_types": {
+    "task_assignment": {
+      "total": 5,
+      "successful": 4,
+      "failed": 1,
+      "agents": {},
+      "success_rate": 0.8
+    },
+    "task_status": {
+      "total": 1,
+      "successful": 1,
+      "failed": 0,
+      "agents": {},
+      "success_rate": 1.0
+    }
+  },
+  "metrics": {
+    "overall_success_rate": 0.8333333333333334,
+    "total_agents": 2,
+    "unique_task_types": 2
+  }
+}
