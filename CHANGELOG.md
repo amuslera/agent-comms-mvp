@@ -2,6 +2,38 @@
 
 All notable changes to the Agent Communication System will be documented in this file.
 
+## [v1.4.1] - 2025-05-18
+
+### Live Test Verification
+
+This patch release confirms the successful testing and verification of retry/fallback functionality through comprehensive live testing.
+
+### Tested & Verified
+
+#### Live Test Plan Execution
+- **Test Plan Created** (`plans/live_test_plan.yaml`): Multi-task test with designed failures
+- **Retry Logic Verified**: CA agent attempted tasks with exponential backoff
+- **Fallback Routing Confirmed**: Automatic fallback from CA to CC on failures
+- **Dependency Chain Validated**: Downstream tasks executed correctly after fallback
+
+#### Test Artifacts
+- **Test Runner** (`tools/test_retry_fallback.py`): Simulation script for orchestrator behavior
+- **Test Logs** (`logs/retry_fallback_test.log`): Detailed event tracking
+- **Test Report** (`logs/TASK-043B-test-report.md`): Comprehensive analysis of results
+
+### Test Results
+- Total events: 19
+- Retry events: 2 (as designed)
+- Fallback events: 1 (CA → CC)
+- Success events: 3 (all tasks completed)
+- Test status: ✅ PASSED
+
+### Contributors
+- CC (Claude Code): Test execution and reporting
+- CA (Cursor AI): Live test plan design
+- WA (Web Assistant): Test monitoring and summary
+- ARCH: Test coordination
+
 ## [v1.4.0] - 2025-05-18
 
 ### Phase 4 Sprint 1: Resilient Orchestration
@@ -117,5 +149,6 @@ This release marks the completion of Phase 1, establishing the foundational infr
 - WA (Web Assistant): UI tools and monitoring
 - ARCH: Task coordination and architecture
 
+[v1.4.1]: https://github.com/amuslera/agent-comms-mvp/releases/tag/v1.4.1-test-verified
 [v1.4.0]: https://github.com/amuslera/agent-comms-mvp/releases/tag/v1.4.0-resilient-orchestration
 [v1.0.0]: https://github.com/amuslera/agent-comms-mvp/releases/tag/v1.0.0-agent-core
