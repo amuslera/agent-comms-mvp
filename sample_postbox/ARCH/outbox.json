@@ -1,0 +1,109 @@
+{
+  "agent": "ARCH",
+  "messages": [
+    {
+      "from": "ARCH",
+      "to": "CA",
+      "type": "task",
+      "content": {
+        "task_id": "TASK-450",
+        "type": "validation",
+        "priority": "high",
+        "description": "Sample task from ARCH to CA"
+      },
+      "timestamp": "2025-05-18T06:05:59.822645"
+    },
+    {
+      "from": "ARCH",
+      "to": "WA",
+      "type": "info",
+      "content": "Informational message from ARCH to WA",
+      "timestamp": "2025-05-18T05:39:59.822645"
+    },
+    {
+      "from": "ARCH",
+      "to": "WA",
+      "type": "error",
+      "content": {
+        "code": "ERR-8704",
+        "message": "Sample error occurred in ARCH",
+        "severity": "error"
+      },
+      "timestamp": "2025-05-18T06:06:59.822645"
+    },
+    {
+      "from": "ARCH",
+      "to": "BROADCAST",
+      "type": "info",
+      "content": "Informational message from ARCH to BROADCAST",
+      "timestamp": "2025-05-18T06:04:59.822645"
+    },
+    {
+      "from": "ARCH",
+      "to": "CA",
+      "type": "result",
+      "content": {
+        "task_id": "TASK-111",
+        "status": "failed",
+        "details": "Result details for task from ARCH"
+      },
+      "timestamp": "2025-05-18T05:49:59.822645"
+    },
+    {
+      "from": "ARCH",
+      "to": "WA",
+      "type": "error",
+      "content": {
+        "code": "ERR-8259",
+        "message": "Sample error occurred in ARCH",
+        "severity": "error"
+      },
+      "timestamp": "2025-05-18T06:08:59.822645"
+    },
+    {
+      "from": "ARCH",
+      "to": "CA",
+      "type": "error",
+      "content": {
+        "code": "ERR-1357",
+        "message": "Sample error occurred in ARCH",
+        "severity": "error"
+      },
+      "timestamp": "2025-05-18T05:49:59.822645"
+    },
+    {
+      "from": "ARCH",
+      "to": "CC",
+      "type": "task",
+      "content": {
+        "task_id": "TASK-743",
+        "type": "extraction",
+        "priority": "high",
+        "description": "Sample task from ARCH to CC"
+      },
+      "timestamp": "2025-05-18T06:09:59.822645"
+    },
+    {
+      "from": "ARCH",
+      "to": "WA",
+      "type": "error",
+      "content": {
+        "code": "ERR-7024",
+        "message": "Sample error occurred in ARCH",
+        "severity": "error"
+      },
+      "timestamp": "2025-05-18T05:45:59.822645"
+    },
+    {
+      "from": "ARCH",
+      "to": "BROADCAST",
+      "type": "result",
+      "content": {
+        "task_id": "TASK-182",
+        "status": "partial",
+        "details": "Result details for task from ARCH"
+      },
+      "timestamp": "2025-05-18T05:14:59.822645"
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "agent": "CC",
+  "messages": [
+    {
+      "from": "CC",
+      "to": "BROADCAST",
+      "type": "info",
+      "content": "Informational message from CC to BROADCAST",
+      "timestamp": "2025-05-18T05:47:59.823312"
+    },
+    {
+      "from": "CC",
+      "to": "BROADCAST",
+      "type": "task",
+      "content": {
+        "task_id": "TASK-476",
+        "type": "summarization",
+        "priority": "medium",
+        "description": "Sample task from CC to BROADCAST"
+      },
+      "timestamp": "2025-05-18T06:01:59.823312"
+    },
+    {
+      "from": "CC",
+      "to": "ARCH",
+      "type": "result",
+      "content": {
+        "task_id": "TASK-364",
+        "status": "success",
+        "details": "Result details for task from CC"
+      },
+      "timestamp": "2025-05-18T05:26:59.823312"
+    },
+    {
+      "from": "CC",
+      "to": "WA",
+      "type": "task",
+      "content": {
+        "task_id": "TASK-814",
+        "type": "analysis",
+        "priority": "low",
+        "description": "Sample task from CC to WA"
+      },
+      "timestamp": "2025-05-18T05:17:59.823312"
+    },
+    {
+      "from": "CC",
+      "to": "ARCH",
+      "type": "info",
+      "content": "Informational message from CC to ARCH",
+      "timestamp": "2025-05-18T05:44:59.823312"
+    },
+    {
+      "from": "CC",
+      "to": "CA",
+      "type": "error",
+      "content": {
+        "code": "ERR-2023",
+        "message": "Sample error occurred in CC",
+        "severity": "critical"
+      },
+      "timestamp": "2025-05-18T05:51:59.823312"
+    },
+    {
+      "from": "CC",
+      "to": "CA",
+      "type": "result",
+      "content": {
+        "task_id": "TASK-408",
+        "status": "partial",
+        "details": "Result details for task from CC"
+      },
+      "timestamp": "2025-05-18T06:01:59.823312"
+    },
+    {
+      "from": "CC",
+      "to": "CA",
+      "type": "error",
+      "content": {
+        "code": "ERR-7379",
+        "message": "Sample error occurred in CC",
+        "severity": "critical"
+      },
+      "timestamp": "2025-05-18T05:52:59.823312"
+    },
+    {
+      "from": "CC",
+      "to": "WA",
+      "type": "result",
+      "content": {
+        "task_id": "TASK-117",
+        "status": "failed",
+        "details": "Result details for task from CC"
+      },
+      "timestamp": "2025-05-18T05:51:59.823312"
+    },
+    {
+      "from": "CC",
+      "to": "WA",
+      "type": "task",
+      "content": {
+        "task_id": "TASK-814",
+        "type": "validation",
+        "priority": "high",
+        "description": "Sample task from CC to WA"
+      },
+      "timestamp": "2025-05-18T05:57:59.823312"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "agent": "CA",
+  "messages": [
+    {
+      "from": "CA",
+      "to": "ARCH",
+      "type": "result",
+      "content": {
+        "task_id": "TASK-755",
+        "status": "failed",
+        "details": "Result details for task from CA"
+      },
+      "timestamp": "2025-05-18T05:17:59.822977"
+    },
+    {
+      "from": "CA",
+      "to": "WA",
+      "type": "task",
+      "content": {
+        "task_id": "TASK-705",
+        "type": "extraction",
+        "priority": "high",
+        "description": "Sample task from CA to WA"
+      },
+      "timestamp": "2025-05-18T06:04:59.822977"
+    },
+    {
+      "from": "CA",
+      "to": "WA",
+      "type": "info",
+      "content": "Informational message from CA to WA",
+      "timestamp": "2025-05-18T05:56:59.822977"
+    },
+    {
+      "from": "CA",
+      "to": "CC",
+      "type": "result",
+      "content": {
+        "task_id": "TASK-926",
+        "status": "failed",
+        "details": "Result details for task from CA"
+      },
+      "timestamp": "2025-05-18T05:41:59.822977"
+    },
+    {
+      "from": "CA",
+      "to": "BROADCAST",
+      "type": "result",
+      "content": {
+        "task_id": "TASK-143",
+        "status": "failed",
+        "details": "Result details for task from CA"
+      },
+      "timestamp": "2025-05-18T05:15:59.822977"
+    },
+    {
+      "from": "CA",
+      "to": "ARCH",
+      "type": "task",
+      "content": {
+        "task_id": "TASK-929",
+        "type": "extraction",
+        "priority": "medium",
+        "description": "Sample task from CA to ARCH"
+      },
+      "timestamp": "2025-05-18T05:55:59.822977"
+    },
+    {
+      "from": "CA",
+      "to": "ARCH",
+      "type": "task",
+      "content": {
+        "task_id": "TASK-901",
+        "type": "extraction",
+        "priority": "low",
+        "description": "Sample task from CA to ARCH"
+      },
+      "timestamp": "2025-05-18T05:45:59.822977"
+    },
+    {
+      "from": "CA",
+      "to": "BROADCAST",
+      "type": "error",
+      "content": {
+        "code": "ERR-1347",
+        "message": "Sample error occurred in CA",
+        "severity": "error"
+      },
+      "timestamp": "2025-05-18T05:12:59.822977"
+    },
+    {
+      "from": "CA",
+      "to": "ARCH",
+      "type": "result",
+      "content": {
+        "task_id": "TASK-227",
+        "status": "partial",
+        "details": "Result details for task from CA"
+      },
+      "timestamp": "2025-05-18T06:09:59.822977"
+    },
+    {
+      "from": "CA",
+      "to": "WA",
+      "type": "error",
+      "content": {
+        "code": "ERR-9961",
+        "message": "Sample error occurred in CA",
+        "severity": "error"
+      },
+      "timestamp": "2025-05-18T05:44:59.822977"
+    }
+  ]
+}

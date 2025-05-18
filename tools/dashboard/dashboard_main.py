@@ -20,10 +20,10 @@ from rich.panel import Panel
 from rich.text import Text
 
 # Import dashboard components
-from components.agent_status import AgentStatus
-from components.live_tasks import LiveTasks
-from components.message_feed import MessageFeed
-from layout.styles import print_header, print_footer, console
+from .components.agent_status import AgentStatus
+from .components.live_tasks import LiveTasks
+from .components.message_feed import MessageFeed
+from .layout.styles import print_header, print_footer, console
 
 class Dashboard:
     """Main dashboard class that orchestrates all components."""
