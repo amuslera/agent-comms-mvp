@@ -1,0 +1,27 @@
+{
+  "agent_id": "WA",
+  "created_at": "2025-05-18T02:17:16-07:00",
+  "updated_at": "2025-05-18T02:17:16-07:00",
+  "version": "1.0.0",
+  "preferences": {
+    "ui_theme": "light",
+    "notifications_enabled": true,
+    "default_view": "dashboard"
+  },
+  "knowledge": {
+    "user_preferences": {},
+    "frequent_actions": [],
+    "ui_customizations": {}
+  },
+  "state": {
+    "current_session": null,
+    "last_active": null,
+    "status": "available"
+  },
+  "history": {
+    "sessions_handled": 0,
+    "last_session": null,
+    "error_count": 0
+  },
+  "custom": {}
+}
