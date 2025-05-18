@@ -36,7 +36,6 @@ Bluelabel Agent OS is built around a set of specialized agents that collaborate 
 ## Agent Profiles
 
 ### ARCH (Task Router & Coordinator)
-
 **Profile**: [ARCH_PROFILE.md](../contexts/ARCH_PROFILE.md)
 
 **Responsibilities**:
