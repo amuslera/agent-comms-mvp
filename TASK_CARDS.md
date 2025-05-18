@@ -654,6 +654,23 @@
 - Marks transition from infrastructure to UI development phase
 **Tag**: `v1.5.0-ui-layer-prep`
 
+### TASK-052: Dashboard Task Filtering Fixes
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Fixed dashboard task filtering and message parsing reliability issues.
+**Details**:
+- Fixed timezone-aware datetime comparisons in task filtering
+- Improved message parsing to handle different outbox formats
+- Added centralized dashboard configuration module
+- Updated test cases with comprehensive coverage
+- Improved reliability and code cleanup
+**Files**:
+- `/tools/dashboard/components/live_tasks.py` - Fixed task parsing and retention
+- `/tools/dashboard/components/message_feed.py` - Improved message handling
+- `/tools/dashboard/dashboard_config.py` - New configuration module
+- `/tools/dashboard/tests/` - Added test coverage
+**Branch**: task/052-fix-dashboard-task-filtering
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### 📘 Phase 5: UI & Visualization
