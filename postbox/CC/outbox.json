@@ -1,1 +1,45 @@
-[] 
+[
+  {
+    "type": "task_status",
+    "id": "f8e7d6c5-b4a3-2110-9876-543210fedcba",
+    "timestamp": "2025-05-18T09:00:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "MULTI-007-008",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully merged both TASK-007 and TASK-008 feature branches into main. Files now available at /agent_runner.py and /simulation/task_handlers.py. Both tasks marked as Done in TASK_CARDS.md."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "merged_branches": [
+        "feat/TASK-007-agent-runner",
+        "feat/TASK-008-simulation-stubs"
+      ]
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "b2c3d4e5-6f7a-8901-bcde-234567890123",
+    "timestamp": "2025-05-18T10:30:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "MULTI-009-010-011",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully reviewed and merged all PRs for TASK-009, TASK-010, and TASK-011. All files in place: /tests/test_agent_flow.py, updated /agent_runner.py with --init, and /tools/task_dispatcher.py. All tasks marked as Done in TASK_CARDS.md."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "merged_prs": [
+        "https://github.com/amuslera/agent-comms-mvp/pull/4",
+        "feat/TASK-010-agent-init",
+        "https://github.com/amuslera/agent-comms-mvp/pull/3"
+      ]
+    }
+  }
+]
