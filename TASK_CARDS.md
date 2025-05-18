@@ -174,7 +174,7 @@
 **File**: `/router/router.py`
 
 ### TASK-013: Create Inbox Monitor CLI
-**Status**: ✅ Done
+**Status**: 
 **Owner**: WA
 **Description**: Created a CLI tool to monitor and inspect agent inboxes.
 **Details**:
@@ -188,7 +188,7 @@
 - `/tools/inbox_monitor.py`
 
 ### TASK-030: Create Task Status Tracker CLI
-**Status**: ✅ Done
+**Status**: 
 **Owner**: WA
 **Description**: Created a CLI tool to track task statuses across all agents.
 **Details**:
@@ -245,6 +245,36 @@
 **Owner**: WA
 **Description**: Implemented persistent memory for agents using context files.
 **Details**:
+
+### TASK-023B: Build Agent Learning CLI
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Created a CLI tool to expose agent performance and learning insights.
+**Details**:
+- Implemented performance summary with success rates and task completion stats
+- Added recommendation system for task-agent matching
+- Included error analysis to identify problematic agents/tasks
+- Added export functionality for detailed reports
+- Supports interactive and non-interactive modes
+- Color-coded output for better readability
+**Files**:
+- `/tools/agent_learning_cli.py`
+- `/agent_learning_snapshot.json` (sample data)
+- `/insights/` (report output directory)
+**Usage**:
+```bash
+# Show agent performance summary
+python3 tools/agent_learning_cli.py summary
+
+# Get agent recommendations for a task type
+python3 tools/agent_learning_cli.py recommend digest
+
+# Show error analysis
+python3 tools/agent_learning_cli.py errors
+
+# Export detailed report
+python3 tools/agent_learning_cli.py export
+```
 - Created context files for each agent in `/context/` directory
 - Implemented `ContextManager` class for loading/saving contexts
 - Added `context_inspector.py` CLI tool for managing contexts
@@ -297,6 +327,24 @@
 - Added error handling for invalid fallback tasks
 - Created recovery log for tracking fallback activations
 - Added support for error context preservation in fallback tasks
+
+#### TASK-023A: Build Learning Engine & Agent Scorecards
+- **Status**: ✅ Done
+- **Owner**: CA
+- **Description**: Created learning engine to analyze agent behavior and generate performance scorecards
+- **Files**: 
+  - `/insights/learning_engine.py`
+  - `/insights/agent_learning_snapshot.json`
+- **Implementation Details**:
+  - Implemented log parsing for task, router, and recovery logs
+  - Created agent scorecard generation with key metrics:
+    - Tasks completed
+    - Average response time
+    - Failure counts
+    - Retry rates
+  - Added failure pattern analysis across agents
+  - Implemented JSON snapshot generation
+  - Added comprehensive error message analysis
 
 ## ⏭️ Planned Tasks (Backlog)
 

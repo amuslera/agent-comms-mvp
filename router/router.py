@@ -83,15 +83,24 @@ def decrement_retry_count(message: Dict[str, Any]) -> Dict[str, Any]:
     return message
 
 
-def route_message(message: Dict[str, Any], source_agent: str) -> None:
+def route_message(message: Dict[str, Any], source_agent: str, use_learning: bool = False) -> None:
     """
     Route a message to its recipient's inbox.
     
     Args:
         message: Message dictionary to route
         source_agent: ID of the sending agent
+        use_learning: Whether to use learning data for routing
     """
     recipient = message.get('recipient')
+    
+    # Check if learning-based routing should override the recipient
+    if use_learning:
+        learned_recipient = route_with_learning(message, use_learning)
+        if learned_recipient:
+            logger.info(f"Override routing: {recipient} -> {learned_recipient} (learning-based)")
+            recipient = learned_recipient
+    
     if not recipient:
         logger.error(f"Message missing recipient: {message}")
         return
@@ -133,8 +142,12 @@ def route_message(message: Dict[str, Any], source_agent: str) -> None:
         logger.error(f"Error routing message to {recipient}: {e}")
 
 
-def process_outboxes() -> None:
-    """Process all agent outboxes and route messages."""
+def process_outboxes(use_learning: bool = False) -> None:
+    """Process all agent outboxes and route messages.
+    
+    Args:
+        use_learning: Whether to use learning data for routing decisions
+    """
     logger.info("Starting message routing cycle")
     
     # Find all outbox.json files
@@ -149,7 +162,7 @@ def process_outboxes() -> None:
             
             # Route each message
             for msg in messages:
-                route_message(msg, agent_id)
+                route_message(msg, agent_id, use_learning)
             
             # Clear outbox after processing
             with open(outbox_file, 'w') as f:
@@ -162,5 +175,88 @@ def process_outboxes() -> None:
     logger.info("Message routing cycle complete")
 
 
+def load_learning_data() -> Optional[Dict[str, Any]]:
+    """
+    Load agent learning data from insights directory.
+    
+    Returns:
+        Optional[Dict]: Learning data or None if not found
+    """
+    try:
+        with open('insights/agent_learning_snapshot.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.warning("Learning data not found")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding learning data: {e}")
+        return None
+
+
+def get_best_agent_for_task(task_type: str, learning_data: Dict[str, Any]) -> Optional[str]:
+    """
+    Determine the best agent for a task type based on performance data.
+    
+    Args:
+        task_type: Type of task to route
+        learning_data: Learning snapshot data
+        
+    Returns:
+        Optional[str]: Agent ID or None if no data available
+    """
+    try:
+        task_rankings = learning_data.get('task_type_rankings', {}).get(task_type, {})
+        if task_rankings:
+            # Return the first (highest-ranked) agent
+            return list(task_rankings.keys())[0]
+    except Exception as e:
+        logger.error(f"Error determining best agent: {e}")
+    
+    return None
+
+
+def route_with_learning(message: Dict[str, Any], use_learning: bool = False) -> Optional[str]:
+    """
+    Enhanced routing with optional learning-based decision making.
+    
+    Args:
+        message: Message to route
+        use_learning: Whether to use learning data for routing
+        
+    Returns:
+        Optional[str]: Target agent ID or None to use default routing
+    """
+    if not use_learning:
+        return None
+    
+    learning_data = load_learning_data()
+    if not learning_data:
+        return None
+    
+    # Extract task type from message
+    task_desc = message.get('content', {}).get('description', '')
+    task_type = task_desc.split(':')[0].strip() if ':' in task_desc else None
+    
+    if not task_type:
+        return None
+    
+    best_agent = get_best_agent_for_task(task_type, learning_data)
+    if best_agent:
+        logger.info(f"Learning-based routing: Task type '{task_type}' -> Agent '{best_agent}'")
+    
+    return best_agent
+
+
 if __name__ == "__main__":
-    process_outboxes() 
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Message router with learning support')
+    parser.add_argument('--use-learning', action='store_true',
+                       help='Enable learning-based routing decisions')
+    
+    args = parser.parse_args()
+    
+    if args.use_learning:
+        logger.info("Learning-based routing enabled")
+    
+    process_outboxes(use_learning=args.use_learning) 
