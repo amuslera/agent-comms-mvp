@@ -372,6 +372,23 @@
 - Added getting started guide and documentation references
 **File**: `/docs/SYSTEM_OVERVIEW.md`
 
+### TASK-051B: Runtime & Test Log Cleanup
+**Status**: ✅ Done
+**Owner**: CA
+**Description**: Cleaned up system state folders and test/log directories to ensure a stable baseline for Phase 5.
+**Details**:
+- Created archive directory for retry/fallback test messages
+- Added README files to examples/, tests/, and insights/ directories
+- Removed temporary files (.DS_Store, *.log, *.bak)
+- Standardized postbox contents for all agents
+- Cleaned up test artifacts and debug output
+**Files**:
+- `/postbox/archive/retry_fallback_tests/`
+- `/examples/README.md`
+- `/tests/README.md`
+- `/insights/README.md`
+- Updated postbox contents for all agents
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 2: Coordination Layer
