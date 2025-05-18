@@ -372,6 +372,23 @@
 - Added getting started guide and documentation references
 **File**: `/docs/SYSTEM_OVERVIEW.md`
 
+### TASK-051B: Runtime & Test Log Cleanup
+**Status**: ✅ Done
+**Owner**: CA
+**Description**: Cleaned up system state folders and test/log directories to ensure a stable baseline for Phase 5.
+**Details**:
+- Created archive directory for retry/fallback test messages
+- Added README files to examples/, tests/, and insights/ directories
+- Removed temporary files (.DS_Store, *.log, *.bak)
+- Standardized postbox contents for all agents
+- Cleaned up test artifacts and debug output
+**Files**:
+- `/postbox/archive/retry_fallback_tests/`
+- `/examples/README.md`
+- `/tests/README.md`
+- `/insights/README.md`
+- Updated postbox contents for all agents
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 2: Coordination Layer
@@ -564,6 +581,27 @@
 **Files**:  
 - `/TASK_CARDS.md` - Updated roadmap section
 **Branch**: feat/TASK-045E-update-roadmap
+
+### TASK-051A: Developer-Focused Cleanup Pass
+**Status**: ✅ Done  
+**Owner**: WA  
+**Description**: Performed a comprehensive developer experience audit and cleanup.  
+**Details**:  
+- Created `setup.py` for proper package installation  
+- Added comprehensive `README.md` with setup and usage instructions  
+- Created `.gitignore` to keep the repository clean  
+- Set up `pre-commit` hooks for code quality  
+- Added `setup.sh` for quick environment setup  
+- Created `.env.example` with configuration template  
+- Documented development workflow and standards  
+**Files**:  
+- `/setup.py` - Package configuration  
+- `/README.md` - Project documentation  
+- `/.gitignore` - Git ignore rules  
+- `/.pre-commit-config.yaml` - Pre-commit hooks  
+- `/setup.sh` - Setup script  
+- `/.env.example` - Environment template
+**Branch**: feat/TASK-051A-dev-cleanup
 
 ### TASK-045F: Review and Merge TASK-045E Roadmap Update
 **Status**: ✅ Done
