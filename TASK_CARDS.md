@@ -446,6 +446,21 @@
 - feat/TASK-034-task-cards-update
 - feat/TASK-035-orchestrator-retry-fallback (included TASK-036 features)
 
+### TASK-042: Tag Phase 4 Sprint 1 as Milestone v1.4.0
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Created Git tag and updated documentation to mark the completion of Phase 4 Sprint 1.
+**Details**:
+- Updated `CHANGELOG.md` with v1.4.0 section documenting all Sprint 1 features
+- Updated `docs/RELEASE_NOTES.md` with new milestone information
+- Created Git tag `v1.4.0-resilient-orchestration` with milestone message
+- Updated system maturity status to reflect new resilience capabilities
+- Updated future roadmap to outline Phase 5 and beyond
+**Files**:
+- `/CHANGELOG.md` - Added v1.4.0 section
+- `/docs/RELEASE_NOTES.md` - Updated with v1.4.0 milestone details
+- Git tag: `v1.4.0-resilient-orchestration`
+
 **TASK-037: Slack/Discord Integration**
 **Description**: Slack (or Discord) integration for plan triggering
 **Suggested Owner**: WA

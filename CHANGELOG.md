@@ -2,6 +2,67 @@
 
 All notable changes to the Agent Communication System will be documented in this file.
 
+## [v1.4.0] - 2025-05-18
+
+### Phase 4 Sprint 1: Resilient Orchestration
+
+This release completes Phase 4 Sprint 1, introducing retry logic, fallback mechanisms, and enhanced orchestration capabilities for robust multi-agent task execution.
+
+### Added
+
+#### Retry and Fallback Logic
+- **Enhanced Orchestrator** (`tools/arch_orchestrator.py`): Added retry and fallback support
+  - `execute_task_with_retry()` method with exponential backoff
+  - Configurable max_retries per task (default: 1)
+  - Fallback agent routing for failed tasks
+  - Comprehensive error tracking and retry logic
+
+#### Execution Plans
+- **Example Plans** (`plans/retry_fallback_example.yaml`): Demonstrates new YAML format
+  - `max_retries` field for configurable retry attempts
+  - `fallback_agent` field for alternative routing
+  - Support for complex task dependencies
+
+#### CLI Tools
+- **Execution Summary** (`tools/generate_execution_summary.py`): Report generation tool
+  - Parses orchestrator logs for task execution details
+  - Supports markdown, JSON, and terminal output formats
+  - Provides completion stats and error summaries
+
+#### Documentation
+- **ARCH Protocol** (`ARCH_PROTOCOL.md`): Comprehensive orchestration documentation
+  - Defined ARCH's purpose, responsibilities, and execution flow
+  - Error handling and escalation patterns
+  - Future extensibility guidelines
+- **Retry/Fallback Guide** (`docs/retry_fallback_guide.md`): Implementation guide
+  - Usage examples and best practices
+  - Configuration reference
+
+#### Testing
+- **Retry Tests** (`tests/test_orchestrator_retry.py`): Retry logic validation
+  - Multiple failure scenario testing
+  - Fallback mechanism verification
+  - Error state validation
+
+### Changed
+- **Task Cards** (`TASK_CARDS.md`): Updated with completed Phase 4 tasks
+  - TASK-033A: Define ARCH Orchestration Protocol
+  - TASK-035: Design and Implement Retry + Fallback Logic
+  - TASK-036: Generate Execution Summary (merged with TASK-035)
+  - TASK-041: Review and Merge All Pending Phase 4 PRs
+
+### System Improvements
+- Increased system resilience with automatic retry mechanisms
+- Better error visibility through execution summaries
+- Clearer orchestration patterns via documented protocol
+- Enhanced testability with comprehensive retry testing
+
+### Contributors
+- CC (Claude Code): Core retry/fallback implementation, protocol documentation
+- CA (Cursor AI): Testing framework and validation
+- WA (Web Assistant): Summary generation and reporting
+- ARCH: Orchestration patterns and system design
+
 ## [v1.0.0] - 2025-05-18
 
 ### Initial Agent OS Core Completed
@@ -56,4 +117,5 @@ This release marks the completion of Phase 1, establishing the foundational infr
 - WA (Web Assistant): UI tools and monitoring
 - ARCH: Task coordination and architecture
 
+[v1.4.0]: https://github.com/amuslera/agent-comms-mvp/releases/tag/v1.4.0-resilient-orchestration
 [v1.0.0]: https://github.com/amuslera/agent-comms-mvp/releases/tag/v1.0.0-agent-core
