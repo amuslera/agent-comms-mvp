@@ -32,4 +32,20 @@
 - `/contexts/*_PROFILE.md`
 - `/postbox/*/inbox.json`
 - `/postbox/*/outbox.json`
-- `/postbox/*/task_log.md` 
+- `/postbox/*/task_log.md`
+
+### TASK-004: Prepare Prompt Templates for Agent-Comms-MVP
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Created and updated prompt templates for each agent with their specific roles in the agent-communication system.
+**Details**:
+- Created `/prompts/` directory
+- Added updated prompt templates:
+  - `Claude_Code_PROMPT_TEMPLATE.md`: Backend architect for routing and runner
+  - `Cursor_AI_PROMPT_TEMPLATE.md`: Validator of messages and runtime flow
+  - `Web_Assistant_PROMPT_TEMPLATE.md`: CLI/dashboard/tooling for agent visibility
+- Updated roles and responsibilities for each agent to fit the agent-comms-mvp scope
+**Files**:
+- `/prompts/Claude_Code_PROMPT_TEMPLATE.md`
+- `/prompts/Cursor_AI_PROMPT_TEMPLATE.md`
+- `/prompts/Web_Assistant_PROMPT_TEMPLATE.md`
