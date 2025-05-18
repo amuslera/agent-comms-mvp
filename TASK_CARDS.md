@@ -66,26 +66,6 @@
 - `/prompts/Cursor_AI_PROMPT_TEMPLATE.md`
 - `/prompts/Web_Assistant_PROMPT_TEMPLATE.md`
 
-### TASK-011: Create CLI Tool to Inject Tasks
-**Status**: ✅ Done
-**Owner**: WA
-**Description**: Developed a CLI tool for injecting structured tasks into agent inboxes.
-**Details**:
-- Created `/tools/task_dispatcher.py` script
-- Features:
-  - Interactive task creation with sensible defaults
-  - Support for custom task types and content
-  - Automatic UUID generation and timestamping
-  - Safe JSON file handling with error checking
-  - Follows agent communication protocol
-- Added executable permissions for easy use
-**Usage**:
-```bash
-./tools/task_dispatcher.py
-```
-**Files**:
-- `/tools/task_dispatcher.py`
-
 ### TASK-005: Create shared context file for agent-comms-mvp
 **Status**: ✅ Done
 **Owner**: CC
@@ -160,39 +140,104 @@
 - Supports all agents: CC, CA, WA, ARCH
 **File**: `/agent-comms-mvp/agent_runner.py`
 
+### TASK-011: Create CLI Tool to Inject Tasks
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Developed a CLI tool for injecting structured tasks into agent inboxes.
+**Details**:
+- Created `/tools/task_dispatcher.py` script
+- Features:
+  - Interactive task creation with sensible defaults
+  - Support for custom task types and content
+  - Automatic UUID generation and timestamping
+  - Safe JSON file handling with error checking
+  - Follows agent communication protocol
+- Added executable permissions for easy use
+**Usage**:
+```bash
+./tools/task_dispatcher.py
+```
+**File**: `/tools/task_dispatcher.py`
+
+### TASK-012: Central Router Module
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Created central message router to automatically distribute messages between agent inboxes.
+**Details**:
+- Implemented `/router/router.py` with CLI interface
+- Scans all agent outboxes for new messages
+- Validates messages against exchange protocol schema
+- Routes messages to recipient inboxes
+- Archives processed messages to `/postbox/archive/`
+- Handles batch routing with `--route` flag
+- Provides proper error handling and validation feedback
+**File**: `/router/router.py`
+
+### TASK-013: Inbox Monitor Tool
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Built a CLI tool to monitor and display agent inbox messages.
+**Details**:
+- Created `/tools/inbox_monitor.py` script
+- Shows unread messages from specified agent's inbox
+- Displays message type, sender, and content
+- Provides count statistics and formatting
+- Supports all agents via command-line argument
+**File**: `/tools/inbox_monitor.py`
+
+### TASK-014: Outbox Flow Visualizer
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Developed a terminal-based dashboard for real-time outbox monitoring.
+**Details**:
+- Created `/tools/flow_visualizer.py` (also called `outbox_visualizer.py`) with multiple views
+- Real-time monitoring of all agent outboxes
+- Interactive message viewing with arrow key navigation
+- Summaries for task assignments, status updates, and errors
+- Last update tracking and auto-refresh (5 seconds)
+- Rich terminal UI using curses
+**File**: `/tools/flow_visualizer.py`
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 2: Coordination Layer
-**TASK-011: Implement Task Dependencies**
-**Description**: Add support for task dependencies and sequential execution.
+
+**TASK-019: Implement Task Dependencies**
+**Description**: Add support for task dependencies and sequential execution. Enable agents to specify prerequisite tasks and coordinate complex workflows.
 **Suggested Owner**: ARCH
 
-**TASK-012: Build Task Status Tracker**
-**Description**: Develop a system to track and report task progress across agents.
+**TASK-020: Build Task Status Tracker**
+**Description**: Develop a centralized system to track and report task progress across all agents. Include real-time status updates and completion metrics.
 **Suggested Owner**: ARCH
+
+**TASK-021: Add Retry Logic to Router**
+**Description**: Implement automatic retry mechanisms for failed message deliveries. Include exponential backoff and dead-letter queue handling.
+**Suggested Owner**: CC
 
 ### Phase 3: Intelligence Layer
-**TASK-013: Add Context Awareness**
-**Description**: Implement context tracking and sharing between agents.
+
+**TASK-022: Add Context Awareness**
+**Description**: Implement context tracking and sharing between agents. Allow agents to maintain conversation history and understand task relationships.
 **Suggested Owner**: CA
 
-**TASK-014: Create Learning System**
-**Description**: Build a system to learn from task execution patterns and improve efficiency.
+**TASK-023: Create Learning System**  
+**Description**: Build a system to learn from task execution patterns and improve efficiency. Analyze common workflows and optimize task routing.
 **Suggested Owner**: CA
 
-**TASK-015: Implement Error Recovery**
-**Description**: Develop intelligent error handling and recovery mechanisms.
+**TASK-024: Implement Error Recovery**
+**Description**: Develop intelligent error handling and recovery mechanisms. Include automatic error classification and resolution strategies.
 **Suggested Owner**: CA
 
 ### Phase 4: UI and Visualization
-**TASK-016: Design Dashboard UI**
-**Description**: Create a web interface for monitoring agent activities and task progress.
+
+**TASK-025: Design Web Dashboard**
+**Description**: Create a web interface for monitoring agent activities and task progress. Include real-time metrics and interactive controls.
 **Suggested Owner**: WA
 
-**TASK-017: Build Task Visualization**
-**Description**: Implement visual representation of task dependencies and progress.
+**TASK-026: Build Task Flow Visualizer**
+**Description**: Implement visual representation of task dependencies and execution flow. Show agent interactions and message routing paths.
 **Suggested Owner**: WA
 
-**TASK-018: Create Agent Console**
-**Description**: Develop a CLI interface for direct agent interaction and monitoring.
+**TASK-027: Create Agent Console**
+**Description**: Develop a unified CLI interface for direct agent interaction and monitoring. Combine existing tools into a comprehensive management console.
 **Suggested Owner**: WA
