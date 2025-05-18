@@ -298,6 +298,24 @@
 - Created recovery log for tracking fallback activations
 - Added support for error context preservation in fallback tasks
 
+### TASK-023C: Integrate Agent Learning into System Execution
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Integrated agent learning data into system execution flow to enable performance-aware decisions
+**Files**:
+- `/agent_runner.py`
+- `/router/router.py`
+- `/insights/agent_learning_snapshot.json`
+**Implementation Details**:
+- Added --use-learning flag to agent_runner.py
+- Integrated learning data loading when flag is enabled
+- Added performance checking for agent task types
+- Implemented warning logs for low success rates
+- Updated task logs to track when learning is applied
+- Extended router.py with optional learning-based routing
+- Added functions to determine best agents for task types
+- Routes messages to high-performing agents when learning is enabled
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 2: Coordination Layer
