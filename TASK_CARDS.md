@@ -299,71 +299,24 @@
 - Created recovery log for tracking fallback activations
 - Added support for error context preservation in fallback tasks
 
-### TASK-023A: Build Learning Engine & Agent Scorecards
+### TASK-023: Create Learning System
 **Status**: ✅ Done
-**Owner**: CA
-**Description**: Created learning engine to analyze agent behavior and generate performance scorecards
-**Files**: 
-  - `/insights/learning_engine.py`
-  - `/insights/agent_learning_snapshot.json`
-**Implementation Details**:
-  - Implemented log parsing for task, router, and recovery logs
-  - Created agent scorecard generation with key metrics:
-    - Tasks completed
-    - Average response time
-    - Failure counts
-    - Retry rates
-  - Added failure pattern analysis across agents
-  - Implemented JSON snapshot generation
-  - Added comprehensive error message analysis
-
-### TASK-023B: Build Agent Learning CLI
-**Status**: ✅ Done
-**Owner**: WA
-**Description**: Created a CLI tool to expose agent performance and learning insights.
-**Details** (moved from above):
-- Implemented performance summary with success rates and task completion stats
-- Added recommendation system for task-agent matching
-- Included error analysis to identify problematic agents/tasks
-- Added export functionality for detailed reports
-- Supports interactive and non-interactive modes
-- Color-coded output for better readability
+**Owner**: CA, WA, CC (collaborative effort)
+**Description**: Built a comprehensive learning and optimization layer to analyze agent behavior, generate performance insights, and enable adaptive routing
 **Files**:
-- `/tools/agent_learning_cli.py`
-- `/agent_learning_snapshot.json` (sample data)
-- `/insights/` (report output directory)
-**Usage**:
-```bash
-# Show agent performance summary
-python3 tools/agent_learning_cli.py summary
-
-# Get agent recommendations for a task type
-python3 tools/agent_learning_cli.py recommend digest
-
-# Show error analysis
-python3 tools/agent_learning_cli.py errors
-
-# Export detailed report
-python3 tools/agent_learning_cli.py export
-```
-
-### TASK-023C: Integrate Agent Learning into System Execution
-**Status**: ✅ Done
-**Owner**: CC
-**Description**: Integrated agent learning data into system execution flow to enable performance-aware decisions
-**Files**:
-- `/agent_runner.py`
-- `/router/router.py`
-- `/insights/agent_learning_snapshot.json`
+- `/insights/learning_engine.py` - Core learning engine for log parsing and metrics
+- `/tools/agent_learning_cli.py` - CLI tool for managing learning data
+- `/agent_runner.py` - Integration with --use-learning flag
+- `/router/router.py` - Learning-based routing capabilities
+- `/insights/agent_learning_snapshot.json` - Performance data snapshots
 **Implementation Details**:
-- Added --use-learning flag to agent_runner.py
-- Integrated learning data loading when flag is enabled
-- Added performance checking for agent task types
-- Implemented warning logs for low success rates
-- Updated task logs to track when learning is applied
-- Extended router.py with optional learning-based routing
-- Added functions to determine best agents for task types
-- Routes messages to high-performing agents when learning is enabled
+- Learning engine parses task, router, and recovery logs
+- Builds performance scorecards with metrics (success rate, response time, failure patterns)
+- CLI provides insights, recommendations, and export functionality
+- Agent runner checks performance and logs warnings for low success rates
+- Router supports learning-based routing to high-performing agents
+- Task logs track when learning is applied
+
 
 ## ⏭️ Planned Tasks (Backlog)
 
