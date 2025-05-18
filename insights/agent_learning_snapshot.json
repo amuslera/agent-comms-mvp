@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "snapshot_timestamp": "2025-05-18T17:30:00Z",
+    "version": "1.0.0",
+    "total_tasks_analyzed": 150
+  },
+  "agent_performance": {
+    "CC": {
+      "task_types": {
+        "deployment": {
+          "success_rate": 0.95,
+          "average_duration": 120,
+          "total_tasks": 20
+        },
+        "configuration": {
+          "success_rate": 0.88,
+          "average_duration": 90,
+          "total_tasks": 25
+        },
+        "infrastructure": {
+          "success_rate": 0.92,
+          "average_duration": 150,
+          "total_tasks": 15
+        }
+      },
+      "overall_success_rate": 0.91,
+      "total_tasks": 60
+    },
+    "CA": {
+      "task_types": {
+        "validation": {
+          "success_rate": 0.98,
+          "average_duration": 60,
+          "total_tasks": 30
+        },
+        "implementation": {
+          "success_rate": 0.85,
+          "average_duration": 180,
+          "total_tasks": 20
+        },
+        "testing": {
+          "success_rate": 0.90,
+          "average_duration": 100,
+          "total_tasks": 25
+        }
+      },
+      "overall_success_rate": 0.91,
+      "total_tasks": 75
+    },
+    "WA": {
+      "task_types": {
+        "documentation": {
+          "success_rate": 0.96,
+          "average_duration": 45,
+          "total_tasks": 15
+        },
+        "ui_design": {
+          "success_rate": 0.82,
+          "average_duration": 120,
+          "total_tasks": 10
+        },
+        "visualization": {
+          "success_rate": 0.88,
+          "average_duration": 90,
+          "total_tasks": 8
+        }
+      },
+      "overall_success_rate": 0.89,
+      "total_tasks": 33
+    }
+  },
+  "task_type_rankings": {
+    "deployment": ["CC", "CA", "WA"],
+    "validation": ["CA", "CC", "WA"],
+    "documentation": ["WA", "CA", "CC"],
+    "implementation": ["CA", "CC", "WA"],
+    "configuration": ["CC", "CA", "WA"],
+    "testing": ["CA", "CC", "WA"]
+  },
+  "recommendations": {
+    "preferred_agents": {
+      "deployment": "CC",
+      "validation": "CA", 
+      "documentation": "WA",
+      "implementation": "CA",
+      "configuration": "CC",
+      "testing": "CA"
+    },
+    "low_performance_warnings": {
+      "WA": ["ui_design"],
+      "CA": ["implementation"]
+    }
+  }
+}
