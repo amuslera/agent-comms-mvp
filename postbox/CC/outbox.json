@@ -116,5 +116,140 @@
         "Created test learning snapshot in /insights/"
       ]
     }
+  },
+  {
+    "type": "task_status",
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+    "timestamp": "2025-05-18T15:00:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "PHASE2-COMPLETE",
+      "status": "completed",
+      "progress": 100,
+      "details": "Phase 2 routing and monitoring complete! Successfully merged TASK-029 (router with TTL/retry) and TASK-030 (task status tracker). All PRs reviewed and merged. Main branch updated with enhanced routing and monitoring capabilities."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "completed_tasks": [
+        "TASK-029",
+        "TASK-030"
+      ],
+      "pr_numbers": [
+        "PR #8",
+        "PR #7"
+      ],
+      "phase": "Phase 2 Coordination Layer",
+      "features_added": [
+        "Router with TTL and retry support",
+        "Task status tracker CLI tool",
+        "Message archiving for expired/failed delivery",
+        "Router logging to router_log.md"
+      ],
+      "git_status": "All PRs merged and main branch updated"
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "b3c4d5e6-f7a8-9012-cdef-345678901234",
+    "timestamp": "2025-05-18T16:00:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-031",
+      "status": "completed",
+      "progress": 100,
+      "details": "Implemented dependency-aware execution in agent_runner.py. Added dependency checking with depends_on metadata support, deferred execution for unmet dependencies, comprehensive logging in task_log.md, and --force flag to override checks. Ready for review."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "feat/TASK-031-dependency-execution",
+      "pr_url": "https://github.com/amuslera/agent-comms-mvp/pull/new/feat/TASK-031-dependency-execution",
+      "features_implemented": [
+        "Check depends_on metadata in task messages",
+        "Search outboxes and task logs for completed dependencies",
+        "Defer tasks with unmet dependencies",
+        "Log deferred status with reason",
+        "Add --force flag to bypass dependency checks",
+        "Create test_dependency_task.json for testing"
+      ],
+      "files_modified": [
+        "/agent_runner.py",
+        "/test_dependency_task.json"
+      ]
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "c5d6e7f8-a9b0-1234-def5-678901234567",
+    "timestamp": "2025-05-18T17:00:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "PHASE3-COMPLETE",
+      "status": "completed",
+      "progress": 100,
+      "details": "Phase 3 Intelligent Routing Layer complete! Successfully merged all pending PRs. Includes dependency-aware execution (TASK-031), context awareness framework (TASK-022/merged as PR #9), and error recovery/fallback routing (TASK-032). Tagged milestone v1.1.0-intelligent-routing."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "completed_tasks": [
+        "TASK-022",
+        "TASK-031",
+        "TASK-032"
+      ],
+      "merged_prs": [
+        "PR #9 (TASK-022/TASK-032)"
+      ],
+      "phase": "Phase 3 Intelligence Layer",
+      "features_added": [
+        "Context awareness with persistent agent memory",
+        "Dependency checking with depends_on metadata",
+        "Error recovery and fallback task routing",
+        "Context management CLI tools",
+        "Recovery logging system"
+      ],
+      "milestone_tag": "v1.1.0-intelligent-routing",
+      "git_status": "All changes merged and pushed to main"
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "dc92a576-e910-4c22-bd25-1ffd4db0df40",
+    "timestamp": "2025-05-18T02:41:11.412747",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-023",
+      "status": "completed",
+      "progress": 100,
+      "details": "Task TASK-023 executed successfully"
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "original_message_id": "test-learning-001"
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "fb069fbe-b360-41cd-baa2-8c0d4c4eec98",
+    "timestamp": "2025-05-18T02:41:27.226027",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-024",
+      "status": "completed",
+      "progress": 100,
+      "details": "Task TASK-024 executed successfully"
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "original_message_id": "test-learning-002"
+    }
   }
 ]
