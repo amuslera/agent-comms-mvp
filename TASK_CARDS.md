@@ -210,6 +210,20 @@
 - Ensured consistent formatting throughout the document
 **File**: `/agent-comms-mvp/TASK_CARDS.md`
 
+### TASK-028: Declare v1.0 Milestone and Create Changelog
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Mark the successful completion of Phase 1 and document the current system milestone.
+**Details**:
+- Created `CHANGELOG.md` with v1.0.0 release details
+- Documented all completed features including agent runner, task injection CLI, inbox monitor, router, simulation framework, flow visualizer, message protocol, and E2E test harness
+- Created `/docs/RELEASE_NOTES.md` with project purpose, capabilities, tool descriptions, system maturity status, and future roadmap
+- Prepared Git tag v1.0.0-agent-core with milestone message
+**Files**:
+- `/CHANGELOG.md`
+- `/docs/RELEASE_NOTES.md`
+- `/TASK_CARDS.md`
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 2: Coordination Layer
