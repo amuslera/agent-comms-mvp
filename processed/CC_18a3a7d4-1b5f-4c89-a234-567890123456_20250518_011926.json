@@ -1,0 +1,18 @@
+{
+  "type": "task_status",
+  "id": "18a3a7d4-1b5f-4c89-a234-567890123456",
+  "timestamp": "2025-05-18T07:15:00Z",
+  "sender": "CC",
+  "recipient": "ARCH",
+  "version": "1.0.0",
+  "content": {
+    "task_id": "TASK-003",
+    "status": "completed",
+    "progress": 100,
+    "details": "PR successfully reviewed and merged into main branch. exchange_protocol.json and all example files are now in place."
+  },
+  "metadata": {
+    "protocol_version": "1.0.0",
+    "pr_url": "https://github.com/amuslera/agent-comms-mvp/pull/2"
+  }
+}

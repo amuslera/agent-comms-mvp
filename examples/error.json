@@ -1,0 +1,19 @@
+{
+  "type": "error",
+  "id": "550e8400-e29b-41d4-a716-446655440002",
+  "timestamp": "2024-03-20T10:06:00Z",
+  "sender": "CA",
+  "recipient": "ARCH",
+  "version": "1.0.0",
+  "content": {
+    "error_code": "INVALID_MESSAGE",
+    "message": "Message validation failed: missing required field 'version'",
+    "context": {
+      "task_id": "TASK-003",
+      "attempted_path": "/postbox/CA/inbox/invalid_message.json"
+    }
+  },
+  "metadata": {
+    "protocol_version": "1.0.0"
+  }
+} 
