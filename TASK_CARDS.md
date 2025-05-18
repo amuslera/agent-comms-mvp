@@ -66,6 +66,26 @@
 - `/prompts/Cursor_AI_PROMPT_TEMPLATE.md`
 - `/prompts/Web_Assistant_PROMPT_TEMPLATE.md`
 
+### TASK-011: Create CLI Tool to Inject Tasks
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Developed a CLI tool for injecting structured tasks into agent inboxes.
+**Details**:
+- Created `/tools/task_dispatcher.py` script
+- Features:
+  - Interactive task creation with sensible defaults
+  - Support for custom task types and content
+  - Automatic UUID generation and timestamping
+  - Safe JSON file handling with error checking
+  - Follows agent communication protocol
+- Added executable permissions for easy use
+**Usage**:
+```bash
+./tools/task_dispatcher.py
+```
+**Files**:
+- `/tools/task_dispatcher.py`
+
 ### TASK-005: Create shared context file for agent-comms-mvp
 **Status**: ✅ Done
 **Owner**: CC
