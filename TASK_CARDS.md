@@ -553,22 +553,31 @@
 **Files**:
 - `/TASK_CARDS.md` - Updated with TASK-045C and TASK-045D completion status
 
+### TASK-045E: Update Roadmap with Phase 5 and 6 Tasks
+**Status**: ✅ Done  
+**Owner**: WA  
+**Description**: Updated the roadmap with detailed tasks for Phase 5 (UI & Visualization) and Phase 6 (Advanced Features).  
+**Details**:  
+- Added structured task table for Phase 5 with clear ownership  
+- Included Phase 6 placeholder for future planning  
+- Ensured all tasks follow consistent formatting  
+**Files**:  
+- `/TASK_CARDS.md` - Updated roadmap section
+**Branch**: feat/TASK-045E-update-roadmap
+
 ## ⏭️ Planned Tasks (Backlog)
 
-### Phase 5: Web Interface
+### 📘 Phase 5: UI & Visualization
 
-**TASK-037: Slack/Discord Integration**
-**Description**: Slack (or Discord) integration for plan triggering
-**Suggested Owner**: WA
+| ID        | Description                                                | Owner |
+|-----------|------------------------------------------------------------|-------|
+| TASK-046  | Design interactive CLI dashboard (live task + log view)   | WA    |
+| TASK-047  | Implement Slack/Discord trigger for plan execution         | CC    |
+| TASK-048  | Build Web UI prototype (static or reactive)                | WA    |
+| TASK-049  | Create orchestration control panel (visual task planner)   | CC    |
+| TASK-050  | Tag release v1.5.0 and publish final visual layer docs     | CA    |
 
-**TASK-038: Plan Monitoring UI**
-**Description**: Minimal CLI or Web UI for plan monitoring
-**Suggested Owner**: WA
-
-**TASK-039: Continuous Plan Execution**
-**Description**: Enable continuous plan execution mode
-**Suggested Owner**: CA
-
-**TASK-040: Orchestrator Test Suite**
-**Description**: Add orchestrator test suite + replay mode
-**Suggested Owner**: CA
+### 🔮 Phase 6: Advanced Features (Future)
+- API gateway for external agent comms
+- Persistent task loops
+- Multi-session memory coordination
