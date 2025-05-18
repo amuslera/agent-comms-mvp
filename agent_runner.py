@@ -14,6 +14,19 @@ from pathlib import Path
 from jsonschema import validate, ValidationError
 
 
+def load_text_file(filepath):
+    """Load text content from a file."""
+    try:
+        with open(filepath, 'r') as f:
+            return f.read()
+    except FileNotFoundError:
+        print(f"Error: File not found - {filepath}")
+        return None
+    except Exception as e:
+        print(f"Error reading file {filepath}: {e}")
+        return None
+
+
 def load_json_file(filepath):
     """Load JSON content from a file."""
     try:
@@ -206,6 +219,85 @@ def process_inbox(agent, schema, simulate=True, clear=False):
         print(f"📥 {len(remaining_messages)} message(s) remaining in inbox")
 
 
+def agent_init(agent):
+    """Initialize an agent by loading and displaying their configuration files."""
+    print(f"🤖 Initializing agent {agent}...")
+    print(f"\n{'=' * 60}")
+    
+    # Define file paths based on agent name
+    profile_path = Path(f"contexts/{agent}_PROFILE.md")
+    prompt_paths = {
+        "CC": Path("prompts/Claude_Code_PROMPT_TEMPLATE.md"),
+        "CA": Path("prompts/Cursor_AI_PROMPT_TEMPLATE.md"),
+        "WA": Path("prompts/Web_Assistant_PROMPT_TEMPLATE.md"),
+        "ARCH": None  # ARCH doesn't have a prompt template
+    }
+    context_path = Path("CONTEXT_agent_comms.md")
+    
+    # Load agent profile
+    print(f"\n📋 Agent Profile ({profile_path})")
+    print("-" * 50)
+    profile_content = load_text_file(profile_path)
+    if profile_content:
+        print(profile_content)
+    else:
+        print(f"❌ Could not load agent profile")
+    
+    # Load prompt template if available
+    if agent in prompt_paths and prompt_paths[agent]:
+        print(f"\n📝 Prompt Template ({prompt_paths[agent]})")
+        print("-" * 50)
+        prompt_content = load_text_file(prompt_paths[agent])
+        if prompt_content:
+            # Print first 500 characters as a preview
+            print(prompt_content[:500] + "..." if len(prompt_content) > 500 else prompt_content)
+        else:
+            print(f"❌ Could not load prompt template")
+    else:
+        print(f"\n📝 No prompt template available for {agent}")
+    
+    # Load shared context
+    print(f"\n🌐 Shared Context ({context_path})")
+    print("-" * 50)
+    context_content = load_text_file(context_path)
+    if context_content:
+        # Extract agent-specific section from context
+        agent_sections = {
+            "CC": "### Code Creator (CC)",
+            "CA": "### Cursor AI (CA)",
+            "WA": "### Web Assistant (WA)",
+            "ARCH": "### Architect (ARCH)"
+        }
+        
+        if agent in agent_sections:
+            section_start = context_content.find(agent_sections[agent])
+            if section_start != -1:
+                # Find the next section or end of agent roles
+                next_section = context_content.find("###", section_start + 1)
+                communication_section = context_content.find("## Communication Model")
+                end_point = min(filter(lambda x: x > section_start, 
+                                     [next_section if next_section != -1 else len(context_content),
+                                      communication_section if communication_section != -1 else len(context_content)]))
+                
+                agent_section = context_content[section_start:end_point].strip()
+                print(agent_section)
+            else:
+                print(f"Could not find section for {agent} in context file")
+        else:
+            print(f"Unknown agent: {agent}")
+    else:
+        print(f"❌ Could not load shared context")
+    
+    print(f"\n{'=' * 60}")
+    print(f"✅ Agent {agent} initialization complete")
+    print(f"\nExpected behavior:")
+    print(f"- Check inbox at: postbox/{agent}/inbox.json")
+    print(f"- Send responses to: postbox/{agent}/outbox.json")
+    print(f"- Log activities in: postbox/{agent}/task_log.md")
+    print(f"- Validate messages using: exchange_protocol.json")
+    print(f"\nRun 'python agent_runner.py --agent {agent}' to process inbox")
+
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -228,9 +320,20 @@ def main():
         action="store_true",
         help="Clear inbox after processing messages"
     )
+    parser.add_argument(
+        "--init",
+        action="store_true",
+        help="Initialize agent by displaying role, capabilities, and expected behavior"
+    )
     
     args = parser.parse_args()
     
+    # If --init flag is provided, run initialization instead
+    if args.init:
+        agent_init(args.agent)
+        return
+    
+    # Otherwise, proceed with normal inbox processing
     # Load exchange protocol schema
     schema_path = Path("exchange_protocol.json")
     schema = load_json_file(schema_path)

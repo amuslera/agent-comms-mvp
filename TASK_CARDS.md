@@ -147,19 +147,22 @@
 - Added detailed logging and error reporting
 **File**: `/tests/test_agent_flow.py`
 
+### TASK-010: Agent self-initialization system
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Added logic for agents to load and display their profiles, prompt templates, and context.
+**Details**:
+- Added `--init` flag to agent_runner.py
+- Loads agent's *_PROFILE.md from contexts/
+- Loads appropriate PROMPT_TEMPLATE.md from prompts/
+- Loads and displays agent-specific section from CONTEXT_agent_comms.md
+- Shows expected behavior and file locations
+- Supports all agents: CC, CA, WA, ARCH
+**File**: `/agent-comms-mvp/agent_runner.py`
+
 ## ⏭️ Planned Tasks (Backlog)
 
-### Phase 1: Execution Framework
-
-**TASK-009: Create Task Runner**
-**Description**: Implement a system to execute tasks based on received assignments.
-**Suggested Owner**: CC
-
 ### Phase 2: Coordination Layer
-**TASK-010: Design Task Queue System**
-**Description**: Create a priority-based task queue with deadline management.
-**Suggested Owner**: ARCH
-
 **TASK-011: Implement Task Dependencies**
 **Description**: Add support for task dependencies and sequential execution.
 **Suggested Owner**: ARCH
