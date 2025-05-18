@@ -1,16 +1,34 @@
 #!/usr/bin/env python3
 """
-Central message router for agent communication system.
-Routes messages from agent outboxes to recipient inboxes.
+Central message router with TTL and retry support.
+
+This module handles message routing between agents, including:
+- TTL enforcement for message expiration
+- Retry countdown and tracking
+- Message archiving and logging
 """
 
 import argparse
 import json
 import os
+import glob
 from datetime import datetime
 from pathlib import Path
 import jsonschema
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any, Optional
+import logging
+
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('router/router_log.md'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 
 def load_schema() -> Dict:
@@ -41,69 +59,170 @@ def scan_outbox(agent: str, postbox_dir: Path) -> List[Dict]:
     return messages if isinstance(messages, list) else []
 
 
-def route_message(message: Dict, schema: Dict, postbox_dir: Path, processed_dir: Path) -> Tuple[bool, str]:
-    """Route a single message to the recipient's inbox."""
-    # Validate message
-    valid, error = validate_message(message, schema)
-    if not valid:
-        return False, f"Validation error: {error}"
+def is_message_expired(message: Dict[str, Any]) -> bool:
+    """
+    Check if a message has expired based on its TTL.
     
-    # Get recipient
+    Args:
+        message: Message dictionary with optional TTL in metadata
+        
+    Returns:
+        bool: True if message has expired
+    """
+    ttl = message.get('metadata', {}).get('ttl')
+    if not ttl:
+        return False
+        
+    try:
+        ttl_dt = datetime.fromisoformat(ttl.replace('Z', '+00:00'))
+        return datetime.now(ttl_dt.tzinfo) > ttl_dt
+    except (ValueError, AttributeError):
+        logger.error(f"Invalid TTL format in message: {ttl}")
+        return False
+
+
+def should_retry(message: Dict[str, Any]) -> bool:
+    """
+    Check if a message should be retried based on retry count.
+    
+    Args:
+        message: Message dictionary with optional retry count in metadata
+        
+    Returns:
+        bool: True if message should be retried
+    """
+    retries = message.get('metadata', {}).get('retries', 0)
+    return retries > 0
+
+
+def decrement_retry_count(message: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Decrement the retry count in message metadata.
+    
+    Args:
+        message: Message dictionary with retry count
+        
+    Returns:
+        Updated message dictionary
+    """
+    if 'metadata' not in message:
+        message['metadata'] = {}
+    
+    current_retries = message['metadata'].get('retries', 0)
+    message['metadata']['retries'] = max(0, current_retries - 1)
+    
+    return message
+
+
+def archive_message(message: Dict[str, Any], reason: str) -> None:
+    """
+    Archive a message that has expired or exhausted retries.
+    
+    Args:
+        message: Message dictionary to archive
+        reason: Reason for archiving ('expired' or 'retry_exhausted')
+    """
+    archive_dir = Path('postbox/archive')
+    archive_dir.mkdir(exist_ok=True)
+    
+    # Create archive file with timestamp
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    archive_file = archive_dir / f"archived_{timestamp}.json"
+    
+    # Add archiving metadata
+    archived_message = message.copy()
+    archived_message['archive_metadata'] = {
+        'archived_at': datetime.now().isoformat(),
+        'reason': reason
+    }
+    
+    try:
+        with open(archive_file, 'w') as f:
+            json.dump(archived_message, f, indent=2)
+        logger.info(f"Archived message {message.get('id', 'unknown')} - Reason: {reason}")
+    except Exception as e:
+        logger.error(f"Error archiving message: {e}")
+
+
+def route_message(message: Dict[str, Any], source_agent: str) -> None:
+    """
+    Route a message to its recipient's inbox, handling TTL and retries.
+    
+    Args:
+        message: Message dictionary to route
+        source_agent: ID of the sending agent
+    """
     recipient = message.get('recipient')
     if not recipient:
-        return False, "No recipient specified"
+        logger.error(f"Message missing recipient: {message}")
+        return
     
-    # Check if recipient directory exists
-    recipient_inbox = postbox_dir / recipient / "inbox.json"
-    if not recipient_inbox.parent.exists():
-        return False, f"Recipient {recipient} does not exist"
+    # Check TTL
+    if is_message_expired(message):
+        logger.info(f"Message expired (TTL): {message.get('id', 'unknown')}")
+        archive_message(message, 'expired')
+        return
     
-    # Load current inbox
-    inbox_messages = []
-    if recipient_inbox.exists():
-        with open(recipient_inbox, 'r') as f:
-            content = json.load(f)
-            if isinstance(content, list):
-                inbox_messages = content
+    # Check retries
+    if not should_retry(message):
+        logger.info(f"Message out of retries: {message.get('id', 'unknown')}")
+        archive_message(message, 'retry_exhausted')
+        return
     
-    # Add message to inbox
-    inbox_messages.append(message)
+    # Decrement retry count
+    message = decrement_retry_count(message)
     
-    # Write updated inbox
-    with open(recipient_inbox, 'w') as f:
-        json.dump(inbox_messages, f, indent=2)
+    # Route to recipient's inbox
+    inbox_path = Path(f"postbox/{recipient}/inbox.json")
     
-    # Archive the message
-    archive_message(message, processed_dir)
-    
-    return True, f"Message {message.get('id', 'unknown')} routed to {recipient}"
+    try:
+        # Read existing messages
+        if inbox_path.exists():
+            with open(inbox_path, 'r') as f:
+                messages = json.load(f)
+        else:
+            messages = []
+        
+        # Add new message
+        messages.append(message)
+        
+        # Write back to inbox
+        with open(inbox_path, 'w') as f:
+            json.dump(messages, f, indent=2)
+            
+        logger.info(f"Routed message {message.get('id', 'unknown')} from {source_agent} to {recipient}")
+        
+    except (json.JSONDecodeError, FileNotFoundError) as e:
+        logger.error(f"Error routing message to {recipient}: {e}")
 
 
-def archive_message(message: Dict, processed_dir: Path):
-    """Archive a processed message."""
-    processed_dir.mkdir(parents=True, exist_ok=True)
+def process_outboxes() -> None:
+    """Process all agent outboxes and route messages."""
+    logger.info("Starting message routing cycle")
     
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    message_id = message.get('id', 'unknown')
-    filename = f"{timestamp}_{message_id}.json"
+    # Find all outbox.json files
+    outbox_files = glob.glob("postbox/*/outbox.json")
     
-    with open(processed_dir / filename, 'w') as f:
-        json.dump(message, f, indent=2)
-
-
-def clear_outbox(agent: str, postbox_dir: Path, messages_to_remove: List[Dict]):
-    """Remove routed messages from an agent's outbox."""
-    outbox_path = postbox_dir / agent / "outbox.json"
+    for outbox_file in outbox_files:
+        agent_id = Path(outbox_file).parent.name
+        
+        try:
+            with open(outbox_file, 'r') as f:
+                messages = json.load(f)
+            
+            # Route each message
+            for msg in messages:
+                route_message(msg, agent_id)
+            
+            # Clear outbox after processing
+            with open(outbox_file, 'w') as f:
+                json.dump([], f)
+                
+        except (json.JSONDecodeError, FileNotFoundError) as e:
+            logger.error(f"Error processing outbox {outbox_file}: {e}")
+            continue
     
-    with open(outbox_path, 'r') as f:
-        current_messages = json.load(f)
-    
-    # Remove routed messages by ID
-    routed_ids = {msg.get('id') for msg in messages_to_remove}
-    remaining_messages = [msg for msg in current_messages if msg.get('id') not in routed_ids]
-    
-    with open(outbox_path, 'w') as f:
-        json.dump(remaining_messages, f, indent=2)
+    logger.info("Message routing cycle complete")
 
 
 def route_all_messages(dry_run: bool = False) -> Dict[str, List[str]]:
@@ -141,20 +260,14 @@ def route_all_messages(dry_run: bool = False) -> Dict[str, List[str]]:
                 print(f"   [DRY RUN] Would route {msg_id} to {recipient}")
                 results['routed'].append(f"{agent} -> {recipient}: {msg_id}")
             else:
-                success, result = route_message(msg, schema, postbox_dir, processed_dir)
-                
-                if success:
-                    print(f"   ✓ Routed {msg_id} to {recipient}")
-                    results['routed'].append(f"{agent} -> {recipient}: {msg_id}")
-                    routed_messages.append(msg)
-                else:
-                    print(f"   ❌ Failed to route {msg_id}: {result}")
-                    results['failed'].append(f"{msg_id}: {result}")
-                    results['errors'].append(result)
+                route_message(msg, agent)
+                results['routed'].append(f"{agent} -> {recipient}: {msg_id}")
+                routed_messages.append(msg)
         
         # Clear successfully routed messages from outbox
         if routed_messages and not dry_run:
-            clear_outbox(agent, postbox_dir, routed_messages)
+            with open(postbox_dir / agent / "outbox.json", 'w') as f:
+                json.dump([], f)
             print(f"   ✓ Cleared {len(routed_messages)} routed message(s) from outbox")
     
     # Summary

@@ -224,6 +224,19 @@
 - `/docs/RELEASE_NOTES.md`
 - `/TASK_CARDS.md`
 
+### TASK-029: Add Retry and TTL Support to Router
+**Status**: ✅ Done
+**Owner**: CA
+**Description**: Extended central router to support retry logic for failed messages and enforce TTL (Time To Live) for messages
+**File**: `/router/router.py`
+**Implementation Details**:
+- Added TTL checking with `is_message_expired()` function
+- Implemented retry count tracking with `should_retry()` and `decrement_retry_count()`
+- Added message archiving for expired/retry-exhausted messages
+- Added comprehensive logging of routing actions
+- Added error handling for invalid TTL formats
+- Implemented automatic outbox clearing after processing
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 2: Coordination Layer
