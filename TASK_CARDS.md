@@ -90,15 +90,23 @@
 - Suggested owners for each task
 **File**: `/agent-comms-mvp/TASK_CARDS.md`
 
+### TASK-008: Create Simulation Stubs for Agent Task Execution
+**Status**: ✅ Done
+**Owner**: CA
+**Description**: Created modular simulation stubs for agent task execution.
+**Details**:
+- Implemented task handler functions for different message types
+- Added router function for task distribution
+- Included timestamp and task ID tracking
+- Added example usage and error handling
+- Created simulation handlers for digest, summary, and generic tasks
+**File**: `/simulation/task_handlers.py`
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 1: Execution Framework
 **TASK-007: Implement Message Validator**
 **Description**: Create a CLI tool to validate messages against the exchange protocol schema.
-**Suggested Owner**: CC
-
-**TASK-008: Build Message Router**
-**Description**: Develop a service to handle message routing between agent postboxes.
 **Suggested Owner**: CC
 
 **TASK-009: Create Task Runner**
