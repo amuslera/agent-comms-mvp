@@ -90,6 +90,19 @@
 - Suggested owners for each task
 **File**: `/agent-comms-mvp/TASK_CARDS.md`
 
+### TASK-007: Implement agent_runner.py
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Created a CLI tool that reads tasks from agent inbox, validates messages, simulates execution, and updates logs.
+**Details**:
+- Implemented CLI with argparse for agent selection
+- Validates messages using exchange_protocol.json schema
+- Simulates task execution and logs results
+- Updates task_log.md with timestamps and status
+- Writes task_status messages to outbox.json
+- Added --simulate and --clear flags
+**File**: `/agent-comms-mvp/agent_runner.py`
+
 ### TASK-008: Create Simulation Stubs for Agent Task Execution
 **Status**: ✅ Done
 **Owner**: CA
@@ -105,9 +118,6 @@
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 1: Execution Framework
-**TASK-007: Implement Message Validator**
-**Description**: Create a CLI tool to validate messages against the exchange protocol schema.
-**Suggested Owner**: CC
 
 **TASK-009: Create Task Runner**
 **Description**: Implement a system to execute tasks based on received assignments.
