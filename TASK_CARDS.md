@@ -375,19 +375,6 @@
 **Description**: Implement automatic retry mechanisms for failed message deliveries. Include exponential backoff and dead-letter queue handling.
 **Suggested Owner**: CC
 
-**TASK-033B: Define Plan Format and Create Sample Plan**  
-**Status**: ✅ Done  
-**Owner**: WA  
-**Description**: Defined the format for ARCH execution plans and created a working example.  
-**Details**:  
-- Created `/plans/sample_plan.yaml` with comprehensive format and inline documentation  
-- Implemented `/tools/run_plan.py` CLI tool for executing plans  
-- Added support for task dependencies, retries, timeouts, and validation  
-- Integrated with existing `arch_orchestrator.py`  
-**Files**:  
-- `/plans/sample_plan.yaml`  
-- `/tools/run_plan.py`
-
 ### Phase 3: Intelligence Layer
 
 **TASK-022: Add Context Awareness**
@@ -404,44 +391,58 @@
 
 ### Phase 4: UI and Automation Layer
 
-**TASK-035: Add Fallback and Retry Support**
-**Description**: Enhance arch_orchestrator.py with robust fallback mechanisms and retry logic for failed tasks. Implement exponential backoff and alternative execution paths.
-**Suggested Owner**: CA
+### TASK-035: Design and Implement Retry + Fallback Logic in ARCH Orchestrator
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Extended the arch_orchestrator.py runtime to support smarter failure handling with retry and fallback mechanisms.
+**Details**:
+- Added retry support with configurable max_retries per task
+- Implemented exponential backoff between retry attempts
+- Added fallback agent support for automatic rerouting on failures
+- Enhanced task monitoring to detect failures and timeouts
+- Created comprehensive logging for retry attempts and fallback routing
+- Updated YAML format to support fallback_agent and max_retries fields
+- Added retry/fallback statistics to execution summary
 **Files**:
-- `/arch_orchestrator.py`
-- `/docs/fallback_strategies.md`
+- `/arch_orchestrator.py` - Enhanced with retry and fallback logic
+- `/plans/retry_fallback_example.yaml` - Example demonstrating features
+- `/docs/retry_fallback_guide.md` - Documentation for new features
+- `/tests/test_orchestrator_retry.py` - Test script for retry logic
+**Branch**: feat/TASK-035-orchestrator-retry-fallback
 
-**TASK-036: Add Execution Summary Report**
-**Description**: Implement comprehensive execution summary reporting in the orchestrator, including success rates, timing metrics, and dependency analysis.
-**Suggested Owner**: WA
-**Files**:
-- `/arch_orchestrator.py`
-- `/reports/execution_summary.py`
+**TASK-036: Add Execution Summary Report**  
+**Status**: ✅ Done  
+**Owner**: WA  
+**Description**: Created a CLI tool to generate execution summary reports from agent task logs.  
+**Details**:  
+- Parses task logs from `/postbox/*/task_log.md`  
+- Supports multiple output formats (Markdown, JSON)  
+- Filters by agent and date range  
+- Calculates key metrics: success rates, task distribution, performance by task type  
+- Integrates with existing insights data  
+**Files**:  
+- `/tools/generate_execution_summary.py`  
+**Usage**:  
+```bash
+# Generate markdown report for today
+./tools/generate_execution_summary.py --range today
+
+# Generate JSON report for a specific agent
+./tools/generate_execution_summary.py --format json --agent CA
+```
 
 **TASK-037: Slack/Discord Integration**
-**Description**: Add integration with Slack or Discord for remote plan triggering and monitoring. Include webhook support and interactive command handling.
+**Description**: Slack (or Discord) integration for plan triggering
 **Suggested Owner**: WA
-**Files**:
-- `/integrations/slack_bot.py`
-- `/integrations/discord_bot.py`
 
 **TASK-038: Plan Monitoring UI**
-**Description**: Create a minimal CLI or web-based UI for monitoring plan execution in real-time. Include task status, progress bars, and error reporting.
+**Description**: Minimal CLI or Web UI for plan monitoring
 **Suggested Owner**: WA
-**Files**:
-- `/ui/plan_monitor.py`
-- `/ui/web_dashboard.py`
 
 **TASK-039: Continuous Plan Execution**
-**Description**: Enable continuous plan execution mode with automatic retries and recovery. Support for scheduled plans and periodic execution.
+**Description**: Enable continuous plan execution mode
 **Suggested Owner**: CA
-**Files**:
-- `/arch_orchestrator.py`
-- `/scheduler/plan_scheduler.py`
 
 **TASK-040: Orchestrator Test Suite**
-**Description**: Develop comprehensive test suite for the orchestrator, including replay mode for debugging and regression testing.
+**Description**: Add orchestrator test suite + replay mode
 **Suggested Owner**: CA
-**Files**:
-- `/tests/test_orchestrator.py`
-- `/tests/replay_mode.py`

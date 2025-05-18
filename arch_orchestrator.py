@@ -8,6 +8,8 @@ Loads and executes agent communication plans by:
 3. Triggering agent runners
 4. Monitoring execution
 5. Reporting results
+
+Now with enhanced retry and fallback support!
 """
 
 import argparse
@@ -83,6 +85,9 @@ class TaskMonitor(FileSystemEventHandler):
                 if "**Status**: ✅ Success" in content:
                     self.completed = True
                     self.result = "completed"
+                elif "**Status**: ❌ Failed" in content:
+                    self.completed = True
+                    self.result = "failed"
         except Exception as e:
             logger.error(f"Error checking task log: {e}")
 
@@ -107,13 +112,14 @@ class ArchOrchestrator:
     
     def validate_task(self, task: Dict) -> bool:
         """Validate a task's structure and requirements."""
-        required_fields = ['id', 'type', 'agent', 'content']
+        required_fields = ['task_id', 'type', 'agent', 'content']
         return all(field in task for field in required_fields)
     
-    def dispatch_task(self, task: Dict) -> bool:
+    def dispatch_task(self, task: Dict, target_agent: str = None) -> bool:
         """Dispatch a task to the appropriate agent's inbox."""
         try:
-            agent = task['agent']
+            # Use target agent if specified (for fallback), otherwise use task's agent
+            agent = target_agent or task['agent']
             inbox_path = Path(f"postbox/{agent}/inbox.json")
             
             # Create inbox if it doesn't exist
@@ -128,13 +134,20 @@ class ArchOrchestrator:
             # Add new task message
             task_message = {
                 "type": "task_assignment",
-                "id": str(task['id']),
+                "id": str(task['task_id']),
                 "timestamp": datetime.now().isoformat(),
                 "sender": "ARCH",
                 "recipient": agent,
+                "version": "1.0.0",
                 "content": task['content'],
                 "metadata": task.get('metadata', {})
             }
+            
+            # Add priority and deadline if specified
+            if 'priority' in task:
+                task_message['content']['priority'] = task['priority']
+            if 'deadline' in task:
+                task_message['content']['deadline'] = task['deadline']
             
             messages.append(task_message)
             
@@ -142,6 +155,7 @@ class ArchOrchestrator:
             with open(inbox_path, 'w') as f:
                 json.dump(messages, f, indent=2)
                 
+            logger.info(f"Dispatched task {task['task_id']} to {agent}")
             return True
             
         except Exception as e:
@@ -157,10 +171,9 @@ class ArchOrchestrator:
             logger.error(f"Error starting agent runner: {e}")
             return None
     
-    def monitor_task(self, task: Dict) -> bool:
+    def monitor_task(self, task: Dict, agent: str, timeout: int = 300) -> str:
         """Monitor a task's execution and wait for completion."""
-        agent = task['agent']
-        task_id = task['id']
+        task_id = task['task_id']
         
         # Create monitor and observer
         monitor = TaskMonitor(task_id, agent)
@@ -172,16 +185,71 @@ class ArchOrchestrator:
         self.observers.append(observer)
         
         # Wait for completion with timeout
-        timeout = 300  # 5 minutes
         start_time = time.time()
         
         while not monitor.completed:
             if time.time() - start_time > timeout:
-                logger.error(f"Task {task_id} timed out")
-                return False
+                logger.error(f"Task {task_id} timed out on agent {agent}")
+                observer.stop()
+                observer.join()
+                return "timeout"
             time.sleep(1)
         
-        return monitor.result == "completed"
+        observer.stop()
+        observer.join()
+        
+        return monitor.result or "failed"
+    
+    def execute_task_with_retry(self, task: Dict) -> tuple[bool, str]:
+        """Execute a task with retry logic and fallback support."""
+        max_retries = task.get('max_retries', 1)
+        retry_delay = 5  # Base delay in seconds
+        
+        # Track all execution attempts
+        attempts = []
+        original_agent = task['agent']
+        
+        for attempt in range(max_retries):
+            current_agent = original_agent
+            
+            # Use fallback agent if we've failed on primary agent
+            if attempt > 0 and 'fallback_agent' in task:
+                current_agent = task['fallback_agent']
+                logger.info(f"Attempting with fallback agent: {current_agent}")
+            
+            logger.info(f"Executing task {task['task_id']} (attempt {attempt + 1}/{max_retries}) on agent {current_agent}")
+            
+            # Dispatch task
+            if not self.dispatch_task(task, current_agent):
+                attempts.append((current_agent, False, "Dispatch failed"))
+                time.sleep(retry_delay * (2 ** attempt))  # Exponential backoff
+                continue
+            
+            # Start agent runner
+            process = self.start_agent_runner(current_agent)
+            if not process:
+                attempts.append((current_agent, False, "Agent runner failed"))
+                time.sleep(retry_delay * (2 ** attempt))
+                continue
+            
+            # Monitor execution
+            result = self.monitor_task(task, current_agent)
+            process.terminate()
+            
+            if result == "completed":
+                logger.info(f"Task {task['task_id']} completed successfully on {current_agent}")
+                return True, f"Completed on {current_agent} (attempt {attempt + 1})"
+            
+            attempts.append((current_agent, False, f"Execution {result}"))
+            
+            # Don't sleep after the last attempt
+            if attempt < max_retries - 1:
+                logger.info(f"Task {task['task_id']} failed, retrying in {retry_delay * (2 ** attempt)} seconds...")
+                time.sleep(retry_delay * (2 ** attempt))
+        
+        # Task failed all attempts
+        failure_summary = "; ".join([f"{agent}: {reason}" for agent, _, reason in attempts])
+        return False, f"Failed all {max_retries} attempts: {failure_summary}"
     
     def execute_plan(self) -> bool:
         """Execute the loaded plan."""
@@ -197,33 +265,17 @@ class ArchOrchestrator:
         
         # Process each task
         for task in self.plan.get('tasks', []):
-            print(f"\nProcessing task {task['id']}...")
+            print(f"\nProcessing task {task['task_id']}...")
             
             # Validate task
             if not self.validate_task(task):
                 logger.error(f"Invalid task structure: {task}")
-                results.append((task['id'], False, "Invalid task structure"))
+                results.append((task['task_id'], False, "Invalid task structure"))
                 continue
             
-            # Dispatch task
-            if not self.dispatch_task(task):
-                logger.error(f"Failed to dispatch task {task['id']}")
-                results.append((task['id'], False, "Dispatch failed"))
-                continue
-            
-            # Start agent runner
-            process = self.start_agent_runner(task['agent'])
-            if not process:
-                logger.error(f"Failed to start agent runner for {task['agent']}")
-                results.append((task['id'], False, "Agent runner failed"))
-                continue
-            
-            # Monitor execution
-            success = self.monitor_task(task)
-            results.append((task['id'], success, "Completed" if success else "Failed"))
-            
-            # Clean up
-            process.terminate()
+            # Execute task with retry and fallback
+            success, status = self.execute_task_with_retry(task)
+            results.append((task['task_id'], success, status))
         
         # Stop all observers
         for observer in self.observers:
@@ -235,6 +287,14 @@ class ArchOrchestrator:
         print("=" * 50)
         for task_id, success, status in results:
             print(f"Task {task_id}: {'✅' if success else '❌'} {status}")
+        
+        # Log retry and fallback statistics
+        print("\nRetry and Fallback Statistics:")
+        print("=" * 30)
+        for task in self.plan.get('tasks', []):
+            max_retries = task.get('max_retries', 1)
+            fallback = task.get('fallback_agent', 'None')
+            print(f"Task {task['task_id']}: max_retries={max_retries}, fallback_agent={fallback}")
         
         return all(success for _, success, _ in results)
 
@@ -255,4 +315,4 @@ def main():
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
-    main() 
+    main()

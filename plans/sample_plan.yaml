@@ -37,9 +37,8 @@ tasks:
     dependencies: []  # This task has no dependencies
     
     # Retry configuration
-    retry:
-      max_attempts: 3
-      backoff: "5s"  # Time to wait between retries
+    max_retries: 3  # Max attempts (renamed from max_attempts for consistency)
+    # No fallback agent specified for this task
       
     # Timeout for this specific task
     timeout: "30m"
@@ -62,6 +61,10 @@ tasks:
     # This task depends on task_001 completing successfully
     dependencies: ["task_001"]
     
+    # Retry with fallback to CC if WA fails
+    max_retries: 2
+    fallback_agent: "CC"  # Backend can also generate reports if needed
+    
     # Notifications - who to notify when this task completes
     notifications:
       on_success: ["user@example.com"]
@@ -83,6 +86,10 @@ tasks:
     
     # No dependencies, can run in parallel with other tasks
     dependencies: []
+    
+    # Minimal retry configuration for health check
+    max_retries: 2
+    # No fallback needed for infrastructure checks
 
 # How ARCH processes this plan:
 # 1. Validates the YAML structure and required fields
