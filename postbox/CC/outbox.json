@@ -90,5 +90,31 @@
         "Expanded backlog with Phase 2-4 descriptions"
       ]
     }
+  },
+  {
+    "type": "task_status",
+    "id": "e9f0a1b2-c3d4-5678-90ab-cdef12345678",
+    "timestamp": "2025-05-18T13:00:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-023C",
+      "status": "completed",
+      "progress": 100,
+      "details": "Completed TASK-023C: Integrated agent learning into system execution. Added --use-learning flag to agent_runner.py, performance checking with warnings, and learning-based routing in router.py. Task logs now track when learning is applied."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "feat/TASK-023C-learning-integration",
+      "pr_url": "https://github.com/amuslera/agent-comms-mvp/pull/new/feat/TASK-023C-learning-integration",
+      "changes": [
+        "Added --use-learning flag to agent_runner.py",
+        "Integrated learning data loading and performance checking",
+        "Added learning_applied tracking to task logs",
+        "Extended router.py with learning-based routing",
+        "Created test learning snapshot in /insights/"
+      ]
+    }
   }
 ]
