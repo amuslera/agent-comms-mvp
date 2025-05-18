@@ -78,3 +78,68 @@
 - Described task assignment and tracking workflow
 - Added references to protocol definition and prompt templates
 **File**: `/agent-comms-mvp/CONTEXT_agent_comms.md`
+
+### TASK-006: Add structured roadmap to TASK_CARDS.md
+**Status**: ✅ Done
+**Owner**: CA
+**Description**: Added a structured roadmap section to TASK_CARDS.md outlining upcoming tasks and project phases.
+**Details**:
+- Added new section for planned tasks
+- Organized tasks into development phases
+- Included task numbers, titles, and descriptions
+- Suggested owners for each task
+**File**: `/agent-comms-mvp/TASK_CARDS.md`
+
+## ⏭️ Planned Tasks (Backlog)
+
+### Phase 1: Execution Framework
+**TASK-007: Implement Message Validator**
+**Description**: Create a CLI tool to validate messages against the exchange protocol schema.
+**Suggested Owner**: CC
+
+**TASK-008: Build Message Router**
+**Description**: Develop a service to handle message routing between agent postboxes.
+**Suggested Owner**: CC
+
+**TASK-009: Create Task Runner**
+**Description**: Implement a system to execute tasks based on received assignments.
+**Suggested Owner**: CC
+
+### Phase 2: Coordination Layer
+**TASK-010: Design Task Queue System**
+**Description**: Create a priority-based task queue with deadline management.
+**Suggested Owner**: ARCH
+
+**TASK-011: Implement Task Dependencies**
+**Description**: Add support for task dependencies and sequential execution.
+**Suggested Owner**: ARCH
+
+**TASK-012: Build Task Status Tracker**
+**Description**: Develop a system to track and report task progress across agents.
+**Suggested Owner**: ARCH
+
+### Phase 3: Intelligence Layer
+**TASK-013: Add Context Awareness**
+**Description**: Implement context tracking and sharing between agents.
+**Suggested Owner**: CA
+
+**TASK-014: Create Learning System**
+**Description**: Build a system to learn from task execution patterns and improve efficiency.
+**Suggested Owner**: CA
+
+**TASK-015: Implement Error Recovery**
+**Description**: Develop intelligent error handling and recovery mechanisms.
+**Suggested Owner**: CA
+
+### Phase 4: UI and Visualization
+**TASK-016: Design Dashboard UI**
+**Description**: Create a web interface for monitoring agent activities and task progress.
+**Suggested Owner**: WA
+
+**TASK-017: Build Task Visualization**
+**Description**: Implement visual representation of task dependencies and progress.
+**Suggested Owner**: WA
+
+**TASK-018: Create Agent Console**
+**Description**: Develop a CLI interface for direct agent interaction and monitoring.
+**Suggested Owner**: WA
