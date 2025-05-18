@@ -18,8 +18,8 @@ from typing import Dict, List, Optional, Tuple, Union, Any
 import yaml
 
 # Constants
-POSTBOX_DIR = Path("../postbox").resolve()
-INSIGHTS_DIR = Path("../insights").resolve()
+POSTBOX_DIR = (Path(__file__).parent.parent / "postbox").resolve()
+INSIGHTS_DIR = (Path(__file__).parent.parent / "insights").resolve()
 DEFAULT_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 class TaskLogParser:
