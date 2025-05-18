@@ -34,6 +34,22 @@
 - `/postbox/*/outbox.json`
 - `/postbox/*/task_log.md`
 
+### TASK-003: Create Exchange Protocol Schema
+**Status**: ✅ Done
+**Owner**: CA
+**Description**: Created machine-readable schema for inter-agent messages.
+**Details**:
+- Created JSON schema for message validation
+- Defined required fields and types
+- Added validation rules for each message type
+- Included example messages for each type
+- Created examples directory with sample messages
+**Files**:
+- `/exchange_protocol.json`
+- `/examples/task_assignment.json`
+- `/examples/task_status.json`
+- `/examples/error.json`
+
 ### TASK-004: Prepare Prompt Templates for Agent-Comms-MVP
 **Status**: ✅ Done
 **Owner**: WA
