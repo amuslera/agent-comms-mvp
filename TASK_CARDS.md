@@ -240,6 +240,23 @@
 - `/docs/RELEASE_NOTES.md`
 - `/TASK_CARDS.md`
 
+### TASK-022: Implement Context Awareness Framework
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Implemented persistent memory for agents using context files.
+**Details**:
+- Created context files for each agent in `/context/` directory
+- Implemented `ContextManager` class for loading/saving contexts
+- Added `context_inspector.py` CLI tool for managing contexts
+- Updated `agent_runner.py` to handle agent contexts
+- Added comprehensive documentation and tests
+**Files**:
+- `/context/*_context.json`
+- `/tools/context_manager.py`
+- `/tools/context_inspector.py`
+- `/docs/context_awareness.md`
+- `/tests/test_context_awareness.py`
+
 ### TASK-029: Add Retry and TTL Support to Router
 **Status**: ✅ Done
 **Owner**: CA

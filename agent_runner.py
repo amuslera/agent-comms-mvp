@@ -10,11 +10,20 @@ import json
 import argparse
 import sys
 import uuid
+import logging
 from datetime import datetime
 from pathlib import Path
 from jsonschema import validate, ValidationError
 import glob
 import re
+
+# Add the parent directory to the path so we can import context_manager
+sys.path.insert(0, str(Path(__file__).parent))
+from tools.context_manager import ContextManager
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 def load_text_file(filepath):
@@ -109,27 +118,60 @@ def check_dependencies_met(message):
     return len(missing_deps) == 0, missing_deps
 
 
-def simulate_task_execution(message):
-    """Simulate task execution and return execution result."""
-    print(f"\n🚀 Executing task from {message['sender']}...")
-    print(f"   Message ID: {message['id']}")
-    print(f"   Type: {message['type']}")
+def simulate_task_execution(message, agent_context=None):
+    """Simulate task execution and return execution result.
     
-    if message['type'] == 'task_assignment':
-        task_id = message['content']['task_id']
-        description = message['content']['description']
-        print(f"   Task ID: {task_id}")
-        print(f"   Description: {description}")
-        print(f"   Priority: {message['content']['priority']}")
-        print(f"   Deadline: {message['content']['deadline']}")
+    Args:
+        message: The task message to process
+        agent_context: The agent's context dictionary (may be modified)
         
-        # Simulate successful execution
-        print(f"   ✅ Task {task_id} executed successfully (simulated)")
-        return True, f"Task {task_id} completed successfully (simulated execution)"
+    Returns:
+        Tuple of (success: bool, details: str, updated_context: dict)
+    """
+    task_type = message.get('content', {}).get('type', 'unknown')
+    task_id = message.get('content', {}).get('task_id', 'unknown')
     
+    print(f"\n{'='*40}")
+    print(f"SIMULATING TASK EXECUTION")
+    print(f"Task ID: {task_id}")
+    print(f"Type: {task_type}")
+    print(f"From: {message.get('sender', 'unknown')}")
+    print(f"To: {message.get('recipient', 'unknown')}")
+    print(f"Agent Context: {'Available' if agent_context else 'Not available'}")
+    print(f"{'='*40}")
+    
+    # Initialize context if not provided
+    if agent_context is None:
+        agent_context = {}
+    
+    # Update context with task information
+    if 'history' not in agent_context:
+        agent_context['history'] = {}
+    if 'tasks' not in agent_context['history']:
+        agent_context['history']['tasks'] = []
+    
+    # Add task to history
+    task_entry = {
+        'task_id': task_id,
+        'type': task_type,
+        'timestamp': datetime.now().isoformat(),
+        'status': 'completed'
+    }
+    agent_context['history']['tasks'].append(task_entry)
+    
+    # Update last active time
+    agent_context['state'] = agent_context.get('state', {})
+    agent_context['state']['last_active'] = datetime.now().isoformat()
+    
+    # Simulate different outcomes based on task type
+    if task_type == 'data_processing':
+        return True, "Data processed successfully", agent_context
+    elif task_type == 'api_call':
+        return True, "API call completed", agent_context
+    elif task_type == 'report_generation':
+        return True, "Report generated", agent_context
     else:
-        print(f"   ℹ️  Processing {message['type']} message")
-        return True, f"Message {message['id']} processed successfully"
+        return True, f"Task {task_id} executed successfully", agent_context
 
 
 def append_to_task_log(agent, message, success, details):
@@ -186,124 +228,134 @@ def create_status_message(agent, original_message, success, details):
     return status_message
 
 
-def process_inbox(agent, schema, simulate=True, clear=False, force=False):
-    """Process all messages in the agent's inbox."""
+def process_inbox(agent, schema, simulate=True, clear=False, force=False, context_dir='context'):
+    """Process all messages in the agent's inbox.
+    
+    Args:
+        agent: The agent ID to process messages for
+        schema: The JSON schema to validate messages against
+        simulate: Whether to simulate task execution
+        clear: Whether to clear processed messages from the inbox
+        force: Whether to force execution even if dependencies aren't met
+        context_dir: Directory containing context files
+    """
     inbox_path = Path(f"postbox/{agent}/inbox.json")
     outbox_path = Path(f"postbox/{agent}/outbox.json")
     
-    # Load inbox messages
-    messages = load_json_file(inbox_path)
+    # Initialize context manager
+    context_manager = ContextManager(context_dir)
     
-    if not messages:
+    # Load agent context
+    try:
+        agent_context = context_manager.load_context(agent)
+        logger.debug(f"Loaded context for agent {agent}")
+    except Exception as e:
+        logger.error(f"Error loading context for {agent}: {e}")
+        agent_context = {}
+    
+    # Load inbox
+    if not inbox_path.exists():
+        print(f"No inbox found for agent {agent}")
+        return
+    
+    try:
+        with open(inbox_path, 'r') as f:
+            inbox = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error reading inbox for {agent}: {e}")
+        return
+    
+    if not isinstance(inbox, list):
+        print(f"Invalid inbox format for {agent}")
+        return
+    
+    if not inbox:
         print(f"No messages in {agent}'s inbox")
         return
     
-    print(f"Processing {len(messages)} message(s) from {agent}'s inbox...")
+    print(f"\nProcessing {len(inbox)} message(s) in {agent}'s inbox...")
     
-    # Load current outbox
-    outbox = load_json_file(outbox_path)
+    # Load outbox
+    outbox = []
+    if outbox_path.exists():
+        try:
+            with open(outbox_path, 'r') as f:
+                outbox = json.load(f)
+                if not isinstance(outbox, list):
+                    outbox = []
+        except (json.JSONDecodeError, FileNotFoundError):
+            outbox = []
     
     processed_messages = []
+    context_modified = False
     
-    for message in messages:
-        print(f"\n{'='*50}")
-        print(f"Processing message {message['id']}...")
-        
-        # Validate message
-        valid, error = validate_message(message, schema)
-        
-        if not valid:
-            print(f"   ❌ Validation failed: {error}")
-            append_to_task_log(agent, message, False, f"Validation error: {error}")
+    for message in inbox:
+        try:
+            # Validate message against schema
+            validate(instance=message, schema=schema)
             
-            # Create error message for outbox
-            error_message = {
-                "type": "error",
-                "id": str(uuid.uuid4()),
-                "timestamp": datetime.now().isoformat(),
-                "sender": agent,
-                "recipient": message['sender'],
-                "version": "1.0.0",
-                "content": {
-                    "error_code": "INVALID_MESSAGE",
-                    "message": f"Message validation failed: {error}",
-                    "context": {
-                        "original_message_id": message['id']
-                    }
-                },
-                "metadata": {
-                    "protocol_version": "1.0.0"
-                }
-            }
-            outbox.append(error_message)
-            continue
-        
-        print("   ✓ Message validated successfully")
-        
-        # Check dependencies
-        if message['type'] == 'task_assignment' and not force:
-            deps_met, missing_deps = check_dependencies_met(message)
-            
-            if not deps_met:
-                print(f"   ⏸️  Task has unmet dependencies: {missing_deps}")
-                reason = f"Task deferred - waiting for dependencies: {', '.join(missing_deps)}"
-                append_to_task_log(agent, message, False, reason)
-                
-                # Create status message for deferred task
-                status_message = {
-                    "type": "task_status",
-                    "id": str(uuid.uuid4()),
-                    "timestamp": datetime.now().isoformat(),
-                    "sender": agent,
-                    "recipient": message['sender'],
-                    "version": "1.0.0",
-                    "content": {
-                        "task_id": message['content'].get('task_id', 'N/A'),
-                        "status": "deferred",
-                        "progress": 0,
-                        "details": reason
-                    },
-                    "metadata": {
-                        "protocol_version": "1.0.0",
-                        "original_message_id": message['id'],
-                        "missing_dependencies": missing_deps
-                    }
-                }
-                outbox.append(status_message)
-                print(f"   📤 Added deferred status to outbox")
+            # Check dependencies if not forcing
+            if not force and not check_dependencies_met(message):
+                print(f"Skipping {message.get('id', 'unknown')}: Dependencies not met")
                 continue
-        
-        # Simulate task execution
-        if simulate:
-            success, details = simulate_task_execution(message)
-        else:
-            print("   ⚠️  Real execution not implemented (using simulation)")
-            success, details = simulate_task_execution(message)
-        
-        # Log the execution result
-        append_to_task_log(agent, message, success, details)
-        
-        # Create status message for outbox
-        if message['type'] == 'task_assignment':
-            status_message = create_status_message(agent, message, success, details)
-            outbox.append(status_message)
-            print(f"   📤 Added status message to outbox")
-        
-        processed_messages.append(message)
+            
+            # Make a copy of the context for this task
+            task_context = json.loads(json.dumps(agent_context)) if agent_context else {}
+            
+            # Simulate task execution with context
+            if simulate:
+                success, details, updated_context = simulate_task_execution(message, task_context)
+                
+                # Check if context was modified
+                if json.dumps(task_context) != json.dumps(agent_context):
+                    agent_context = updated_context
+                    context_modified = True
+                    logger.debug(f"Context updated during task execution for {agent}")
+            else:
+                success = True
+                details = "Simulation skipped"
+            
+            # Log the result
+            append_to_task_log(agent, message, success, details)
+            
+            # Create status message
+            status_msg = create_status_message(agent, message, success, details)
+            outbox.append(status_msg)
+            
+            print(f"Processed message {message.get('id', 'unknown')}: {'✓' if success else '✗'}")
+            processed_messages.append(message['id'])
+            
+        except ValidationError as e:
+            print(f"Invalid message format: {e}")
+        except Exception as e:
+            print(f"Error processing message: {e}")
     
-    # Save updated outbox
-    save_json_file(outbox_path, outbox)
-    print(f"\n✅ Updated outbox with {len(outbox)} message(s)")
+    # Save updated context if modified
+    if context_modified:
+        try:
+            if context_manager.save_context(agent, agent_context):
+                logger.debug(f"Saved updated context for agent {agent}")
+            else:
+                logger.error(f"Failed to save context for agent {agent}")
+        except Exception as e:
+            logger.error(f"Error saving context for {agent}: {e}")
     
-    # Clear inbox if requested
-    if clear:
-        save_json_file(inbox_path, [])
-        print(f"🗑️  Cleared {agent}'s inbox")
-    else:
-        # Remove processed messages from inbox
-        remaining_messages = [m for m in messages if m not in processed_messages]
-        save_json_file(inbox_path, remaining_messages)
-        print(f"📥 {len(remaining_messages)} message(s) remaining in inbox")
+    # Save outbox
+    try:
+        with open(outbox_path, 'w') as f:
+            json.dump(outbox, f, indent=2)
+    except Exception as e:
+        print(f"Error saving outbox: {e}")
+    
+    # Clear processed messages from inbox if requested
+    if clear and processed_messages:
+        remaining_messages = [msg for msg in inbox if msg.get('id') not in processed_messages]
+        try:
+            with open(inbox_path, 'w') as f:
+                json.dump(remaining_messages, f, indent=2)
+            print(f"\nCleared {len(processed_messages)} processed message(s) from inbox")
+        except Exception as e:
+            print(f"Error clearing inbox: {e}")
 
 
 def agent_init(agent):
@@ -387,52 +439,54 @@ def agent_init(agent):
 
 def main():
     """Main CLI entry point."""
-    parser = argparse.ArgumentParser(
-        description="Agent Runner - Execute tasks from agent inbox"
-    )
-    parser.add_argument(
-        "--agent",
-        required=True,
-        choices=["CC", "CA", "WA", "ARCH"],
-        help="Agent identifier to run tasks for"
-    )
-    parser.add_argument(
-        "--simulate",
-        action="store_true",
-        default=True,
-        help="Simulate task execution (default: True)"
-    )
-    parser.add_argument(
-        "--clear",
-        action="store_true",
-        help="Clear inbox after processing messages"
-    )
-    parser.add_argument(
-        "--init",
-        action="store_true",
-        help="Initialize agent by displaying role, capabilities, and expected behavior"
-    )
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Force task execution, ignoring dependency checks"
-    )
+    parser = argparse.ArgumentParser(description='Agent Runner CLI')
+    parser.add_argument('agent', help='Agent ID (e.g., WA, CA, CC)')
+    parser.add_argument('--schema', default='exchange_protocol.json', 
+                       help='Path to JSON schema file')
+    parser.add_argument('--no-simulate', action='store_true', 
+                       help='Skip task simulation')
+    parser.add_argument('--clear', action='store_true',
+                       help='Clear processed messages from inbox')
+    parser.add_argument('--force', '-f', action='store_true',
+                       help='Force execution even if dependencies are not met')
+    parser.add_argument('--init', action='store_true',
+                       help='Initialize agent configuration')
+    parser.add_argument('--context-dir', default='context',
+                       help='Directory containing context files')
+    parser.add_argument('--debug', action='store_true',
+                       help='Enable debug logging')
     
     args = parser.parse_args()
     
-    # If --init flag is provided, run initialization instead
+    # Configure logging
+    log_level = logging.DEBUG if args.debug else logging.INFO
+    logging.basicConfig(level=log_level, 
+                       format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
     if args.init:
         agent_init(args.agent)
         return
     
-    # Otherwise, proceed with normal inbox processing
-    # Load exchange protocol schema
-    schema_path = Path("exchange_protocol.json")
-    schema = load_json_file(schema_path)
+    # Load schema
+    try:
+        with open(args.schema, 'r') as f:
+            schema = json.load(f)
+    except FileNotFoundError:
+        print(f"Schema file not found: {args.schema}")
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON in schema file: {e}")
+        sys.exit(1)
     
-    print(f"🤖 Agent Runner - Processing inbox for {args.agent}")
-    print(f"   Mode: {'Simulation' if args.simulate else 'Real execution'}")
-    print(f"   Clear inbox: {args.clear}")
+    # Process inbox
+    process_inbox(
+        agent=args.agent,
+        schema=schema,
+        simulate=not args.no_simulate,
+        clear=args.clear,
+        force=args.force,
+        context_dir=args.context_dir
+    )
     print(f"   Force execution: {args.force}")
     
     # Process the inbox

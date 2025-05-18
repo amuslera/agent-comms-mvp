@@ -1,0 +1,27 @@
+{
+  "agent_id": "ARCH",
+  "created_at": "2025-05-18T02:17:16-07:00",
+  "updated_at": "2025-05-18T02:17:16-07:00",
+  "version": "1.0.0",
+  "preferences": {
+    "default_priority": 2,
+    "task_timeout_minutes": 30,
+    "max_concurrent_tasks": 5
+  },
+  "knowledge": {
+    "agent_capabilities": {},
+    "task_history": [],
+    "system_health": {}
+  },
+  "state": {
+    "active_tasks": [],
+    "system_status": "operational",
+    "last_health_check": null
+  },
+  "history": {
+    "tasks_routed": 0,
+    "last_routed_task": null,
+    "system_errors": 0
+  },
+  "custom": {}
+}
