@@ -2,7 +2,6 @@
 
 ## Completed Tasks
 
-<<<<<<< HEAD
 ### TASK-001: Create Agent Communication Protocol MVP
 **Status**: ✅ Done
 **Owner**: CA
@@ -405,50 +404,6 @@
 **Branch**: feat/TASK-047-dashboard-enhancements
 
 ### TASK-063A: Integrate Outbox Visualizer into React UI
-**Status**: 🔄 Planned
-**Owner**: WA
-**Description**: Migrate and integrate the CLI-based message visualizer into the React UI.
-**Details**:
-- Migrate visualization features from TASK-014
-- Integrate with React UI in `/apps/web`
-- Implement real-time outbox monitoring
-- Add interactive message viewing
-- Support WebSocket or polling for updates
-**Components**:
-- Message flow visualization
-- Real-time outbox monitoring
-- Interactive message viewing
-- Agent-specific views
-**Files**:
-- `/apps/web/src/components/MessageVisualizer/`
-- `/apps/web/src/hooks/useMessageFlow.ts`
-**Dependencies**:
-- TASK-014 (outbox visualizer)
-- TASK-060 (React UI shell)
-
-### TASK-035: Design and Implement Retry + Fallback Logic in ARCH Orchestrator
-**Status**: ✅ Done
-**Owner**: CC
-**Description**: Extended the arch_orchestrator.py runtime to support smarter failure handling with retry and fallback mechanisms.
-**Details**:
-- Added retry support with configurable max_retries per task
-- Implemented exponential backoff between retry attempts
-- Added fallback agent support for automatic rerouting on failures
-- Enhanced task monitoring to detect failures and timeouts
-- Created comprehensive logging for retry attempts and fallback routing
-- Updated YAML format to support fallback_agent and max_retries fields
-- Added retry/fallback statistics to execution summary
-**Files**:
-- `/arch_orchestrator.py` - Enhanced with retry and fallback logic
-- `/plans/retry_fallback_example.yaml` - Example demonstrating features
-- `/docs/retry_fallback_guide.md` - Documentation for new features
-- `/tests/test_orchestrator_retry.py` - Test script for retry logic
-**Branch**: feat/TASK-035-orchestrator-retry-fallback
-
-### TASK-036: Add Execution Summary Report  
-=======
-### TASK-063A: Integrate Outbox Visualizer into React UI
->>>>>>> feat/TASK-061F-plan-api
 **Status**: ✅ Done  
 **Owner**: CC  
 **Description**: Integrated the message visualization tool into the React-based UI with a new `/outbox` route.  
@@ -470,9 +425,27 @@
 
 **Branch**: `feat/TASK-063A-outbox-ui`
 
----
+### TASK-035: Design and Implement Retry + Fallback Logic in ARCH Orchestrator
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Extended the arch_orchestrator.py runtime to support smarter failure handling with retry and fallback mechanisms.
+**Details**:
+- Added retry support with configurable max_retries per task
+- Implemented exponential backoff between retry attempts
+- Added fallback agent support for automatic rerouting on failures
+- Enhanced task monitoring to detect failures and timeouts
+- Created comprehensive logging for retry attempts and fallback routing
+- Updated YAML format to support fallback_agent and max_retries fields
+- Added retry/fallback statistics to execution summary
+**Files**:
+- `/arch_orchestrator.py` - Enhanced with retry and fallback logic
+- `/plans/retry_fallback_example.yaml` - Example demonstrating features
+- `/docs/retry_fallback_guide.md` - Documentation for new features
+- `/tests/test_orchestrator_retry.py` - Test script for retry logic
+**Branch**: feat/TASK-035-orchestrator-retry-fallback
 
-<<<<<<< HEAD
+### TASK-036: Add Execution Summary Report  
+
 ### TASK-043B: Execute Live Test Plan (Retry/Fallback)
 **Status**: ✅ Done
 **Owner**: CC
@@ -752,6 +725,37 @@
 - `/apps/api/main.py` - Router integration
 **Branch**: feat/TASK-061F-plan-api
 
+### TASK-061I: Create DEVELOPMENT.md for Bluelabel Agent OS
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Documented the core development workflow, repository structure, and contributor guidelines.
+**Details**:
+- Comprehensive local setup instructions (Python, Node, FastAPI, React)
+- Detailed monorepo layout overview and architecture explanation
+- Complete guide for running agents locally and task submission
+- Instructions for launching FastAPI backend and React frontend
+- Branch naming conventions and task assignment process documentation
+- Merge policy and agent naming conventions
+- Development standards and testing procedures
+**Files**:
+- `/docs/DEVELOPMENT.md` - Complete development guide
+**Branch**: feat/TASK-061I-dev-docs
+
+### TASK-060E: Implement DAG Viewer for Task Plans
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Built a reusable frontend component that visualizes task plans as directed acyclic graphs.
+**Details**:
+- Created PlanDAGViewer component using react-flow
+- Implemented custom TaskNode component with priority-based styling
+- Added plan view page with metadata display
+- Integrated with existing plan API endpoints
+**Files**:
+- `/apps/web/src/components/PlanDAGViewer.tsx` - Main DAG visualization component
+- `/apps/web/src/components/nodes/TaskNode.tsx` - Custom task node component
+- `/apps/web/src/pages/PlanView.tsx` - Plan details and visualization page
+**Branch**: feat/TASK-060E-dag-viewer
+
 ### TASK-999: Review and Merge All Pending PR Branches
 **Status**: ✅ Done
 **Owner**: CC
@@ -787,6 +791,3 @@
 - API gateway for external agent comms
 - Persistent task loops
 - Multi-session memory coordination
-=======
-[Rest of the existing TASK_CARDS.md content]
->>>>>>> feat/TASK-061F-plan-api
