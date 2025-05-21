@@ -788,6 +788,27 @@
 - `/docs/context_bundle/REFACTOR_RECOMMENDATIONS.md` - Refactoring plan
 **Branch**: feat/TASK-066A-context-refactor
 
+### TASK-066B: Finalize Documentation Cleanup and Indexing
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Polished and finalized refactored documentation by improving discoverability, internal organization, and versioning clarity.
+**Details**:
+- Created directory-level index files for:
+  - `/docs/protocols/`
+  - `/docs/prompts/`
+  - `/docs/features/`
+  - `/schemas/`
+- Added version headers to core documentation files
+- Implemented cross-linking between related files
+- Standardized documentation structure
+**Files**:
+- `/docs/protocols/README.md`
+- `/docs/prompts/README.md`
+- `/docs/features/README.md`
+- `/schemas/README.md`
+- `/docs/protocols/AGENT_PROTOCOL.md` (updated)
+**Branch**: feat/TASK-066B-docs-cleanup
+
 ### TASK-BATCH-MERGE-5: Review and Merge Completed Feature Branches
 **Status**: ✅ Done
 **Owner**: CC

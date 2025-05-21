@@ -1,5 +1,13 @@
 # Agent Communication Protocol
 
+## Version: 1.2.0
+**Last Updated**: 2025-05-28
+
+## Related Documentation
+- [ARCH_PROTOCOL.md](./ARCH_PROTOCOL.md) - ARCH orchestrator protocol
+- [AGENT_TASK_PROTOCOL.md](./AGENT_TASK_PROTOCOL.md) - Task handling protocol
+- [EXECUTION_FLOW.md](../system/EXECUTION_FLOW.md) - System execution flow
+
 ## Version History
 - v1.0.0 (MVP): Initial file-based communication system
 - v2.0.0 (Current): Enhanced protocol with security and advanced features
