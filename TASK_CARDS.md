@@ -877,6 +877,25 @@
 - Feature branch cleanup completed
 **Branch**: main (synchronized)
 
+### TASK-067C: Commit Snapshot and Tag Phase 5 Completion  
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Created formal version tag marking the completion of Phase 5 — including UI, backend, docs, plan execution, and system cleanup milestones.
+**Details**:
+- Confirmed main branch is up to date with remote
+- Committed final pending changes for Phase 5 completion
+- Created annotated tag v0.5.0 with comprehensive Phase 5 summary
+- Pushed tag v0.5.0 to GitHub for permanent milestone marking
+- Documented all Phase 5 achievements and major features
+**Phase 5 Achievements**:
+- ✅ React UI Shell with routing and layout
+- ✅ FastAPI backend with agent/task endpoints  
+- ✅ Plan submission and DAG visualization
+- ✅ Documentation reorganization and cleanup
+- ✅ Context file bundling and deduplication
+- ✅ Repository synchronization and cleanup
+**Tag**: `v0.5.0` - Phase 5 completion milestone
+
 ### TASK-999: Review and Merge All Pending PR Branches
 **Status**: ✅ Done
 **Owner**: CC
