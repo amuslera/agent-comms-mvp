@@ -741,6 +741,22 @@
 - `/docs/DEVELOPMENT.md` - Complete development guide
 **Branch**: feat/TASK-061I-dev-docs
 
+### TASK-060D: Implement Plan Submission UI
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Created a comprehensive plan submission interface allowing users to submit execution plans in YAML or JSON format.
+**Details**:
+- Built PlanSubmission page with form validation and error handling
+- Added toast notifications for user feedback
+- Integrated with backend plan API endpoints
+- Added plan submission route to navigation
+- Supports both YAML and JSON plan formats
+**Files**:
+- `/apps/web/src/pages/PlanSubmission.tsx` - Plan submission form interface
+- `/apps/web/src/api/planApi.ts` - API integration for plan submission
+- `/apps/web/src/components/ui/` - Reusable UI components
+**Merged**: main (commit 6d3934d)
+
 ### TASK-060E: Implement DAG Viewer for Task Plans
 **Status**: ✅ Done
 **Owner**: CC
@@ -754,7 +770,21 @@
 - `/apps/web/src/components/PlanDAGViewer.tsx` - Main DAG visualization component
 - `/apps/web/src/components/nodes/TaskNode.tsx` - Custom task node component
 - `/apps/web/src/pages/PlanView.tsx` - Plan details and visualization page
-**Branch**: feat/TASK-060E-dag-viewer
+**Merged**: main (commit 6d3934d)
+
+### TASK-BATCH-MERGE-5: Review and Merge Completed Feature Branches
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Reviewed and merged all completed feature branches from the current development cycle.
+**Details**:
+- Merged feat/TASK-061I-dev-docs (Developer Documentation)
+- Merged feat/TASK-060D (Plan Submission UI) and feat/TASK-060E (DAG Viewer) as combined feature
+- Updated TASK_CARDS.md with completion status
+- Notified ARCH of merge completion
+**Branches Merged**:
+- feat/TASK-061I-dev-docs - Complete development workflow documentation
+- feat/TASK-065-context-bundle - Plan submission UI and DAG viewer components
+**Merged**: main (multiple commits)
 
 ### TASK-065: Collect and Bundle All Context / Protocol Files
 **Status**: ✅ Done
