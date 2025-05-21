@@ -685,20 +685,12 @@
 - `/apps/api/sample_data.py` - Sample data for development
 **Commit**: `b29d7ed` - TASK-061C: scaffold FastAPI endpoints for agents and tasks
 
-### TASK-999: Review and Merge All Pending PR Branches
+### TASK-061D: Create API_REFERENCE.md
 **Status**: ✅ Done
 **Owner**: CC
-**Description**: Reviewed and merged all completed feature branches into main.
-**Details**:
-- Reviewed and merged feat/TASK-060-ui-react-reset (React UI shell)
-- Reviewed and merged feat/TASK-061B-architecture-docs (Architecture documentation)
-- Reviewed and merged feat/TASK-061C-api-endpoints (FastAPI backend layer)
-- Updated TASK_CARDS.md to mark all tasks as completed
-- Notified ARCH of task completion for next phase planning
-**Commits**:
-- `262064b` - TASK-060A: merge React UI shell
-- `56f5643` - TASK-061B: add complete ARCHITECTURE.md documentation
-- `b29d7ed` - TASK-061C: scaffold FastAPI endpoints for agents and tasks
+**Description**: Create comprehensive API reference documentation
+**Files**:
+- `/docs/API_REFERENCE.md`
 
 ## ⏭️ Planned Tasks (Backlog)
 
