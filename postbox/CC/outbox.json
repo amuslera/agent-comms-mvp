@@ -1,6 +1,36 @@
 [
   {
     "type": "task_status",
+    "id": "TASK-BATCH-MERGE-5-status",
+    "timestamp": "2025-05-21T22:00:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-BATCH-MERGE-5",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully reviewed and merged all completed feature branches from the current development cycle. All tasks properly integrated and documented."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branches_merged": [
+        "feat/TASK-061I-dev-docs",
+        "feat/TASK-065-context-bundle"
+      ],
+      "tasks_completed": [
+        "TASK-060D",
+        "TASK-060E", 
+        "TASK-061I"
+      ],
+      "commits": ["6d3934d", "7f12fdd"],
+      "files_updated": ["TASK_CARDS.md"],
+      "features_ready": ["plan_submission_ui", "dag_viewer", "development_docs"],
+      "ready_for_next_cycle": true
+    }
+  },
+  {
+    "type": "task_status",
     "id": "b7c8d9e0-f1a2-3456-7890-234567890123",
     "timestamp": "2025-05-18T15:00:00Z",
     "sender": "CC",
@@ -149,6 +179,29 @@
       "dependencies": ["TASK-014", "TASK-060"],
       "files_created": ["/TASK_CARDS.md (updated)"],
       "original_message_id": "TASK-063A"
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "msg_cc_060e_complete",
+    "timestamp": "2025-05-21T10:30:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-060E",
+      "status": "completed",
+      "progress": 100,
+      "details": "Implemented DAG viewer for task plans using react-flow. Created reusable components for plan visualization with priority-based styling and interactive features.",
+      "files_created": [
+        "/apps/web/src/components/PlanDAGViewer.tsx",
+        "/apps/web/src/components/nodes/TaskNode.tsx",
+        "/apps/web/src/pages/PlanView.tsx"
+      ],
+      "metadata": {
+        "branch": "feat/TASK-060E-dag-viewer",
+        "dependencies": ["TASK-061F-plan-api"]
+      }
     }
   }
 ]
