@@ -1,0 +1,23 @@
+metadata:
+  plan_id: test_retry
+  version: 1.0.0
+tasks:
+- agent: CA
+  content:
+    action: test
+  max_retries: 1
+  task_id: test_simple
+  type: task_assignment
+- agent: CA
+  content:
+    action: retry_test
+  max_retries: 3
+  task_id: test_retry
+  type: task_assignment
+- agent: WA
+  content:
+    action: fallback_test
+  fallback_agent: CC
+  max_retries: 2
+  task_id: test_fallback
+  type: task_assignment

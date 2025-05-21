@@ -1,0 +1,93 @@
+# Live Test Plan for Retry and Fallback Features
+# Version: 1.0.0
+# Description: Tests the retry and fallback mechanisms in ARCH orchestrator
+
+metadata:
+  plan_id: "live_test_001"
+  version: "1.0.0"
+  created: "2024-03-19T10:00:00Z"
+  description: "Live test plan for retry and fallback features"
+  priority: "high"
+  timeout: "30m"
+
+tasks:
+  # Task 1: Initial task that will fail and trigger retry
+  - task_id: "live-test-summary"
+    agent: "CA"
+    type: "task_assignment"
+    description: "Generate system summary report (designed to fail)"
+    priority: "high"
+    deadline: "2024-03-19T10:30:00Z"
+    
+    content:
+      action: "generate_summary"
+      parameters:
+        mode: "fail_first"  # Special mode to simulate failure
+        retry_count: 0      # Will be incremented on retry
+        output_file: "/reports/system_summary.md"
+    
+    # Retry configuration
+    max_retries: 2
+    fallback_agent: "CC"    # Will fall back to CC after retries
+    
+    # Notifications for monitoring
+    notifications:
+      on_failure: ["admin@example.com"]
+    
+    timeout: "5m"
+
+  # Task 2: Dependent task that should succeed
+  - task_id: "live-test-validate"
+    agent: "WA"
+    type: "task_assignment"
+    description: "Validate the generated summary"
+    priority: "medium"
+    deadline: "2024-03-19T10:35:00Z"
+    
+    content:
+      action: "validate_summary"
+      parameters:
+        input_file: "/reports/system_summary.md"
+        checks:
+          - "format"
+          - "completeness"
+          - "accuracy"
+    
+    # Depends on the first task (will run after retry/fallback)
+    dependencies: ["live-test-summary"]
+    
+    # No retry needed for validation
+    max_retries: 0
+    
+    timeout: "3m"
+
+  # Task 3: Final task that should always succeed
+  - task_id: "live-test-notify"
+    agent: "WA"
+    type: "task_assignment"
+    description: "Send notification of test completion"
+    priority: "low"
+    deadline: "2024-03-19T10:40:00Z"
+    
+    content:
+      action: "send_notification"
+      parameters:
+        message: "Live test completed"
+        channel: "test-results"
+        include_summary: true
+    
+    # Depends on validation
+    dependencies: ["live-test-validate"]
+    
+    # No retry needed for notifications
+    max_retries: 0
+    
+    timeout: "2m"
+
+# Expected Execution Flow:
+# 1. Task 1 (CA) will fail initially
+# 2. ARCH will retry twice with CA
+# 3. After retries fail, task will fall back to CC
+# 4. CC will complete the summary generation
+# 5. Task 2 (WA) will validate the summary
+# 6. Task 3 (WA) will send completion notification 

@@ -756,21 +756,6 @@
 - `/apps/web/src/pages/PlanView.tsx` - Plan details and visualization page
 **Branch**: feat/TASK-060E-dag-viewer
 
-### TASK-065: Collect and Bundle All Context / Protocol Files
-**Status**: ✅ Done
-**Owner**: CC
-**Description**: Searched the repository for all system context, agent protocols, task structure, and configuration standards files, then collected them into a centralized bundle for review and validation.
-**Details**:
-- Created `/docs/context_bundle/` directory for centralized file collection
-- Collected 37 files covering agent protocols, profiles, task templates, workflows, prompts, architecture docs, routing rules, and configuration files
-- Preserved all original file names and maintained duplicate copies (originals untouched)
-- Created comprehensive README.md index documenting all collected files by category
-- Bundle includes: 5 agent protocol files, 8 agent profile/context files, 5 task format templates, 5 workflow plans, 3 prompt templates, 5 architecture docs, 2 routing files, 3 configuration files, and 2 main documentation files
-**Files**:
-- `/docs/context_bundle/` - Complete context bundle directory
-- `/docs/context_bundle/README.md` - Comprehensive bundle index and documentation
-**Branch**: feat/TASK-065-context-bundle
-
 ### TASK-999: Review and Merge All Pending PR Branches
 **Status**: ✅ Done
 **Owner**: CC
