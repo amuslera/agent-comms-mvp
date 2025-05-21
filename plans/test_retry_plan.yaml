@@ -1,38 +1,23 @@
-# Test Plan for Retry and Fallback Logic
 metadata:
-  plan_id: "test_retry"
-  version: "1.0.0"
-  created: "2025-05-18T20:00:00Z"
-  description: "Test plan to verify retry and fallback logic"
-
+  plan_id: test_retry
+  version: 1.0.0
 tasks:
-  # This task should succeed on first try
-  - task_id: "test_success"
-    agent: "CA"
-    type: "task_assignment"
-    content:
-      action: "test_action"
-      parameters:
-        should_fail: false
-    max_retries: 1
-    
-  # This task should fail once then succeed
-  - task_id: "test_retry"
-    agent: "CA"
-    type: "task_assignment"
-    content:
-      action: "test_retry_action"
-      parameters:
-        fail_count: 1  # Fail first attempt only
-    max_retries: 3
-    
-  # This task should fail on primary agent and succeed on fallback
-  - task_id: "test_fallback"
-    agent: "WA"
-    type: "task_assignment"
-    content:
-      action: "test_fallback_action"
-      parameters:
-        primary_agent_fails: true
-    max_retries: 2
-    fallback_agent: "CC"
+- agent: CA
+  content:
+    action: test
+  max_retries: 1
+  task_id: test_simple
+  type: task_assignment
+- agent: CA
+  content:
+    action: retry_test
+  max_retries: 3
+  task_id: test_retry
+  type: task_assignment
+- agent: WA
+  content:
+    action: fallback_test
+  fallback_agent: CC
+  max_retries: 2
+  task_id: test_fallback
+  type: task_assignment

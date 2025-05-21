@@ -772,6 +772,22 @@
 - `/apps/web/src/pages/PlanView.tsx` - Plan details and visualization page
 **Merged**: main (commit 6d3934d)
 
+### TASK-066A: Review and Refactor Redundant or Unclear Context Files
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Reviewed and refactored redundant context files to improve organization and clarity.
+**Details**:
+- Created new directory structure for documentation
+- Merged protocol documentation versions
+- Consolidated prompt templates
+- Standardized schema locations
+- Created comprehensive retry/fallback documentation
+**Files**:
+- `/docs/protocols/AGENT_PROTOCOL.md` - Merged protocol documentation
+- `/docs/features/retry_fallback.md` - Combined retry/fallback guide
+- `/docs/context_bundle/REFACTOR_RECOMMENDATIONS.md` - Refactoring plan
+**Branch**: feat/TASK-066A-context-refactor
+
 ### TASK-BATCH-MERGE-5: Review and Merge Completed Feature Branches
 **Status**: ✅ Done
 **Owner**: CC
@@ -800,6 +816,30 @@
 - `/docs/context_bundle/` - Complete context bundle directory
 - `/docs/context_bundle/README.md` - Comprehensive bundle index and documentation
 **Branch**: feat/TASK-065-context-bundle
+
+### TASK-066: Reorganize and Deduplicate Context and Protocol Files
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Reorganized the contents of the context bundle into a cleaner, more maintainable structure and eliminated duplicates.
+**Details**:
+- Created organized subdirectories under `/docs/` (protocols/, system/, prompts/, metadata/, misc/)
+- Moved protocol files to `/docs/protocols/`
+- Moved system documentation to `/docs/system/`
+- Moved prompt templates to `/docs/prompts/`
+- Moved agent profiles and metadata to `/docs/metadata/`
+- Moved workflow plans to existing `/plans/` directory
+- Moved test fixtures to new `/test_fixtures/` directory
+- Removed duplicate files where identical copies existed elsewhere
+- Cleaned up system files (.DS_Store, __MACOSX)
+- Removed empty context_bundle directory after successful reorganization
+**Files**:
+- `/docs/protocols/` - Agent communication protocols and schemas
+- `/docs/system/` - System architecture and execution documentation
+- `/docs/prompts/` - Agent prompt templates
+- `/docs/metadata/` - Agent profiles and context files
+- `/docs/misc/` - Miscellaneous documentation files
+- `/test_fixtures/` - Test data and examples
+**Branch**: feat/TASK-066-reorganize-context
 
 ### TASK-999: Review and Merge All Pending PR Branches
 **Status**: ✅ Done
