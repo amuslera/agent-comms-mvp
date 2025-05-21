@@ -389,6 +389,42 @@
 - `/insights/README.md`
 - Updated postbox contents for all agents
 
+### TASK-047: Dashboard Enhancements
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Improved dashboard structure and stability with import path fixes and code organization.
+**Details**:
+- Moved dashboard code from `legacy_ui/` to `tools/dashboard/`
+- Fixed import paths and module organization
+- Added sample postbox data for testing
+- Improved code maintainability and structure
+**Files**:
+- `/tools/dashboard/` - Restructured dashboard code
+- `/sample_postbox/` - Added test data
+**Branch**: feat/TASK-047-dashboard-enhancements
+
+### TASK-063A: Integrate Outbox Visualizer into React UI
+**Status**: 🔄 Planned
+**Owner**: WA
+**Description**: Migrate and integrate the CLI-based message visualizer into the React UI.
+**Details**:
+- Migrate visualization features from TASK-014
+- Integrate with React UI in `/apps/web`
+- Implement real-time outbox monitoring
+- Add interactive message viewing
+- Support WebSocket or polling for updates
+**Components**:
+- Message flow visualization
+- Real-time outbox monitoring
+- Interactive message viewing
+- Agent-specific views
+**Files**:
+- `/apps/web/src/components/MessageVisualizer/`
+- `/apps/web/src/hooks/useMessageFlow.ts`
+**Dependencies**:
+- TASK-014 (outbox visualizer)
+- TASK-060 (React UI shell)
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### Phase 2: Coordination Layer
