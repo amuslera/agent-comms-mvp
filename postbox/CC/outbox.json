@@ -22,24 +22,27 @@
     }
   },
   {
-    "messages": [
-      {
-        "message_id": "msg_" + new Date().getTime(),
-        "from": "CC",
-        "to": "ARCH",
-        "timestamp": new Date().toISOString(),
-        "message_type": "notification",
-        "content": {
-          "type": "task_completion",
-          "task_id": "TASK-061B",
-          "status": "completed",
-          "details": "Created comprehensive ARCHITECTURE.md documentation with system overview, core components, message flow diagrams, and future roadmap. PR opened for review."
-        },
-        "metadata": {
-          "priority": "normal",
-          "category": "documentation"
-        }
-      }
-    ]
+    "type": "task_status",
+    "id": "e4f5g6h7-8i9j-0k1l-2m3n-4o5p6q7r8s9t",
+    "timestamp": "2025-05-21T18:45:30Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-999",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully reviewed and merged all pending feature branches: feat/TASK-060-ui-react-reset (React UI shell), feat/TASK-061B-architecture-docs (Architecture documentation), and feat/TASK-061C-api-endpoints (FastAPI backend). All tasks are now marked as completed in TASK_CARDS.md."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branches_merged": [
+        "feat/TASK-060-ui-react-reset",
+        "feat/TASK-061B-architecture-docs",
+        "feat/TASK-061C-api-endpoints"
+      ],
+      "files_updated": 10,
+      "ready_for_next_phase": true
+    }
   }
 ]
