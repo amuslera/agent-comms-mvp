@@ -1,1 +1,49 @@
-[]
+[
+  {
+    "type": "task_status",
+    "id": "TASK-047-MERGED",
+    "timestamp": "2025-05-21T19:45:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-047",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully merged feat/TASK-047-dashboard-enhancements-merge branch to main. This branch restructured dashboard code, fixed import paths, and added sample postbox data for testing."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "commit_hash": "7aae629",
+      "branch_merged": "feat/TASK-047-dashboard-enhancements-merge",
+      "task_auto_merge": true
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-061F-COMPLETED",
+    "timestamp": "2025-05-21T21:12:00Z",
+    "sender": "CA",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-061F",
+      "status": "completed",
+      "progress": 100,
+      "details": "Implemented FastAPI endpoint for plan submission. Created models for validation, service layer for handling plans, and routes for submission, status checking, and execution."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "feat/TASK-061F-plan-api",
+      "files_created": [
+        "/apps/api/models/plan.py",
+        "/apps/api/services/plan_service.py",
+        "/apps/api/routers/plans.py"
+      ],
+      "files_modified": [
+        "/apps/api/main.py",
+        "/TASK_CARDS.md"
+      ]
+    }
+  }
+]
