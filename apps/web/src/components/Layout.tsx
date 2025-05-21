@@ -65,6 +65,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </svg>
               Agents
             </Link>
+            <Link
+              to="/plans/submit"
+              className={`group flex items-center px-4 py-3 text-sm font-medium rounded-md ${isActive('/plans/submit')}`}
+            >
+              <svg
+                className="mr-3 h-6 w-6 text-gray-400 group-hover:text-gray-300"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+              Submit Plan
+            </Link>
           </div>
         </nav>
       </div>
@@ -77,6 +98,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <h2 className="text-lg font-semibold text-gray-800">
               {location.pathname === '/dashboard' && 'Dashboard'}
               {location.pathname === '/agents' && 'Agents'}
+              {location.pathname === '/plans/submit' && 'Submit Plan'}
             </h2>
             <div className="flex items-center space-x-4">
               <button className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none">
