@@ -20,5 +20,26 @@
       "tests_passed": true,
       "files_updated": 8
     }
+  },
+  {
+    "messages": [
+      {
+        "message_id": "msg_" + new Date().getTime(),
+        "from": "CC",
+        "to": "ARCH",
+        "timestamp": new Date().toISOString(),
+        "message_type": "notification",
+        "content": {
+          "type": "task_completion",
+          "task_id": "TASK-061B",
+          "status": "completed",
+          "details": "Created comprehensive ARCHITECTURE.md documentation with system overview, core components, message flow diagrams, and future roadmap. PR opened for review."
+        },
+        "metadata": {
+          "priority": "normal",
+          "category": "documentation"
+        }
+      }
+    ]
   }
 ]

@@ -687,3 +687,10 @@
 - API gateway for external agent comms
 - Persistent task loops
 - Multi-session memory coordination
+
+### TASK-061B: Create ARCHITECTURE.md for Bluelabel Agent OS
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Created comprehensive architecture documentation including system overview, core components, message flow, system layers, and future roadmap.
+**Files**:
+- `/docs/ARCHITECTURE.md`
