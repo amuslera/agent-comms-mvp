@@ -704,6 +704,21 @@
 - `/apps/web/src/hooks/` - React hooks for API integration
 **Commit**: `1f14064` - TASK-061D: Add API reference documentation and client integration files
 
+### TASK-061E: Create ROADMAP.md
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Write a concise roadmap that reflects current system status, next planned features, and major phases.
+**Details**:
+- Created comprehensive roadmap document in `docs/ROADMAP.md`
+- Outlined current status with completed phases
+- Documented in-progress tasks and Phase 5 remaining work
+- Previewed Phase 6 advanced features (webhooks, observability, API migration)
+- Included timeline projections and long-term vision
+- Added contribution information
+**Files**:
+- `/docs/ROADMAP.md`
+**Commit**: `e796d6c` - TASK-061E: Merge roadmap documentation
+
 ### TASK-999: Review and Merge All Pending PR Branches
 **Status**: ✅ Done
 **Owner**: CC
@@ -713,6 +728,7 @@
 - Reviewed and merged feat/TASK-061B-architecture-docs (Architecture documentation)
 - Reviewed and merged feat/TASK-061C-api-endpoints (FastAPI backend layer)
 - Reviewed and merged feat/TASK-061D-api-docs (API reference documentation)
+- Reviewed and merged feat/TASK-061E-roadmap-docs (Roadmap documentation)
 - Updated TASK_CARDS.md to mark all tasks as completed
 - Notified ARCH of task completion for next phase planning
 **Commits**:
@@ -720,6 +736,7 @@
 - `56f5643` - TASK-061B: add complete ARCHITECTURE.md documentation
 - `b29d7ed` - TASK-061C: scaffold FastAPI endpoints for agents and tasks
 - `1f14064` - TASK-061D: Add API reference documentation and client integration files
+- `e796d6c` - TASK-061E: Merge roadmap documentation
 
 ## ⏭️ Planned Tasks (Backlog)
 
