@@ -685,6 +685,25 @@
 - `/apps/api/sample_data.py` - Sample data for development
 **Commit**: `b29d7ed` - TASK-061C: scaffold FastAPI endpoints for agents and tasks
 
+### TASK-061D: Add API Reference Documentation
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Created comprehensive API reference document and integrated React client.
+**Details**:
+- Created detailed API reference documentation in docs/API_REFERENCE.md
+- Documented all API endpoints, schemas, and examples
+- Added versioning information and error handling protocols
+- Implemented React client integration files:
+  - TypeScript interfaces in src/api/agentApi.ts and taskApi.ts
+  - API configuration in src/api/config.ts
+  - Custom hooks in src/hooks/useAgents.ts and useTasks.ts
+- Documented client integration considerations
+**Files**:
+- `/docs/API_REFERENCE.md` - Comprehensive API documentation
+- `/apps/web/src/api/` - TypeScript API client
+- `/apps/web/src/hooks/` - React hooks for API integration
+**Commit**: `1f14064` - TASK-061D: Add API reference documentation and client integration files
+
 ### TASK-999: Review and Merge All Pending PR Branches
 **Status**: ✅ Done
 **Owner**: CC
@@ -693,12 +712,14 @@
 - Reviewed and merged feat/TASK-060-ui-react-reset (React UI shell)
 - Reviewed and merged feat/TASK-061B-architecture-docs (Architecture documentation)
 - Reviewed and merged feat/TASK-061C-api-endpoints (FastAPI backend layer)
+- Reviewed and merged feat/TASK-061D-api-docs (API reference documentation)
 - Updated TASK_CARDS.md to mark all tasks as completed
 - Notified ARCH of task completion for next phase planning
 **Commits**:
 - `262064b` - TASK-060A: merge React UI shell
 - `56f5643` - TASK-061B: add complete ARCHITECTURE.md documentation
 - `b29d7ed` - TASK-061C: scaffold FastAPI endpoints for agents and tasks
+- `1f14064` - TASK-061D: Add API reference documentation and client integration files
 
 ## ⏭️ Planned Tasks (Backlog)
 
