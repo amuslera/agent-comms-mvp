@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MCP Message Envelope",
+  "description": "Schema for MCP-compatible message envelope used in Bluelabel Agent OS",
+  "type": "object",
+  "required": [
+    "type",
+    "protocol_version",
+    "sender_id",
+    "recipient_id",
+    "timestamp",
+    "task_id",
+    "payload"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["task_result", "error", "needs_input"],
+      "description": "Type of the message"
+    },
+    "protocol_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Version of the message protocol"
+    },
+    "sender_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_-]+$",
+      "description": "Identifier of the sending agent"
+    },
+    "recipient_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_-]+$",
+      "description": "Identifier of the intended recipient agent"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of message creation"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_-]+$",
+      "description": "Identifier of the task this message relates to"
+    },
+    "retry_count": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Number of times this message has been retried"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Distributed tracing identifier"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Message-specific content",
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "task_result"
+            },
+            "payload": {
+              "type": "object",
+              "required": ["status", "result"],
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["success", "partial_success", "failed"]
+                },
+                "result": {
+                  "type": "object",
+                  "properties": {
+                    "output": {
+                      "type": "string"
+                    },
+                    "artifacts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["type", "path"],
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "path": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": ["output"]
+                },
+                "metrics": {
+                  "type": "object",
+                  "properties": {
+                    "duration_ms": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "memory_usage_mb": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "error"
+            },
+            "payload": {
+              "type": "object",
+              "required": ["code", "message"],
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "details": {
+                  "type": "object"
+                },
+                "retryable": {
+                  "type": "boolean"
+                },
+                "suggested_actions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "needs_input"
+            },
+            "payload": {
+              "type": "object",
+              "required": ["requested_inputs"],
+              "properties": {
+                "requested_inputs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["id", "type", "description"],
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": ["string", "number", "boolean", "enum", "file"]
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "sensitive": {
+                        "type": "boolean",
+                        "default": false
+                      },
+                      "options": {
+                        "type": "array",
+                        "items": {
+                          "type": ["string", "number", "boolean"]
+                        }
+                      },
+                      "default": {},
+                      "required": {
+                        "type": "boolean",
+                        "default": true
+                      }
+                    }
+                  }
+                },
+                "context": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "context": {
+      "type": "object",
+      "description": "Additional context or metadata",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

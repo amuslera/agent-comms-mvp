@@ -5,7 +5,7 @@ Phase policy loader for ARCH message routing and execution rules.
 from enum import Enum
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Union
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 class EscalationLevel(str, Enum):
     """Escalation levels for message routing."""
@@ -37,11 +37,24 @@ class RoutingRule(BaseModel):
     phase_overrides: List[PhaseOverride] = Field(default_factory=list)
     conditions: List[Condition] = Field(default_factory=list)
 
+class EscalationRule(BaseModel):
+    """Escalation rule from phase policy."""
+    type: str
+    description: str
+    retry_count: int = 3
+    retry_delay_minutes: int = 5
+    escalate_if_unresolved: bool = True
+    escalation_timeout_hours: int = 2
+    immediate_human_notification: bool = False
+
 class PhasePolicy(BaseModel):
     """Complete phase policy configuration."""
     task_result_rules: List[RoutingRule] = Field(default_factory=list)
     error_rules: List[RoutingRule] = Field(default_factory=list)
     input_rules: List[RoutingRule] = Field(default_factory=list)
+    escalation_rules: List[EscalationRule] = Field(default_factory=list)
+    active_phase: Optional[str] = None
+    autonomy_level: Optional[str] = None
 
 def load_policy(policy_path: Union[str, Path]) -> PhasePolicy:
     """

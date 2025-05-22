@@ -1,9 +1,9 @@
 import React from 'react';
 import type { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, Outlet } from 'react-router-dom';
 
 interface LayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
@@ -24,8 +24,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <nav className="mt-6">
           <div className="px-2 space-y-1">
             <Link
-              to="/dashboard"
-              className={`group flex items-center px-4 py-3 text-sm font-medium rounded-md ${isActive('/dashboard')}`}
+              to="/"
+              className={`group flex items-center px-4 py-3 text-sm font-medium rounded-md ${isActive('/')}`}
             >
               <svg
                 className="mr-3 h-6 w-6 text-gray-400 group-hover:text-gray-300"
@@ -86,6 +86,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </svg>
               Submit Plan
             </Link>
+            <Link
+              to="/arch/messages"
+              className={`group flex items-center px-4 py-3 text-sm font-medium rounded-md ${isActive('/arch/messages')}`}
+            >
+              <svg
+                className="mr-3 h-6 w-6 text-gray-400 group-hover:text-gray-300"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              ARCH Messages
+            </Link>
           </div>
         </nav>
       </div>
@@ -96,9 +117,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <header className="bg-white shadow-sm">
           <div className="flex justify-between items-center px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-800">
-              {location.pathname === '/dashboard' && 'Dashboard'}
+              {location.pathname === '/' && 'Dashboard'}
               {location.pathname === '/agents' && 'Agents'}
               {location.pathname === '/plans/submit' && 'Submit Plan'}
+              {location.pathname === '/arch/messages' && 'ARCH Messages'}
             </h2>
             <div className="flex items-center space-x-4">
               <button className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none">
@@ -130,7 +152,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto bg-gray-50">
-          {children}
+          {children || <Outlet />}
         </main>
       </div>
     </div>

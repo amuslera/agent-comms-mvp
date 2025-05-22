@@ -1,0 +1,38 @@
+{
+  "type": "task_result",
+  "protocol_version": "1.0",
+  "sender_id": "CA",
+  "recipient_id": "ARCH",
+  "timestamp": "2025-05-21T20:00:00Z",
+  "task_id": "TASK-070C",
+  "retry_count": 0,
+  "trace_id": "abc123-xzy-789",
+  "payload": {
+    "status": "success",
+    "result": {
+      "output": "Successfully processed data transformation",
+      "artifacts": [
+        {
+          "type": "file",
+          "path": "/data/processed/result-20250521.json",
+          "description": "Processed data in JSON format"
+        },
+        {
+          "type": "report",
+          "path": "/reports/transformation-20250521.pdf",
+          "description": "Transformation report with statistics"
+        }
+      ]
+    },
+    "metrics": {
+      "duration_ms": 1245,
+      "memory_usage_mb": 342,
+      "records_processed": 1250
+    }
+  },
+  "context": {
+    "pipeline_id": "pipe-9876",
+    "execution_id": "exec-54321",
+    "environment": "production"
+  }
+}

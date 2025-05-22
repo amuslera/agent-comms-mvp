@@ -11,91 +11,115 @@ from datetime import datetime
 from tools.arch.message_parser import MessageType
 from tools.arch.message_router import MessageRouter, RoutingRule, EscalationLevel
 
+def mcp_message(
+    sender_id: str,
+    recipient_id: str,
+    trace_id: str,
+    retry_count: int,
+    task_id: str,
+    payload: dict
+) -> Dict[str, Any]:
+    return {
+        "sender_id": sender_id,
+        "recipient_id": recipient_id,
+        "trace_id": trace_id,
+        "retry_count": retry_count,
+        "task_id": task_id,
+        "payload": payload
+    }
+
 @pytest.fixture
 def test_messages() -> Dict[str, Dict[str, Any]]:
-    """Sample test messages for different types."""
-    base_metadata = {
-        "message_id": "msg_123",
-        "timestamp": datetime.utcnow().isoformat(),
-        "sender_id": "CC",
-        "protocol_version": "1.0.0",
-        "sender": "CC",
-        "recipient": "ARCH"
-    }
-    
     return {
-        "task_result": {
-            "type": "task_result",
-            "metadata": base_metadata.copy(),
-            "content": {
-                "task_id": "TASK-001",
-                "status": "completed",
-                "progress": 100,
-                "details": "Task completed successfully"
+        "task_result": mcp_message(
+            sender_id="CC",
+            recipient_id="ARCH",
+            trace_id="trace-001",
+            retry_count=0,
+            task_id="TASK-001",
+            payload={
+                "type": "task_result",
+                "content": {
+                    "task_id": "TASK-001",
+                    "status": "completed",
+                    "progress": 100,
+                    "details": "Task completed successfully"
+                }
+            }
+        ),
+        "error": mcp_message(
+            sender_id="CA",
+            recipient_id="ARCH",
+            trace_id="trace-002",
+            retry_count=0,
+            task_id="TASK-002",
+            payload={
+                "type": "error",
+                "content": {
+                    "error_type": "validation_error",
+                    "error_message": "Invalid message format",
+                    "task_id": "TASK-002"
+                }
+            }
+        ),
+        "needs_input": mcp_message(
+            sender_id="WA",
+            recipient_id="ARCH",
+            trace_id="trace-003",
+            retry_count=0,
+            task_id="TASK-003",
+            payload={
+                "type": "needs_input",
+                "content": {
+                    "task_id": "TASK-003",
+                    "request_type": "user_confirmation",
+                    "prompt": "Please confirm task execution",
+                    "input_type": "string"
+                }
+            }
+        ),
+        # Edge case: missing trace_id
+        "missing_trace_id": {
+            "sender_id": "CC",
+            "recipient_id": "ARCH",
+            # missing trace_id
+            "retry_count": 0,
+            "task_id": "TASK-004",
+            "payload": {
+                "type": "task_result",
+                "content": {"task_id": "TASK-004", "status": "completed", "progress": 100}
             }
         },
-        "error": {
-            "type": "error",
-            "metadata": {
-                **base_metadata,
-                "message_id": "msg_456",
-                "sender_id": "CA",
-                "sender": "CA"
-            },
-            "content": {
-                "error_type": "validation_error",
-                "error_message": "Invalid message format",
-                "task_id": "TASK-002"
+        # Edge case: invalid retry_count
+        "invalid_retry_count": {
+            "sender_id": "CC",
+            "recipient_id": "ARCH",
+            "trace_id": "trace-005",
+            "retry_count": "not_an_int",
+            "task_id": "TASK-005",
+            "payload": {
+                "type": "task_result",
+                "content": {"task_id": "TASK-005", "status": "completed", "progress": 100}
             }
         },
-        "needs_input": {
-            "type": "needs_input",
-            "metadata": {
-                "message_id": "msg_789",
-                "timestamp": "2025-05-21T17:00:00Z",
-                "sender_id": "WA",
-                "protocol_version": "1.0.0",
-                "recipient": "ARCH",
-                "sender": "WA"
-            },
-            "content": {
-                "task_id": "TASK-003",
-                "request_type": "user_confirmation",
-                "prompt": "Please confirm task execution",
-                "input_type": "string"
-            }
-        },
-        "malformed": {
-            "type": "invalid_type",
-            "metadata": {
-                "message_id": "msg_999",
-                "timestamp": datetime.utcnow().isoformat(),
-                "sender_id": "CC",
-                "protocol_version": "1.0.0"
-            }
-        },
-        "missing_metadata": {
-            "type": "task_result",
-            "metadata": {
-                "message_id": "msg_123"
-            }
-        },
-        "invalid_timestamp": {
-            "type": "task_result",
-            "metadata": {
-                "message_id": "msg_123",
-                "timestamp": "invalid_timestamp",
-                "sender_id": "CC",
-                "protocol_version": "1.0.0",
-                "sender": "CC",
-                "recipient": "ARCH"
-            },
-            "content": {
-                "task_id": "TASK-001",
-                "status": "completed",
-                "progress": 100
-            }
-        }
+        # Edge case: malformed payload
+        "malformed_payload": mcp_message(
+            sender_id="CC",
+            recipient_id="ARCH",
+            trace_id="trace-006",
+            retry_count=0,
+            task_id="TASK-006",
+            payload={"notype": "oops"}
+        ),
+        # Edge case: unknown type
+        "unknown_type": mcp_message(
+            sender_id="CC",
+            recipient_id="ARCH",
+            trace_id="trace-007",
+            retry_count=0,
+            task_id="TASK-007",
+            payload={"type": "unknown_type", "content": {}}
+        ),
     }
 
 @pytest.fixture
@@ -134,6 +158,22 @@ def mock_phase_policy(tmp_path: Path) -> Path:
         escalation_level: human
         max_retries: 1
         retry_delay: 0
+    
+    escalation_rules:
+      - type: error
+        description: General task errors
+        retry_count: 2
+        retry_delay_minutes: 30
+        escalate_if_unresolved: true
+        escalation_timeout_hours: 2
+        
+      - type: critical_error
+        description: Security, data loss, or system breaking errors
+        retry_count: 1
+        retry_delay_minutes: 0
+        escalate_if_unresolved: true
+        escalation_timeout_hours: 0
+        immediate_human_notification: true
     """
     policy.write_text(policy_content)
     return policy

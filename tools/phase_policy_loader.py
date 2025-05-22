@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from pydantic import BaseModel, Field, field_validator, model_validator
 from enum import Enum
+from dataclasses import dataclass, field
 
 
 class AutonomyLevel(str, Enum):
@@ -172,85 +173,37 @@ class EmergencyProcedures(BaseModel):
         return v
 
 
-class PhaseOverride(BaseModel):
-    autonomy_level: Optional[AutonomyLevel] = None
-    permissions: Optional[Permissions] = None
-    escalation_rules: Optional[List[EscalationRule]] = None
+class PhaseOverride:
+    def __init__(self, phase: str, max_retries: Optional[int] = None, retry_delay: Optional[int] = None):
+        self.phase = phase
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
 
 
-class PhasePolicy(BaseModel):
-    # Core phase configuration
-    active_phase: str = "Phase 1"
-    phase_description: str = ""
-    cto_scope: CTOScope = CTOScope.TASK_LEVEL
-    
-    # Autonomy settings
-    autonomy_level: AutonomyLevel = AutonomyLevel.MEDIUM
-    max_concurrent_tasks: int = 5
-    max_execution_time_hours: int = 8
-    budget_limit_usd: Optional[float] = None
-    
-    # Permissions and rules
-    permissions: Permissions = Field(default_factory=Permissions)
-    escalation_rules: List[EscalationRule] = Field(default_factory=list)
-    notify_methods: List[NotificationMethod] = Field(default_factory=list)
-    quality_gates: List[QualityGate] = Field(default_factory=list)
-    
-    # Resource and learning
-    resource_limits: ResourceLimits = Field(default_factory=ResourceLimits)
-    learning_policy: LearningPolicy = Field(default_factory=LearningPolicy)
-    rollback_policy: RollbackPolicy = Field(default_factory=RollbackPolicy)
-    
-    # Governance
-    compliance: Compliance = Field(default_factory=Compliance)
-    emergency_procedures: EmergencyProcedures = Field(default_factory=EmergencyProcedures)
-    
-    # Phase-specific overrides
-    phase_overrides: Dict[str, PhaseOverride] = Field(default_factory=dict)
-    
-    # Metadata
-    policy_version: str = "1.0.0"
-    created_date: Optional[str] = None
-    last_updated: Optional[str] = None
-    created_by: Optional[str] = None
-    approved_by: Optional[str] = None
-    expires_date: Optional[str] = None
+class Condition:
+    def __init__(self, field: str, operator: str, value: Any = None, values: List[Any] = field(default_factory=list)):
+        self.field = field
+        self.operator = operator
+        self.value = value
+        self.values = values
 
-    @field_validator('max_concurrent_tasks')
-    @classmethod
-    def validate_concurrent_tasks(cls, v):
-        if v <= 0:
-            raise ValueError('max_concurrent_tasks must be positive')
-        return v
 
-    @field_validator('max_execution_time_hours')
-    @classmethod
-    def validate_execution_time(cls, v):
-        if v <= 0:
-            raise ValueError('max_execution_time_hours must be positive')
-        return v
+class PolicyRule:
+    def __init__(self, id: str, destination: str, escalation_level: str, max_retries: int = 3, retry_delay: int = 60, phase_overrides: List[PhaseOverride] = field(default_factory=list), conditions: List[Condition] = field(default_factory=list)):
+        self.id = id
+        self.destination = destination
+        self.escalation_level = escalation_level
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
+        self.phase_overrides = phase_overrides
+        self.conditions = conditions
 
-    @field_validator('budget_limit_usd')
-    @classmethod
-    def validate_budget(cls, v):
-        if v is not None and v < 0:
-            raise ValueError('budget_limit_usd must be non-negative')
-        return v
 
-    @model_validator(mode='after')
-    def validate_phase_consistency(self):
-        """Ensure phase overrides are consistent with active phase"""
-        if self.active_phase and self.active_phase in self.phase_overrides:
-            # Apply phase-specific overrides
-            override = self.phase_overrides[self.active_phase]
-            if override.autonomy_level:
-                self.autonomy_level = override.autonomy_level
-            if override.permissions:
-                self.permissions = override.permissions
-            if override.escalation_rules:
-                self.escalation_rules.extend(override.escalation_rules)
-        
-        return self
+class PhasePolicy:
+    def __init__(self, task_result_rules: List[PolicyRule] = field(default_factory=list), error_rules: List[PolicyRule] = field(default_factory=list), input_rules: List[PolicyRule] = field(default_factory=list)):
+        self.task_result_rules = task_result_rules
+        self.error_rules = error_rules
+        self.input_rules = input_rules
 
 
 class PolicyLoader:
@@ -317,7 +270,7 @@ class PolicyLoader:
                 policy_data = {}
             
             # Validate and create policy instance
-            self._policy = PhasePolicy(**policy_data)
+            self._policy = self._create_policy_from_data(policy_data)
             self._load_timestamp = datetime.now()
             
             return self._policy
@@ -333,33 +286,57 @@ class PolicyLoader:
     def _create_safe_default_policy(self) -> PhasePolicy:
         """Create a safe default policy for fallback scenarios"""
         return PhasePolicy(
-            active_phase="Phase 1",
-            phase_description="Safe default configuration",
-            cto_scope=CTOScope.TASK_LEVEL,
-            autonomy_level=AutonomyLevel.LOW,
-            max_concurrent_tasks=1,
-            max_execution_time_hours=1,
-            permissions=Permissions(
-                create_branches=True,
-                merge_to_main=False,
-                create_releases=False,
-                modify_core_architecture=False,
-                add_dependencies=False,
-                create_new_agents=False,
-                modify_security_policies=False,
-                external_integrations=False,
-                infrastructure_changes=False
-            ),
-            escalation_rules=[
-                EscalationRule(
-                    type="default",
-                    description="Default escalation for all errors",
-                    retry_count=1,
-                    retry_delay_minutes=5,
-                    escalate_if_unresolved=True,
-                    escalation_timeout_hours=1
-                )
-            ]
+            task_result_rules=[],
+            error_rules=[],
+            input_rules=[]
+        )
+
+    def _create_policy_from_data(self, data: dict) -> PhasePolicy:
+        """Create a PhasePolicy instance from loaded YAML data"""
+        task_result_rules = [self._parse_rule(rule) for rule in data.get("task_result_rules", [])]
+        error_rules = [self._parse_rule(rule) for rule in data.get("error_rules", [])]
+        input_rules = [self._parse_rule(rule) for rule in data.get("input_rules", [])]
+        return PhasePolicy(
+            task_result_rules=task_result_rules,
+            error_rules=error_rules,
+            input_rules=input_rules
+        )
+
+    def _parse_rule(self, rule_dict: dict) -> PolicyRule:
+        """Parse a single rule from the YAML data"""
+        # Validate escalation_level
+        valid_levels = {"none", "agent", "human"}
+        if rule_dict.get("escalation_level") not in valid_levels:
+            raise ValueError(f"Invalid escalation level: {rule_dict.get('escalation_level')}")
+        # Parse phase_overrides
+        phase_overrides = [self._parse_phase_override(po) for po in rule_dict.get("phase_overrides", [])]
+        # Parse conditions
+        conditions = [self._parse_condition(c) for c in rule_dict.get("conditions", [])]
+        return PolicyRule(
+            id=rule_dict["id"],
+            destination=rule_dict["destination"],
+            escalation_level=rule_dict["escalation_level"],
+            max_retries=rule_dict.get("max_retries", 3),
+            retry_delay=rule_dict.get("retry_delay", 60),
+            phase_overrides=phase_overrides,
+            conditions=conditions
+        )
+
+    def _parse_phase_override(self, po_dict: dict) -> PhaseOverride:
+        """Parse a PhaseOverride from the YAML data"""
+        return PhaseOverride(
+            phase=po_dict["phase"],
+            max_retries=po_dict.get("max_retries"),
+            retry_delay=po_dict.get("retry_delay")
+        )
+
+    def _parse_condition(self, c_dict: dict) -> Condition:
+        """Parse a Condition from the YAML data"""
+        return Condition(
+            field=c_dict["field"],
+            operator=c_dict["operator"],
+            value=c_dict.get("value"),
+            values=c_dict.get("values", [])
         )
 
     def get_policy(self) -> PhasePolicy:
@@ -371,33 +348,22 @@ class PolicyLoader:
     def is_action_permitted(self, action: str) -> bool:
         """Check if a specific action is permitted under current policy"""
         policy = self.get_policy()
-        permissions = policy.permissions
-        
-        action_map = {
-            'create_branch': permissions.create_branches,
-            'merge_to_main': permissions.merge_to_main,
-            'create_release': permissions.create_releases,
-            'modify_architecture': permissions.modify_core_architecture,
-            'add_dependency': permissions.add_dependencies,
-            'create_agent': permissions.create_new_agents,
-            'modify_security': permissions.modify_security_policies,
-            'external_integration': permissions.external_integrations,
-            'infrastructure_change': permissions.infrastructure_changes,
-        }
-        
-        return action_map.get(action, False)
+        for rule in policy.task_result_rules + policy.error_rules + policy.input_rules:
+            if rule.destination == action:
+                return True
+        return False
 
-    def get_escalation_rule(self, error_type: str) -> Optional[EscalationRule]:
+    def get_escalation_rule(self, error_type: str) -> Optional[PolicyRule]:
         """Get escalation rule for specific error type"""
         policy = self.get_policy()
         
-        for rule in policy.escalation_rules:
-            if rule.type == error_type:
+        for rule in policy.error_rules:
+            if rule.id == error_type:
                 return rule
         
         # Return default rule if no specific rule found
-        for rule in policy.escalation_rules:
-            if rule.type == "error" or rule.type == "default":
+        for rule in policy.error_rules:
+            if rule.id == "error" or rule.id == "default":
                 return rule
         
         return None
@@ -412,7 +378,7 @@ class PolicyLoader:
         if rule.immediate_human_notification:
             return True
         
-        if retry_count >= rule.retry_count:
+        if retry_count >= rule.max_retries:
             return rule.escalate_if_unresolved
         
         return False
@@ -420,20 +386,19 @@ class PolicyLoader:
     def get_resource_limit(self, resource_type: str) -> int:
         """Get resource limit for specific resource type"""
         policy = self.get_policy()
-        limits = policy.resource_limits
+        for rule in policy.task_result_rules + policy.error_rules + policy.input_rules:
+            if rule.destination == resource_type:
+                return rule.max_retries * rule.retry_delay
         
-        limit_map = {
-            'api_calls': limits.max_api_calls_per_hour,
-            'file_operations': limits.max_file_operations_per_hour,
-            'network_requests': limits.max_network_requests_per_hour,
-            'subprocess_executions': limits.max_subprocess_executions_per_hour,
-        }
-        
-        return limit_map.get(resource_type, 100)  # Default limit
+        return 100  # Default limit
 
     def save_policy(self, policy: PhasePolicy) -> None:
         """Save policy to YAML file"""
-        policy_dict = policy.model_dump()
+        policy_dict = {
+            "task_result_rules": [rule.__dict__ for rule in policy.task_result_rules],
+            "error_rules": [rule.__dict__ for rule in policy.error_rules],
+            "input_rules": [rule.__dict__ for rule in policy.input_rules]
+        }
         
         # Ensure parent directory exists
         self.policy_file.parent.mkdir(parents=True, exist_ok=True)
@@ -470,6 +435,12 @@ def is_action_permitted(action: str) -> bool:
 def should_escalate_error(error_type: str, retry_count: int) -> bool:
     """Check if error should be escalated"""
     return get_policy_loader().should_escalate(error_type, retry_count)
+
+
+def load_policy(policy_path: Path) -> PhasePolicy:
+    """Load and return a PhasePolicy from the given YAML file path."""
+    loader = PolicyLoader(policy_path)
+    return loader.load_policy()
 
 
 if __name__ == "__main__":

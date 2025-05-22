@@ -1,0 +1,32 @@
+{
+  "type": "error",
+  "protocol_version": "1.0",
+  "sender_id": "CA",
+  "recipient_id": "ARCH",
+  "timestamp": "2025-05-21T20:05:30Z",
+  "task_id": "TASK-070D",
+  "retry_count": 2,
+  "trace_id": "def456-uvw-012",
+  "payload": {
+    "code": "RESOURCE_UNAVAILABLE",
+    "message": "Database connection timeout",
+    "details": {
+      "service": "database-service",
+      "endpoint": "db-prod-01:5432",
+      "timeout_seconds": 30,
+      "attempt": 3
+    },
+    "retryable": true,
+    "suggested_actions": [
+      "verify_database_connection",
+      "check_network_latency",
+      "increase_timeout"
+    ],
+    "documentation": "https://docs.example.com/errors/RESOURCE_UNAVAILABLE"
+  },
+  "context": {
+    "component": "data_processor",
+    "environment": "production",
+    "initiated_by": "scheduled_job:nightly_etl"
+  }
+}

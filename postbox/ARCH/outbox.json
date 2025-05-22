@@ -1,6 +1,43 @@
 [
   {
     "type": "task_status",
+    "id": "TASK-073B-COMPLETE",
+    "timestamp": "2025-05-21T23:00:00Z",
+    "sender": "ARCH",
+    "recipient": "ALL",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-073B",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully defined and documented the MCP-compatible message envelope format for agent communication.",
+      "changes": [
+        "Created MCP_MESSAGE_FORMAT.md with comprehensive documentation",
+        "Implemented JSON schema for message validation",
+        "Added example messages for all three core types (task_result, error, needs_input)",
+        "Updated task tracking in TASK_CARDS.md"
+      ],
+      "artifacts": [
+        {
+          "type": "documentation",
+          "path": "/docs/protocols/MCP_MESSAGE_FORMAT.md",
+          "description": "MCP Message Format Specification"
+        },
+        {
+          "type": "schema",
+          "path": "/schemas/MCP_MESSAGE_SCHEMA.json",
+          "description": "JSON Schema for message validation"
+        },
+        {
+          "type": "examples",
+          "path": "/schemas/examples/",
+          "description": "Example message payloads"
+        }
+      ]
+    }
+  },
+  {
+    "type": "task_status",
     "id": "TASK-060B-COMPLETE",
     "timestamp": "2025-05-21T18:30:00Z",
     "sender": "CC",
@@ -104,6 +141,67 @@
         "/TASK_CARDS.md"
       ],
       "commit_hash": "1e08a58"
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-073A-COMPLETE",
+    "timestamp": "2025-01-16T23:45:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-073A",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully implemented policy-based retry logic in ARCH Agent enabling tracking of retry attempts and reassignment of failed messages according to phase_policy.yaml configuration.",
+      "changes": [
+        "Added _handle_error_with_retry() method to message router for processing error messages with retry counting",
+        "Implemented policy-based retry limits from phase_policy.yaml escalation rules",
+        "Created message reassignment functionality to original agents for retries",
+        "Added human escalation when retry limits exceeded",
+        "Updated test suite with retry logic validation",
+        "Core retry functionality verified with passing tests (test_route_error and test_route_with_retries)",
+        "Updated TASK_CARDS.md with completion status"
+      ],
+      "artifacts": [
+        {
+          "type": "implementation",
+          "path": "tools/arch/message_router.py",
+          "description": "Enhanced with retry logic including _handle_error_with_retry() method"
+        },
+        {
+          "type": "implementation",
+          "path": "tools/arch/phase_policy_loader.py",
+          "description": "Added EscalationRule class for retry policy support"
+        },
+        {
+          "type": "tests",
+          "path": "tools/arch/tests/test_message_router.py",
+          "description": "Updated retry logic test (removed skip decorator)"
+        },
+        {
+          "type": "documentation",
+          "path": "TASK_CARDS.md",
+          "description": "Updated with TASK-073A completion details"
+        }
+      ]
+    },
+    "metadata": {
+      "retry_features_implemented": [
+        "Error message detection and processing",
+        "Policy-based retry limit enforcement",
+        "Automatic message reassignment to original agents",
+        "Human escalation for exceeded retry limits",
+        "MCP envelope format compatibility"
+      ],
+      "test_results": {
+        "test_route_error": "PASSED",
+        "test_route_with_retries": "PASSED",
+        "overall_coverage": "Core retry functionality verified"
+      },
+      "branch": "feat/TASK-073A-policy-retry-logic",
+      "commit_hash": "pending_final_commit"
     }
   },
   {

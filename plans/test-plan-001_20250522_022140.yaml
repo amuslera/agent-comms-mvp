@@ -1,0 +1,22 @@
+metadata:
+  created: null
+  description: Test plan for verification
+  plan_id: test-plan-001
+  priority: medium
+  timeout: null
+  version: 1.0.0
+tasks:
+- agent: CC
+  content:
+    action: test
+    message: This is a test task
+  deadline: null
+  dependencies: []
+  description: Test task for validation
+  fallback_agent: null
+  max_retries: 1
+  notifications: null
+  priority: medium
+  task_id: task-001
+  timeout: null
+  type: task_assignment

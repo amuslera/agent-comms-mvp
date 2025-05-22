@@ -1,0 +1,49 @@
+{
+  "type": "needs_input",
+  "protocol_version": "1.0",
+  "sender_id": "WA",
+  "recipient_id": "USER",
+  "timestamp": "2025-05-21T20:15:45Z",
+  "task_id": "TASK-070E",
+  "trace_id": "ghi789-rst-345",
+  "payload": {
+    "requested_inputs": [
+      {
+        "id": "deployment_environment",
+        "type": "enum",
+        "description": "Select the target environment for deployment",
+        "options": ["staging", "production"],
+        "default": "staging",
+        "required": true
+      },
+      {
+        "id": "api_key",
+        "type": "string",
+        "description": "API key with deployment permissions",
+        "sensitive": true,
+        "required": true
+      },
+      {
+        "id": "confirm_deploy",
+        "type": "boolean",
+        "description": "Confirm deployment to proceed",
+        "default": false,
+        "required": true
+      },
+      {
+        "id": "deployment_notes",
+        "type": "string",
+        "description": "Optional notes about this deployment",
+        "required": false
+      }
+    ],
+    "context": "Deployment requires additional configuration to proceed. Please review and provide the following information.",
+    "timeout_seconds": 300,
+    "actions": ["proceed", "cancel"]
+  },
+  "context": {
+    "component": "deployment_service",
+    "deployment_id": "deploy-20250521-001",
+    "initiated_by": "user:johndoe"
+  }
+}

@@ -860,6 +860,25 @@
 - `/docs/system/ARCHITECTURE_REBOOT.md`
 - Updated `TASK_CARDS.md`
 
+### TASK-073B: Define and Document MCP-Compatible Message Envelope
+**Status**: ✅ Done
+**Owner**: ARCH
+**Description**: Created a structured message envelope format inspired by MCP for agent communication.
+**Details**:
+- Defined standard message envelope format with required and optional fields
+- Created JSON schema for message validation
+- Documented three core message types: task_result, error, and needs_input
+- Provided detailed examples for each message type
+- Added comprehensive documentation with implementation notes
+**Files**:
+- `/docs/protocols/MCP_MESSAGE_FORMAT.md`
+- `/schemas/MCP_MESSAGE_SCHEMA.json`
+- `/schemas/examples/task_result.json`
+- `/schemas/examples/error.json`
+- `/schemas/examples/needs_input.json`
+- Updated `TASK_CARDS.md`
+**Branch**: `feat/TASK-073B-mcp-envelope-spec`
+
 ### TASK-070B: Build ARCH Inbox Monitor and Message Parser
 **Status**: ✅ Done
 **Owner**: CC
@@ -1076,6 +1095,52 @@
 **Milestone**: v0.6.0 - Fully Operational Alpha System
 **Tag**: `v0.6.0`
 **Commit**: `0224b15`
+
+### TASK-073C: Refactor ARCH Parser and Router to Use MCP Envelope
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Refactored ARCH message parser and router to support and validate the MCP-compatible message envelope schema. Routing now uses sender_id, recipient_id, retry_count, and task_id. Logging includes trace_id and retry_count. Added tests for schema validation and routing.
+**Details**:
+  - Parser validates all MCP envelope fields and types
+  - Router uses envelope fields for routing and logs trace_id/retry_count
+  - 3 new tests for envelope validation and routing
+  - Notifies ARCH via outbox after routing
+**Files**:
+  - `tools/arch/message_parser.py`
+  - `tools/arch/message_router.py`
+  - `tools/arch/tests/test_message_parser.py`
+
+### TASK-073A: Implement Policy-Based Retry Logic in ARCH Agent
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Enabled ARCH agent to track retry attempts and reassign failed messages according to phase_policy.yaml.
+**Details**:
+  - Implemented retry logic in message router with error message detection
+  - Added policy-based retry limits from phase_policy.yaml escalation rules
+  - Created message reassignment to original agents for retries
+  - Added human escalation when retry limits exceeded
+  - Updated test suite with retry logic validation
+  - Core retry functionality verified with passing tests
+**Files**:
+  - `tools/arch/message_router.py` - Added `_handle_error_with_retry()` method
+  - `tools/arch/tests/test_message_router.py` - Updated retry logic test
+  - `tools/arch/phase_policy_loader.py` - Added EscalationRule support
+  - `TASK_CARDS.md` - Updated task status
+  - `postbox/ARCH/outbox.json` - ARCH notification of completion
+
+### TASK-073E: Refactor ARCH Agent Test Suite to Fully Support MCP Envelope Format
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Updated all ARCH parser and router tests to use the MCP-compatible message structure. Removed legacy-format tests and fixtures. Added edge case tests for missing fields, invalid retry_count, and malformed payloads. All tests pass.
+**Details**:
+- All test fixtures and cases use MCP envelope only
+- Edge cases: missing envelope field, invalid retry_count, malformed/unknown payload
+- Legacy/flat message format tests removed
+- Confirmed 26/26 tests passing, no failures or skips
+**Files**:
+- `/tools/arch/tests/conftest.py`
+- `/tools/arch/tests/test_message_parser.py`
+- `/tools/arch/tests/test_message_router.py`
 
 ## ⏭️ Planned Tasks (Backlog)
 
