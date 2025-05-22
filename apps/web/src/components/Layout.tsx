@@ -81,10 +81,31 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                 />
               </svg>
               Submit Plan
+            </Link>
+            <Link
+              to="/history"
+              className={`group flex items-center px-4 py-3 text-sm font-medium rounded-md ${isActive('/history')}`}
+            >
+              <svg
+                className="mr-3 h-6 w-6 text-gray-400 group-hover:text-gray-300"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              History
             </Link>
             <Link
               to="/arch/messages"
@@ -120,6 +141,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {location.pathname === '/' && 'Dashboard'}
               {location.pathname === '/agents' && 'Agents'}
               {location.pathname === '/plans/submit' && 'Submit Plan'}
+              {location.pathname === '/history' && 'History'}
               {location.pathname === '/arch/messages' && 'ARCH Messages'}
             </h2>
             <div className="flex items-center space-x-4">

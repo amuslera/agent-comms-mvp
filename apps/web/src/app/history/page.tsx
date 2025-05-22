@@ -120,7 +120,7 @@ export default function HistoryPage() {
           <span className="text-sm">Page {plansPage + 1}</span>
           <button
             className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-            onClick={() => setPlansPage((p) => (p + 1) * PAGE_SIZE < plansCount ? p + 1 : p))}
+            onClick={() => setPlansPage((p) => ((p + 1) * PAGE_SIZE < plansCount ? p + 1 : p))}
             disabled={(plansPage + 1) * PAGE_SIZE >= plansCount}
           >
             Next
@@ -193,7 +193,7 @@ export default function HistoryPage() {
           <span className="text-sm">Page {tasksPage + 1}</span>
           <button
             className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-            onClick={() => setTasksPage((p) => (p + 1) * PAGE_SIZE < tasksCount ? p + 1 : p))}
+            onClick={() => setTasksPage((p) => ((p + 1) * PAGE_SIZE < tasksCount ? p + 1 : p))}}
             disabled={(tasksPage + 1) * PAGE_SIZE >= tasksCount}
           >
             Next
