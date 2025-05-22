@@ -1,28 +1,25 @@
-import React from 'react';
-import { Tooltip } from '../ui/tooltip';
-import { Agent } from '../../types/agent';
+import type { Agent } from '@/types/agent';
 import { 
   getScoreColor, 
   getScoreWidth, 
   getSuccessRateBadgeClass, 
   getTaskCountTooltip,
   generateDummyTrendData
-} from '../../utils/metrics';
+} from '@/utils/metrics';
 import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { Tooltip } from '@/components/ui/tooltip';
 
 interface AgentMetricsProps {
   agent: Agent;
   className?: string;
 }
 
-const AgentMetrics: React.FC<AgentMetricsProps> = ({ agent, className = '' }) => {
-  const { metrics = {} } = agent;
-  const {
-    averageScore = 0,
-    successRate = 0,
-    tasksCompleted = 0,
-    tasksFailed = 0,
-  } = metrics;
+export default function AgentMetrics({ agent, className = '' }: AgentMetricsProps) {
+  const { metrics } = agent;
+  const averageScore = metrics?.averageScore ?? 0;
+  const successRate = metrics?.successRate ?? 0;
+  const tasksCompleted = metrics?.tasksCompleted ?? 0;
+  const tasksFailed = metrics?.tasksFailed ?? 0;
 
   const trendData = generateDummyTrendData();
   const totalTasks = tasksCompleted + tasksFailed;
@@ -51,11 +48,13 @@ const AgentMetrics: React.FC<AgentMetricsProps> = ({ agent, className = '' }) =>
       </div>
 
       {/* Task Count with Tooltip */}
-      <Tooltip content={getTaskCountTooltip(agent)}>
-        <div className="text-sm text-gray-600 cursor-help">
-          {totalTasks} tasks completed
-        </div>
-      </Tooltip>
+      <div>
+        <Tooltip content={getTaskCountTooltip(agent)}>
+          <span className="text-sm text-gray-600 cursor-help border-b border-dashed border-gray-400">
+            {tasksCompleted + tasksFailed} tasks
+          </span>
+        </Tooltip>
+      </div>
 
       {/* Trend Chart */}
       {totalTasks > 0 && (
@@ -103,6 +102,4 @@ const AgentMetrics: React.FC<AgentMetricsProps> = ({ agent, className = '' }) =>
       )}
     </div>
   );
-};
-
-export default AgentMetrics;
+}

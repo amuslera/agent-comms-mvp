@@ -1482,6 +1482,47 @@
 | TASK-049  | Create orchestration control panel (visual task planner)   | CC    |
 | TASK-050  | Tag release v1.5.0 and publish final visual layer docs     | CA    |
 
+### TASK-077E: Finalize Agent Metrics Dashboard
+**Status**: ✅ Done  
+**Owner**: FE Team  
+**Description**: Implemented agent metrics visualization with real data integration.
+**Details**:
+- Created responsive agent cards with score bars and success rate badges
+- Integrated with GET /metrics/agents API endpoint
+- Added loading states and error handling
+- Implemented auto-refresh every 30 seconds
+- Added manual refresh capability
+- Included development mode toggle for mock data
+- Ensured TypeScript type safety throughout
+- Added responsive design for all screen sizes
+
+**Files Modified**:
+- `/apps/web/src/app/agents/page.tsx` - Main agents dashboard page
+- `/apps/web/src/components/agents/AgentsList.tsx` - Agent list component
+- `/apps/web/src/components/agents/AgentCard.tsx` - Individual agent card
+- `/apps/web/src/components/agents/AgentMetrics.tsx` - Metrics visualization
+- `/apps/web/src/types/agent.ts` - Type definitions
+- `/apps/web/src/utils/metrics.ts` - Utility functions
+
+**Screenshot**:
+```
+[Agents Dashboard]
+┌─────────────────────────────────────────────────────┐
+│ Agent Metrics                              ↻       │
+│ Last updated: 3:45 PM (Using mock data)            │
+├─────────────────────────────────────────────────────┤
+│ ┌───────────────────────────────────────────────┐  │
+│ │ Research Agent                            ●   │  │
+│ │ agent-001                                 Onl.│  │
+│ │ Handles research tasks and data gathering     │  │
+│ │                                             │  │
+│ │ Score: 0.92 ██████████░░░░░░░░░░░░ 92%       │  │
+│ │ Success: 95%                                │  │
+│ │ 130 tasks                                   │  │
+│ └───────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────┘
+```
+
 ### 🔮 Phase 6: Advanced Features (Future)
 - API gateway for external agent comms
 - Persistent task loops

@@ -1,5 +1,4 @@
-import React from 'react';
-import { Agent } from '../../types/agent';
+import type { Agent } from '@/types/agent';
 import AgentMetrics from './AgentMetrics';
 
 interface AgentCardProps {
@@ -8,8 +7,8 @@ interface AgentCardProps {
   onSelect?: (agent: Agent) => void;
 }
 
-const AgentCard: React.FC<AgentCardProps> = ({ agent, className = '', onSelect }) => {
-  const { id, name, description, status, lastActive, metrics } = agent;
+export default function AgentCard({ agent, className = '', onSelect }: AgentCardProps) {
+  const { id, name, description, status, lastActive } = agent;
   
   const getStatusColor = () => {
     switch (status?.toLowerCase()) {
@@ -26,7 +25,7 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, className = '', onSelect }
 
   return (
     <div 
-      className={`bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 ${className}`}
+      className={`cursor-pointer bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 ${className}`}
       onClick={() => onSelect?.(agent)}
     >
       <div className="p-4">
@@ -58,6 +57,4 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, className = '', onSelect }
       </div>
     </div>
   );
-};
-
-export default AgentCard;
+}
