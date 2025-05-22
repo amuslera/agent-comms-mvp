@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://localhost:8000';
 
 export interface PlanSubmissionResponse {
   plan_id: string;
@@ -24,7 +24,10 @@ export const submitPlan = async (planContent: string): Promise<PlanSubmissionRes
       }
     }
 
-    const response = await axios.post(`${API_BASE_URL}/plans`, parsedContent, {
+    const response = await axios.post(`${API_BASE_URL}/plans/`, {
+      plan: planContent,
+      execute: false
+    }, {
       headers: {
         'Content-Type': 'application/json',
       },

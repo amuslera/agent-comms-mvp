@@ -5,7 +5,7 @@ import ReactFlow, {
   Background,
   Controls,
   MiniMap,
-  NodeTypes,
+  NodeTypes as ReactFlowNodeTypes,
   useNodesState,
   useEdgesState,
 } from 'reactflow';
@@ -55,7 +55,7 @@ const FlowContainer = styled.div`
   overflow: hidden;
 `;
 
-const NodeTypes: NodeTypes = {
+const nodeTypes: ReactFlowNodeTypes = {
   task: TaskNode,
 };
 
@@ -110,7 +110,7 @@ export const PlanDAGViewer: React.FC<PlanDAGViewerProps> = ({ plan, onNodeClick 
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClickHandler}
-        nodeTypes={NodeTypes}
+        nodeTypes={nodeTypes}
         fitView
       >
         <Background />

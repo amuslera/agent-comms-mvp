@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from .models.agent import Agent, AgentList
 from .models.task import Task, TaskList, TaskStatus
 from .sample_data import AGENTS, AGENTS_BY_ID, TASKS, TASKS_BY_ID
-from .routers import tasks, plans
+from .routers import plans
 
 # Create FastAPI application
 app = FastAPI(
@@ -32,7 +32,6 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(tasks.router)
 app.include_router(plans.router)
 
 @app.get("/health", tags=["Health"])

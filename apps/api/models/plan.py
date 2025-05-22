@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 class TaskMetadata(BaseModel):
     """Optional metadata for a task in the plan."""
@@ -24,21 +24,24 @@ class PlanTask(BaseModel):
     timeout: Optional[str] = Field(None, description="Timeout for this specific task")
     notifications: Optional[Dict[str, List[str]]] = Field(None, description="Notification settings for task completion")
 
-    @validator('priority')
+    @field_validator('priority')
+    @classmethod
     def validate_priority(cls, v):
         valid_priorities = ['low', 'medium', 'high', 'critical']
         if v and v.lower() not in valid_priorities:
             raise ValueError(f"Priority must be one of: {', '.join(valid_priorities)}")
         return v.lower() if v else 'medium'
 
-    @validator('agent')
+    @field_validator('agent')
+    @classmethod
     def validate_agent(cls, v):
         valid_agents = ['CA', 'CC', 'WA', 'ARCH']
         if v not in valid_agents:
             raise ValueError(f"Agent must be one of: {', '.join(valid_agents)}")
         return v
     
-    @validator('dependencies')
+    @field_validator('dependencies')
+    @classmethod
     def validate_dependencies(cls, v):
         if not isinstance(v, list):
             raise ValueError("Dependencies must be a list of task IDs")
@@ -53,11 +56,13 @@ class PlanMetadata(BaseModel):
     priority: Optional[str] = Field("medium", description="Overall plan priority")
     timeout: Optional[str] = Field(None, description="Maximum time for plan execution")
 
-    @validator('created', pre=True, always=True)
+    @field_validator('created', mode='before')
+    @classmethod
     def set_created(cls, v):
         return v or datetime.utcnow().isoformat()
 
-    @validator('priority')
+    @field_validator('priority')
+    @classmethod
     def validate_priority(cls, v):
         valid_priorities = ['low', 'medium', 'high', 'critical']
         if v and v.lower() not in valid_priorities:
@@ -69,13 +74,10 @@ class ExecutionPlan(BaseModel):
     metadata: PlanMetadata = Field(..., description="Plan metadata")
     tasks: List[PlanTask] = Field(..., description="List of tasks to execute")
 
-    @root_validator
-    def validate_task_dependencies(cls, values):
+    @model_validator(mode='after')
+    def validate_task_dependencies(self):
         """Validate that all task dependencies refer to valid task IDs."""
-        if 'tasks' not in values:
-            return values
-            
-        tasks = values['tasks']
+        tasks = self.tasks
         task_ids = {task.task_id for task in tasks}
         
         for task in tasks:
@@ -83,7 +85,7 @@ class ExecutionPlan(BaseModel):
                 if dep_id not in task_ids:
                     raise ValueError(f"Task {task.task_id} depends on undefined task {dep_id}")
         
-        return values
+        return self
 
 class PlanResponse(BaseModel):
     """Response after plan submission."""
@@ -93,7 +95,8 @@ class PlanResponse(BaseModel):
     errors: Optional[List[Dict[str, Any]]] = Field(None, description="Validation errors if any")
     execution_id: Optional[str] = Field(None, description="ID for tracking plan execution (if started)")
 
-    @validator('status')
+    @field_validator('status')
+    @classmethod
     def validate_status(cls, v):
         valid_statuses = ['validated', 'processing', 'rejected', 'queued']
         if v not in valid_statuses:
