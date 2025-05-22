@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Agents from './pages/Agents';
 import PlanSubmission from './pages/PlanSubmission';
 import MessagesPage from './pages/arch/Messages';
+import PlanPage from './app/plan/page';
 
 // Temporary simple PlanView without ReactFlow to avoid the error
 const SimplePlanView: React.FC = () => {
@@ -36,6 +37,7 @@ export const App: React.FC = () => {
             <Route path="arch/messages" element={<MessagesPage />} />
           </Route>
           <Route path="/plans/view/:planId" element={<SimplePlanView />} />
+          <Route path="/plan" element={<PlanPage />} />
         </Routes>
       </Router>
     </ToastProvider>

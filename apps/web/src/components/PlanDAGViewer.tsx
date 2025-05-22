@@ -1,287 +1,153 @@
-import React, { useCallback, useMemo, useEffect, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import ReactFlow, {
-  type Node,
-  type Edge,
-  type NodeTypes as ReactFlowNodeTypes,
-  Background,
-  Controls,
-  MiniMap,
+  addEdge,
   useNodesState,
   useEdgesState,
-  useReactFlow,
+  Controls,
+  MiniMap,
+  Background,
   ReactFlowProvider,
-  Panel,
 } from 'reactflow';
-// @ts-ignore - We'll create this utility
-import { getLayoutedElements } from '../utils/layout';
+import type { Node, Edge, Connection } from 'reactflow';
 import 'reactflow/dist/style.css';
-import styled from '@emotion/styled';
 
-// Custom node types
-import { TaskNode } from './nodes/TaskNode';
-
-// Define the plan task type based on the API model
-interface PlanTask {
+export interface PlanTask {
   task_id: string;
-  agent: string;
-  type: string;
-  description: string;
-  priority: string;
-  status?: 'pending' | 'running' | 'success' | 'failed' | 'retry';
-  deadline?: string;
-  content: Record<string, any>;
-  dependencies: string[];
-  max_retries?: number;
-  fallback_agent?: string;
-  timeout?: string;
-  duration_sec?: number;
+  agent_id: string;
+  status: 'pending' | 'running' | 'success' | 'failed' | 'retry';
   score?: number;
-  notes?: string;
-  notifications?: Record<string, string[]>;
+  description?: string;
+  dependencies?: string[];
 }
-
-interface PlanMetadata {
-  plan_id: string;
-  version: string;
-  created?: string;
-  description: string;
-  priority: string;
-  timeout?: string;
-}
-
-export interface Plan {
-  metadata: PlanMetadata;
-  tasks: PlanTask[];
-}
-
-// Styled components
-const FlowContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  min-height: 600px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #e9ecef;
-`;
-
-const Tooltip = styled.div`
-  position: absolute;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  border-radius: 4px;
-  font-size: 12px;
-  pointer-events: none;
-  z-index: 100;
-  max-width: 300px;
-  white-space: pre-wrap;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-`;
-
-const StatusBadge = styled.span<{ status?: string }>`
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.7em;
-  font-weight: 600;
-  text-transform: capitalize;
-  margin-left: 8px;
-  background-color: ${({ status }) => {
-    switch (status) {
-      case 'success':
-        return '#198754';
-      case 'running':
-        return '#0d6efd';
-      case 'failed':
-        return '#dc3545';
-      case 'retry':
-        return '#fd7e14';
-      case 'pending':
-      default:
-        return '#6c757d';
-    }
-  }};
-  color: white;
-`;
-
-const nodeTypes: ReactFlowNodeTypes = {
-  task: TaskNode,
-};
 
 interface PlanDAGViewerProps {
-  plan: Plan;
-  onNodeClick?: (taskId: string) => void;
-  className?: string;
+  tasks?: PlanTask[];
 }
 
-const PlanDAGViewerComponent: React.FC<PlanDAGViewerProps> = ({
-  plan,
-  onNodeClick,
-  className,
-}) => {
-  const { fitView } = useReactFlow();
-  const [tooltip, setTooltip] = useState<{
-    content: string;
-    x: number;
-    y: number;
-    visible: boolean;
-  }>({ content: '', x: 0, y: 0, visible: false });
+const TaskNode = ({ data }: { data: PlanTask }) => {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'success':
+        return 'bg-green-100 border-green-500 text-green-800';
+      case 'failed':
+        return 'bg-red-100 border-red-500 text-red-800';
+      case 'retry':
+        return 'bg-yellow-100 border-yellow-500 text-yellow-800';
+      case 'running':
+        return 'bg-blue-100 border-blue-500 text-blue-800';
+      default:
+        return 'bg-gray-100 border-gray-500 text-gray-800';
+    }
+  };
 
-  // Convert plan tasks to nodes and edges with layout
-  const { initialNodes, initialEdges } = useMemo(() => {
-    const nodes: Node[] = plan.tasks.map((task) => ({
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'success':
+        return '✅';
+      case 'failed':
+        return '❌';
+      case 'retry':
+        return '🔄';
+      case 'running':
+        return '⏳';
+      default:
+        return '⏸️';
+    }
+  };
+
+  return (
+    <div 
+      className={`px-4 py-2 border-2 rounded-lg shadow-md min-w-32 ${getStatusColor(data.status)}`}
+      title={`Agent: ${data.agent_id}, Score: ${data.score || 'N/A'}, Status: ${data.status}`}
+    >
+      <div className="flex items-center gap-2">
+        <span className="text-lg">{getStatusIcon(data.status)}</span>
+        <div>
+          <div className="font-semibold text-sm">{data.task_id}</div>
+          <div className="text-xs opacity-75">{data.agent_id}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const nodeTypes = {
+  taskNode: TaskNode,
+};
+
+const PlanDAGViewerInternal: React.FC<PlanDAGViewerProps> = ({ tasks = [] }) => {
+  // Mock data if no tasks provided
+  const mockTasks: PlanTask[] = useMemo(() => [
+    { task_id: 'task-001', agent_id: 'ARCH', status: 'success', score: 95, dependencies: [] },
+    { task_id: 'task-002', agent_id: 'CA', status: 'running', score: 85, dependencies: ['task-001'] },
+    { task_id: 'task-003', agent_id: 'CC', status: 'failed', score: 45, dependencies: ['task-001'] },
+    { task_id: 'task-004', agent_id: 'WA', status: 'retry', score: 70, dependencies: ['task-002', 'task-003'] },
+    { task_id: 'task-005', agent_id: 'ARCH', status: 'pending', dependencies: ['task-004'] },
+  ], []);
+
+  const taskData = tasks.length > 0 ? tasks : mockTasks;
+
+  const initialNodes: Node[] = useMemo(() => {
+    return taskData.map((task, index) => ({
       id: task.task_id,
-      type: 'task',
-      position: { x: 0, y: 0 }, // Will be calculated by layout
-      data: {
-        ...task,
-        label: task.task_id,
-        onClick: () => onNodeClick?.(task.task_id),
-        onMouseEnter: (e: React.MouseEvent, node: Node) => {
-          const rect = (e.target as HTMLElement).getBoundingClientRect();
-          setTooltip({
-            content: `Agent: ${task.agent}\n` +
-                    `Status: ${task.status || 'pending'}\n` +
-                    (task.duration_sec ? `Duration: ${task.duration_sec.toFixed(2)}s\n` : '') +
-                    (task.score ? `Score: ${(task.score * 100).toFixed(1)}%\n` : '') +
-                    (task.notes ? `Notes: ${task.notes}` : ''),
-            x: rect.left + window.scrollX,
-            y: rect.top + window.scrollY - 10,
-            visible: true,
-          });
-        },
-        onMouseLeave: () => {
-          setTooltip(prev => ({ ...prev, visible: false }));
-        },
-      },
+      type: 'taskNode',
+      position: { x: (index % 3) * 200, y: Math.floor(index / 3) * 100 },
+      data: task,
     }));
+  }, [taskData]);
 
-    const edges: Edge[] = plan.tasks.flatMap((task) =>
-      task.dependencies.map((depId) => ({
-        id: `${depId}-${task.task_id}`,
-        source: depId,
-        target: task.task_id,
-        type: 'smoothstep',
-        animated: task.status === 'running',
-        style: {
-          stroke: '#adb5bd',
-          strokeWidth: 2,
-        },
-      }))
-    );
+  const initialEdges: Edge[] = useMemo(() => {
+    const edges: Edge[] = [];
+    taskData.forEach(task => {
+      if (task.dependencies) {
+        task.dependencies.forEach(depId => {
+          edges.push({
+            id: `${depId}-${task.task_id}`,
+            source: depId,
+            target: task.task_id,
+            type: 'smoothstep',
+            animated: task.status === 'running',
+          });
+        });
+      }
+    });
+    return edges;
+  }, [taskData]);
 
-    // Apply layout to nodes
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-      nodes,
-      edges,
-      'TB' // Top to bottom layout
-    );
-
-    return { initialNodes: layoutedNodes, initialEdges: layoutedEdges };
-  }, [plan, onNodeClick]);
-
-  // State for nodes and edges
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  // Update nodes and edges when initial data changes
-  useEffect(() => {
-    setNodes(initialNodes);
-    setEdges(initialEdges);
-    
-    // Fit view after a small delay to allow DOM updates
-    const timer = setTimeout(() => {
-      fitView({ padding: 0.2 });
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, [initialNodes, initialEdges, setNodes, setEdges, fitView]);
-
-  // Handle node click
-  const onNodeClickHandler = useCallback(
-    (_: React.MouseEvent, node: Node) => {
-      onNodeClick?.(node.id);
-    },
-    [onNodeClick]
-  ) as unknown as (event: React.MouseEvent, node: Node) => void;
-
-  // Handle mouse move for tooltip
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (tooltip.visible) {
-      setTooltip(prev => ({
-        ...prev,
-        x: e.clientX + 15,
-        y: e.clientY - 10,
-      }));
-    }
-  }, [tooltip.visible]);
+  const onConnect = useCallback(
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
+  );
 
   return (
-    <FlowContainer className={className} onMouseMove={handleMouseMove}>
+    <div className="w-full h-96 border border-gray-300 rounded-lg">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onNodeClick={onNodeClickHandler}
+        onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
-        nodesDraggable={true}
-        nodesConnectable={false}
-        proOptions={{ hideAttribution: true }}
+        className="bg-gray-50"
       >
-        <Background color="#aaa" gap={16} />
         <Controls />
-        <MiniMap
-          nodeColor={(node) => {
-            switch (node.data.status) {
-              case 'success':
-                return '#198754';
-              case 'running':
-                return '#0d6efd';
-              case 'failed':
-                return '#dc3545';
-              case 'retry':
-                return '#fd7e14';
-              case 'pending':
-              default:
-                return '#6c757d';
-            }
-          }}
-          nodeStrokeWidth={3}
-          zoomable
-          pannable
-        />
-        <Panel position="top-right" className="bg-white p-2 rounded shadow-sm">
-          <div className="flex items-center space-x-2">
-            <span className="text-xs font-medium">Status:</span>
-            <StatusBadge status="success">Success</StatusBadge>
-            <StatusBadge status="running">Running</StatusBadge>
-            <StatusBadge status="failed">Failed</StatusBadge>
-            <StatusBadge status="retry">Retry</StatusBadge>
-            <StatusBadge status="pending">Pending</StatusBadge>
-          </div>
-        </Panel>
+        <MiniMap />
+        <Background variant="dots" gap={12} size={1} />
       </ReactFlow>
-      
-      {tooltip.visible && (
-        <Tooltip
-          style={{
-            left: `${tooltip.x}px`,
-            top: `${tooltip.y}px`,
-            display: tooltip.visible ? 'block' : 'none',
-          }}
-        >
-          {tooltip.content}
-        </Tooltip>
-      )}
-    </FlowContainer>
+    </div>
   );
 };
 
-export const PlanDAGViewer: React.FC<PlanDAGViewerProps> = (props) => (
-  <ReactFlowProvider>
-    <PlanDAGViewerComponent {...props} />
-  </ReactFlowProvider>
-);
+const PlanDAGViewer: React.FC<PlanDAGViewerProps> = (props) => {
+  return (
+    <ReactFlowProvider>
+      <PlanDAGViewerInternal {...props} />
+    </ReactFlowProvider>
+  );
+};
+
+export default PlanDAGViewer;
