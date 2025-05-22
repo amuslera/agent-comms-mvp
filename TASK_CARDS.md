@@ -879,24 +879,33 @@
 - Updated `TASK_CARDS.md`
 **Branch**: `feat/TASK-073B-mcp-envelope-spec`
 
-### TASK-075A: Create Alert Policy Format and Schema
-**Status**: ✅ Done
-**Owner**: ARCH
-**Description**: Defined a structured YAML-based alert policy format for configuring task-level triggers and notifications.
-**Details**:
-- Created comprehensive specification for alert policies in YAML format
-- Implemented JSON schema for validation of alert policies
-- Added support for multiple condition types (error, task_result)
-- Implemented multiple action types (console_log, webhook)
-- Created detailed documentation with examples and usage guidelines
-- Added example policies for common use cases
-**Files**:
-- Created `/docs/protocols/ALERT_POLICY_FORMAT.md`
-- Created `/schemas/ALERT_POLICY_SCHEMA.json`
-- Added `/schemas/examples/alert_policy_critical_errors.yaml`
-- Added `/schemas/examples/alert_policy_performance.yaml`
-- Updated `TASK_CARDS.md`
-**Branch**: `feat/TASK-075A-alert-policy-spec`
+### TASK-075A: Alert Policy Loader
+- [x] Create alert policy loader module
+- [x] Implement YAML schema validation
+- [x] Add error handling for missing/invalid files
+- [x] Create test cases for policy loading
+- Implementation: Created `alert_policy_loader.py` with Pydantic models for policy validation
+
+### TASK-075B: Alert Evaluator Core
+- [x] Create alert evaluator module
+- [x] Implement rule matching logic
+- [x] Add action triggering (human/webhook)
+- [x] Create test cases for evaluation
+- Implementation: Created `alert_evaluator.py` with comprehensive rule matching and action handling
+
+### TASK-075C: Message Router Integration
+- [x] Integrate evaluator into message router
+- [x] Add alert policy path configuration
+- [x] Update router initialization
+- [x] Add alert evaluation to message flow
+- Implementation: Updated `message_router.py` to use alert evaluator for message processing
+
+### TASK-075D: Sample Alert Policy
+- [x] Create example alert policy
+- [x] Add common alert rules
+- [x] Document policy format
+- [x] Add template examples
+- Implementation: Created `schemas/examples/alert_policy.yaml` with comprehensive examples
 
 ### TASK-074D-B: Update MCP Protocol and Schema Documentation
 **Status**: ✅ Done

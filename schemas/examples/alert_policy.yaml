@@ -1,0 +1,97 @@
+# Alert Policy for ARCH Agent
+# Monitors task performance, errors, and system health
+
+version: "1.0.0"
+description: "ARCH agent alert policy for monitoring task execution and system health"
+
+rules:
+  # Alert on critical errors
+  - name: "Critical Error Alert"
+    enabled: true
+    condition:
+      type: error
+      error_code: "E_CRITICAL"
+    action:
+      notify: human
+      method: console_log
+      level: error
+      message: "🚨 Critical error detected: {{.Message}}"
+
+  # Alert on persistent errors
+  - name: "Persistent Error Alert"
+    enabled: true
+    condition:
+      type: error
+      retry_count: 3
+    action:
+      notify: human
+      method: console_log
+      level: warning
+      message: "⚠️ Task failed after {{.Condition.retry_count}} retries"
+
+  # Alert on low confidence results
+  - name: "Low Confidence Alert"
+    enabled: true
+    condition:
+      type: task_result
+      score_below: 0.6
+    action:
+      notify: webhook
+      url: https://alerts.example.com/api/v1/quality
+      template: |
+        {
+          "alert_type": "low_confidence",
+          "title": "⚠️ Low Confidence Result",
+          "task_id": "{{.TaskID}}",
+          "agent": "{{.AgentID}}",
+          "score": {{.TaskResult.score}},
+          "timestamp": "{{.Timestamp}}",
+          "details": {
+            "notes": "{{.TaskResult.notes}}"
+          }
+        }
+
+  # Alert on long-running tasks
+  - name: "Long Running Task Alert"
+    enabled: true
+    condition:
+      type: task_result
+      duration_above: 300  # 5 minutes
+    action:
+      notify: human
+      method: console_log
+      level: warning
+      message: |
+        ⏱️  Long running task detected
+        - Task ID: {{.TaskID}}
+        - Agent: {{.AgentID}}
+        - Duration: {{.TaskResult.duration_sec}}s
+        - Score: {{.TaskResult.score}}
+
+  # Alert on system agent issues
+  - name: "System Agent Alert"
+    enabled: true
+    condition:
+      type: task_result
+      agent: "SYSTEM_*"
+      score_below: 0.5
+    action:
+      notify: webhook
+      url: https://alerts.example.com/api/v1/critical
+      headers:
+        Authorization: "Bearer ${CRITICAL_ALERTS_KEY}"
+      template: |
+        {
+          "alert_type": "system_issue",
+          "title": "🚨 System Agent Issue",
+          "message": "System task {{.TaskID}} completed with low confidence",
+          "task_id": "{{.TaskID}}",
+          "agent": "{{.AgentID}}",
+          "score": {{.TaskResult.score}},
+          "status": "{{.TaskResult.status}}",
+          "timestamp": "{{.Timestamp}}",
+          "details": {
+            "output": "{{.TaskResult.output}}",
+            "artifacts": {{.TaskResult.artifacts}}
+          }
+        } 

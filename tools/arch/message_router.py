@@ -16,6 +16,7 @@ import shutil
 
 from .message_parser import MessageType, MessageParser
 from .phase_policy_loader import PhasePolicy, load_policy, RoutingRule, EscalationLevel, EscalationRule
+from .alert_evaluator import AlertEvaluator
 
 class MessageRouter:
     """Router for ARCH messages."""
@@ -24,6 +25,7 @@ class MessageRouter:
         self,
         postbox_root: Path,
         phase_policy_path: Optional[Path] = None,
+        alert_policy_path: Optional[Path] = None,
         log_dir: Optional[Path] = None
     ):
         """Initialize the message router.
@@ -31,10 +33,12 @@ class MessageRouter:
         Args:
             postbox_root: Root directory for message postboxes
             phase_policy_path: Optional path to phase policy file
+            alert_policy_path: Optional path to alert policy file
             log_dir: Optional directory for logging
         """
         self.postbox_root = postbox_root
         self.phase_policy_path = phase_policy_path
+        self.alert_policy_path = alert_policy_path
         self.log_dir = log_dir
         
         # Always set up a logger
@@ -53,6 +57,7 @@ class MessageRouter:
         # Initialize components
         self.parser = MessageParser(log_dir)
         self.policy = self._load_phase_policy() if phase_policy_path else None
+        self.alert_evaluator = AlertEvaluator(alert_policy_path, postbox_root, log_dir) if alert_policy_path else None
         
         # Retry state tracking
         self.retry_state = {}  # message_id -> retry_count
@@ -87,6 +92,13 @@ class MessageRouter:
             retry_count = parsed.get("retry_count", 0)
             if self.logger:
                 self.logger.info(f"Routing message trace_id={trace_id} retry_count={retry_count}")
+
+            # Evaluate message against alert rules
+            if self.alert_evaluator:
+                matching_rules = self.alert_evaluator.evaluate_message(parsed)
+                if matching_rules:
+                    if self.logger:
+                        self.logger.info(f"Alert rules matched for message {trace_id}: {[r.name for r in matching_rules]}")
 
             # Extract payload for message type and content
             payload = parsed.get("payload", {})

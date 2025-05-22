@@ -268,3 +268,52 @@ policies:
 - FastAPI backend exposes /metrics/agents and /metrics/plans/{plan_id} endpoints
 - Endpoints return agent and plan performance metrics (average score, success rate, task count, last activity, etc.)
 - Metrics are computed from logs/agent_scores.json
+
+## Alert System
+
+The ARCH agent system includes a flexible alert system for monitoring task execution and system health. The alert system is implemented through the following components:
+
+### Alert Policy
+
+Alert policies are defined in YAML format and specify rules for triggering alerts based on message content and task results. Each policy includes:
+
+- Version and description
+- List of alert rules
+- Conditions for triggering alerts
+- Actions to take when alerts are triggered
+
+Example alert conditions:
+- Error codes and retry counts
+- Task result scores and durations
+- Agent-specific performance metrics
+- System health indicators
+
+### Alert Evaluator
+
+The alert evaluator (`AlertEvaluator`) is responsible for:
+
+1. Loading and validating alert policies
+2. Evaluating incoming messages against alert rules
+3. Triggering appropriate actions when conditions are met
+4. Logging alert events for monitoring and analysis
+
+The evaluator supports two types of notifications:
+- Human notifications via console logging
+- Webhook notifications to external systems
+
+### Integration with Message Router
+
+The alert evaluator is integrated into the message router, allowing for real-time evaluation of messages as they flow through the system. This integration enables:
+
+- Immediate detection of issues
+- Proactive alerting for potential problems
+- Automated responses to system events
+- Comprehensive monitoring of agent performance
+
+### Alert Logging
+
+All triggered alerts are logged to a dedicated alert log file, providing:
+- Historical record of system events
+- Audit trail for debugging
+- Performance metrics for analysis
+- Input for system health monitoring
