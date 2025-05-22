@@ -1460,6 +1460,56 @@
 - Comprehensive error handling and logging
 **Branch**: feat/TASK-077C-task-action-router
 
+## 🎯 Phase 6.4 Sprint 2 Summary (v0.6.5)
+**Milestone Tag**: `v0.6.5` - Control and Observability  
+**Completion Date**: May 22, 2025  
+**Sprint Duration**: Phase 6.4 Sprint 2
+
+### 📊 Sprint 2 Achievements:
+- ✅ **5 Major Tasks Completed** (TASK-077A through TASK-077E)
+- ✅ **39 Files Changed** with 3,860+ lines of new functionality  
+- ✅ **7 New React Components** for enhanced UI interactions
+- ✅ **3 New API Routers** for backend control operations
+- ✅ **5 New API Endpoints** for comprehensive system control
+- ✅ **Full-Stack Integration** validated and tested successfully
+
+### 🚀 Key Deliverables:
+1. **Task Detail Drawer** - Interactive task metadata and history display
+2. **Plan Control Bar** - Resubmit, escalate, and cancel operations with API integration  
+3. **Backend Action Router** - RESTful endpoints for plan/task control operations
+4. **Agent Metrics Dashboard** - Real-time performance monitoring with charts
+5. **History & Audit System** - Complete tracking of plans and task executions
+
+### 🛠️ Technical Enhancements:
+- **Frontend**: React + TypeScript + Tailwind CSS + Recharts visualization
+- **Backend**: FastAPI + Pydantic validation + structured logging
+- **UI/UX**: Responsive design, error boundaries, loading states, tooltips
+- **API**: RESTful endpoints, comprehensive error handling, audit trails
+- **DevOps**: Environment variables, contributing guidelines, folder structure docs
+
+### 📈 System Capabilities Added:
+- Interactive task management with detailed drawer views
+- Plan execution control with human escalation workflow
+- Real-time agent performance monitoring and visualization  
+- Comprehensive audit trail for plan and task operations
+- Full-stack observability with metrics and history tracking
+- Production-ready error handling and configuration management
+
+### ✅ Validation Completed:
+- All routes load cleanly without 404s or console errors
+- API endpoints return proper JSON responses
+- Task drawer opens with complete metadata display
+- Plan control buttons trigger backend actions successfully
+- Agent metrics display real data with charts and progress bars
+- Full-stack integration tested and validated
+
+### 🏷️ Repository Status:
+- **Main Branch**: All Sprint 2 work merged and tagged as `v0.6.5`
+- **GitHub**: Tag pushed with comprehensive release notes
+- **Documentation**: Updated with all new components and APIs
+
+**Sprint 2 delivers complete control and observability capabilities for production-ready agent management.**
+
 ### TASK-077D: Build Agent Metrics Dashboard Page
 - [x] Created /agents route and page in the app router
 - [x] Fetched agent metrics from GET /metrics/agents

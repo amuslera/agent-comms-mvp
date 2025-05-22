@@ -673,5 +673,73 @@
       "safe_with_mock_data": true,
       "phase_milestone": "Phase 6.4 Sprint 1"
     }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-077-MERGE-TAG-status",
+    "timestamp": "2025-05-22T06:50:00Z",
+    "sender": "CC",
+    "recipient": "ARCH", 
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-077-MERGE+TAG",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully merged all Phase 6.4 Sprint 2 branches and tagged milestone v0.6.5. Full control and observability capabilities delivered with comprehensive validation completed."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "milestone_tag": "v0.6.5",
+      "milestone_name": "Control and Observability",
+      "sprint_completion": "Phase 6.4 Sprint 2",
+      "branches_merged": [
+        "feat/TASK-077A-task-detail-drawer",
+        "feat/TASK-077B-plan-control-ui", 
+        "feat/TASK-077C-task-action-router",
+        "feat/TASK-077D-agent-metrics-ui",
+        "feat/TASK-077E-agent-metrics-enhancements"
+      ],
+      "files_changed": 39,
+      "lines_added": 3860,
+      "new_components": [
+        "Task Detail Drawer with metadata display",
+        "Plan Control Bar with action buttons",
+        "Agent Metrics Dashboard with charts",
+        "Backend Action Router with APIs",
+        "History tracking and audit system"
+      ],
+      "api_endpoints_added": [
+        "POST /api/v1/plans/{plan_id}/resubmit",
+        "POST /api/v1/plans/{plan_id}/escalate",
+        "POST /api/v1/plans/{plan_id}/cancel", 
+        "GET /plans/history",
+        "GET /tasks/recent"
+      ],
+      "capabilities_delivered": [
+        "Interactive task management with drawer views",
+        "Plan execution control with human escalation",
+        "Real-time agent performance monitoring",
+        "Comprehensive audit trail for operations",
+        "Full-stack observability and metrics",
+        "Production-ready error handling"
+      ],
+      "validation_status": {
+        "frontend_routes": "✅ All routes load cleanly",
+        "api_endpoints": "✅ All endpoints return proper JSON",
+        "task_drawer": "✅ Opens with complete metadata",
+        "plan_controls": "✅ Buttons trigger backend actions",
+        "agent_metrics": "✅ Real data with charts and progress",
+        "integration": "✅ Full-stack validated successfully"
+      },
+      "repository_status": {
+        "main_branch": "Updated with all Sprint 2 work",
+        "github_tag": "v0.6.5 pushed with release notes",
+        "documentation": "Updated with new components and APIs",
+        "branch_cleanup": "Feature branches ready for cleanup"
+      },
+      "next_phase": "Phase 6.5 - Advanced integrations and automation",
+      "production_ready": true,
+      "system_stability": "Validated and operational"
+    }
   }
 ]
