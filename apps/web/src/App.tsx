@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Agents from './pages/Agents';
 import PlanSubmission from './pages/PlanSubmission';
 import { PlanView } from './pages/PlanView';
+import MessagesPage from './pages/arch/Messages';
 
 // Wrapper component that provides the Layout with Outlet for nested routes
 const LayoutWrapper = () => (
@@ -24,6 +25,7 @@ export const App: React.FC = () => {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="agents" element={<Agents />} />
             <Route path="plans/submit" element={<PlanSubmission />} />
+            <Route path="arch/messages" element={<MessagesPage />} />
           </Route>
           <Route path="/plans/view/:planId" element={<PlanView />} />
         </Routes>

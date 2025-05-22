@@ -809,59 +809,6 @@
 - `/docs/protocols/AGENT_PROTOCOL.md` (updated)
 **Branch**: feat/TASK-066B-docs-cleanup
 
-### TASK-BATCH-MERGE-5: Review and Merge Completed Feature Branches
-**Status**: ✅ Done
-**Owner**: CC
-**Description**: Reviewed and merged all completed feature branches from the current development cycle.
-**Details**:
-- Merged feat/TASK-061I-dev-docs (Developer Documentation)
-- Merged feat/TASK-060D (Plan Submission UI) and feat/TASK-060E (DAG Viewer) as combined feature
-- Updated TASK_CARDS.md with completion status
-- Notified ARCH of merge completion
-**Branches Merged**:
-- feat/TASK-061I-dev-docs - Complete development workflow documentation
-- feat/TASK-065-context-bundle - Plan submission UI and DAG viewer components
-**Merged**: main (multiple commits)
-
-### TASK-065: Collect and Bundle All Context / Protocol Files
-**Status**: ✅ Done
-**Owner**: CC
-**Description**: Searched the repository for all system context, agent protocols, task structure, and configuration standards files, then collected them into a centralized bundle for review and validation.
-**Details**:
-- Created `/docs/context_bundle/` directory for centralized file collection
-- Collected 37 files covering agent protocols, profiles, task templates, workflows, prompts, architecture docs, routing rules, and configuration files
-- Preserved all original file names and maintained duplicate copies (originals untouched)
-- Created comprehensive README.md index documenting all collected files by category
-- Bundle includes: 5 agent protocol files, 8 agent profile/context files, 5 task format templates, 5 workflow plans, 3 prompt templates, 5 architecture docs, 2 routing files, 3 configuration files, and 2 main documentation files
-**Files**:
-- `/docs/context_bundle/` - Complete context bundle directory
-- `/docs/context_bundle/README.md` - Comprehensive bundle index and documentation
-**Branch**: feat/TASK-065-context-bundle
-
-### TASK-066: Reorganize and Deduplicate Context and Protocol Files
-**Status**: ✅ Done
-**Owner**: CC
-**Description**: Reorganized the contents of the context bundle into a cleaner, more maintainable structure and eliminated duplicates.
-**Details**:
-- Created organized subdirectories under `/docs/` (protocols/, system/, prompts/, metadata/, misc/)
-- Moved protocol files to `/docs/protocols/`
-- Moved system documentation to `/docs/system/`
-- Moved prompt templates to `/docs/prompts/`
-- Moved agent profiles and metadata to `/docs/metadata/`
-- Moved workflow plans to existing `/plans/` directory
-- Moved test fixtures to new `/test_fixtures/` directory
-- Removed duplicate files where identical copies existed elsewhere
-- Cleaned up system files (.DS_Store, __MACOSX)
-- Removed empty context_bundle directory after successful reorganization
-**Files**:
-- `/docs/protocols/` - Agent communication protocols and schemas
-- `/docs/system/` - System architecture and execution documentation
-- `/docs/prompts/` - Agent prompt templates
-- `/docs/metadata/` - Agent profiles and context files
-- `/docs/misc/` - Miscellaneous documentation files
-- `/test_fixtures/` - Test data and examples
-**Branch**: feat/TASK-066-reorganize-context
-
 ### TASK-067A: Verify Local and Remote Repo Sync
 **Status**: ✅ Done
 **Owner**: CC
@@ -896,24 +843,94 @@
 - ✅ Repository synchronization and cleanup
 **Tag**: `v0.5.0` - Phase 5 completion milestone
 
-### TASK-999: Review and Merge All Pending PR Branches
+### TASK-069: Document the Refined Product Architecture & Execution Plan
+**Status**: ✅ Done
+**Owner**: ARCH
+**Description**: Created comprehensive documentation for the updated Bluelabel Agent OS architecture and execution plan.
+**Details**:
+- Documented fully autonomous execution vision
+- Outlined key components (CTO agent, agent teams, postbox, execution engine)
+- Defined MCP-compatible messaging & retry strategy
+- Detailed task lifecycle from plan to report
+- Specified phase autonomy logic in phase_policy.yaml
+- Outlined scalability, security, and observability strategies
+- Aligned with external ecosystems (MCP, A2A, ADK, LangGraph)
+- Created roadmap from Phase 6 to productization
+**Files**:
+- `/docs/system/ARCHITECTURE_REBOOT.md`
+- Updated `TASK_CARDS.md`
+
+### TASK-070B: Build ARCH Inbox Monitor and Message Parser
 **Status**: ✅ Done
 **Owner**: CC
-**Description**: Reviewed and merged all completed feature branches into main.
+**Description**: Created foundational components for ARCH agent message processing:
+- Implemented message parser with schemas for task results, errors, and input requests
+- Built inbox watcher with polling loop and message routing
+- Added logging and error handling
+- Designed for future extensibility with real-time routing and retries
+**Files Created:**
+- tools/arch/message_parser.py
+- tools/arch/arch_inbox_watcher.py
+- tools/arch/__init__.py
+**Notes:** Components are ready for integration with ARCH agent's core functionality.
+
+### TASK-070C: Add Message Routing and Escalation Logic to ARCH Agent
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Extended the ARCH inbox watcher with message routing and escalation capabilities.
 **Details**:
-- Reviewed and merged feat/TASK-060-ui-react-reset (React UI shell)
-- Reviewed and merged feat/TASK-061B-architecture-docs (Architecture documentation)
-- Reviewed and merged feat/TASK-061C-api-endpoints (FastAPI backend layer)
-- Reviewed and merged feat/TASK-061D-api-docs (API reference documentation)
-- Reviewed and merged feat/TASK-061E-roadmap-docs (Roadmap documentation)
-- Updated TASK_CARDS.md to mark all tasks as completed
-- Notified ARCH of task completion for next phase planning
-**Commits**:
-- `262064b` - TASK-060A: merge React UI shell
-- `56f5643` - TASK-061B: add complete ARCHITECTURE.md documentation
-- `b29d7ed` - TASK-061C: scaffold FastAPI endpoints for agents and tasks
-- `1f14064` - TASK-061D: Add API reference documentation and client integration files
-- `e796d6c` - TASK-061E: Merge roadmap documentation
+- Created message router with routing rules and escalation levels
+- Implemented message routing to agent inboxes
+- Added escalation logic for errors and input requests
+- Added retry support with configurable limits
+- Integrated with phase policy (stub for future implementation)
+- Updated inbox watcher to use new router
+**Files**:
+- `/tools/arch/message_router.py` - New router implementation
+- `/tools/arch/arch_inbox_watcher.py` - Updated to use router
+- `/tools/arch/__init__.py` - Updated exports
+**Branch**: feat/TASK-070B-arch-inbox-watcher
+
+### TASK-070A: Define and Load Execution Policy for ARCH Autonomy
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Created execution policy framework defining autonomy boundaries and operational parameters for the ARCH/CTO agent.
+**Details**:
+- Created comprehensive `phase_policy.yaml` with detailed policy schema
+- Implemented `phase_policy_loader.py` with Pydantic v2 models for validation
+- Defined autonomy levels, permissions, escalation rules, and quality gates
+- Added resource limits, learning policies, and emergency procedures
+- Implemented fallback behavior and safe defaults
+- Added phase-specific overrides and compliance tracking
+- Policy supports high autonomy for Phase 6 with appropriate safeguards
+**Features**:
+- Pydantic-based validation with comprehensive error handling
+- Default value support and safe fallback behavior
+- Resource management and rate limiting
+- Multi-level escalation rules with retry logic
+- Emergency procedures and rollback policies
+- Compliance audit trail and decision logging
+**Files**:
+- `/phase_policy.yaml` - Comprehensive execution policy configuration
+- `/tools/phase_policy_loader.py` - Policy loader with Pydantic models
+**Branch**: feat/TASK-070A-phase-policy
+
+### TASK-070D: Integrate Phase Policy Execution Rules into ARCH Message Router
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Integrated phase policy execution rules into the ARCH message router for dynamic routing and escalation.
+**Details**:
+- Connected phase_policy.yaml loader to message routing flow
+- Implemented dynamic retry limits per message type
+- Added policy-based escalation rules
+- Added phase-specific override support
+- Enhanced logging with policy rule tracking
+- Implemented safe fallback behavior
+**Files**:
+- `/tools/arch/message_router.py` - Updated with policy integration
+- `/tools/arch/arch_inbox_watcher.py` - Updated to use policy-based routing
+- `/TASK_CARDS.md` - Updated with completion status
+**Branch**: feat/TASK-070B-arch-inbox-watcher
 
 ## ⏭️ Planned Tasks (Backlog)
 

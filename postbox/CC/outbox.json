@@ -342,5 +342,125 @@
       "tag_pushed": true,
       "github_milestone": "https://github.com/amuslera/agent-comms-mvp/releases/tag/v0.5.0"
     }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-067B",
+    "status": "completed",
+    "progress": 100,
+    "timestamp": ""
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-070B",
+    "status": "completed",
+    "progress": 100,
+    "timestamp": "",
+    "details": "Created ARCH inbox monitor and message parser components. Implemented message schemas, validation, and polling loop with logging.",
+    "files_created": [
+      "tools/arch/message_parser.py",
+      "tools/arch/arch_inbox_watcher.py",
+      "tools/arch/__init__.py"
+    ],
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "feat/TASK-070B-arch-inbox-watcher"
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-070C-status",
+    "timestamp": "",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-070C",
+      "status": "completed",
+      "progress": 100,
+      "details": "Extended ARCH inbox watcher with message routing and escalation capabilities. Implemented routing rules, escalation levels, and retry support.",
+      "files_created": [
+        "tools/arch/message_router.py"
+      ],
+      "files_updated": [
+        "tools/arch/arch_inbox_watcher.py",
+        "tools/arch/__init__.py",
+        "TASK_CARDS.md"
+      ]
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "feat/TASK-070B-arch-inbox-watcher",
+      "features_implemented": [
+        "message_routing",
+        "escalation_logic",
+        "retry_support"
+      ]
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-070A-status",
+    "timestamp": "2025-05-21T16:30:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-070A",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully created execution policy framework for ARCH autonomy. Implemented comprehensive policy schema with Pydantic validation, fallback behavior, and safe defaults for autonomous operation."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "files_created": [
+        "/phase_policy.yaml",
+        "/tools/phase_policy_loader.py"
+      ],
+      "branch": "feat/TASK-070A-phase-policy",
+      "features_implemented": [
+        "comprehensive_policy_schema",
+        "pydantic_validation",
+        "fallback_behavior",
+        "resource_management",
+        "escalation_rules",
+        "compliance_tracking"
+      ],
+      "autonomy_level": "high",
+      "phase_support": "Phase 6",
+      "validation_tested": true,
+      "safe_defaults": true
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-070D-status",
+    "timestamp": "2025-05-21T17:00:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-070D",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully integrated phase policy execution rules into ARCH message router. Implemented dynamic routing, escalation, and retry logic based on policy configuration.",
+      "files_updated": [
+        "tools/arch/message_router.py",
+        "tools/arch/arch_inbox_watcher.py",
+        "TASK_CARDS.md"
+      ]
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "feat/TASK-070B-arch-inbox-watcher",
+      "features_implemented": [
+        "policy_based_routing",
+        "dynamic_retry_limits",
+        "policy_escalation_rules",
+        "phase_overrides",
+        "rule_tracking",
+        "safe_fallback"
+      ]
+    }
   }
 ]
