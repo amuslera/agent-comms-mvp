@@ -879,6 +879,43 @@
 - Updated `TASK_CARDS.md`
 **Branch**: `feat/TASK-073B-mcp-envelope-spec`
 
+### TASK-075A: Create Alert Policy Format and Schema
+**Status**: ✅ Done
+**Owner**: ARCH
+**Description**: Defined a structured YAML-based alert policy format for configuring task-level triggers and notifications.
+**Details**:
+- Created comprehensive specification for alert policies in YAML format
+- Implemented JSON schema for validation of alert policies
+- Added support for multiple condition types (error, task_result)
+- Implemented multiple action types (console_log, webhook)
+- Created detailed documentation with examples and usage guidelines
+- Added example policies for common use cases
+**Files**:
+- Created `/docs/protocols/ALERT_POLICY_FORMAT.md`
+- Created `/schemas/ALERT_POLICY_SCHEMA.json`
+- Added `/schemas/examples/alert_policy_critical_errors.yaml`
+- Added `/schemas/examples/alert_policy_performance.yaml`
+- Updated `TASK_CARDS.md`
+**Branch**: `feat/TASK-075A-alert-policy-spec`
+
+### TASK-074D-B: Update MCP Protocol and Schema Documentation
+**Status**: ✅ Done
+**Owner**: ARCH
+**Description**: Updated MCP message format documentation and schema to reflect output evaluation fields.
+**Details**:
+- Enhanced documentation with detailed field descriptions and usage guidelines
+- Added version history and related endpoints to documentation
+- Updated JSON schema with comprehensive validation rules and comments
+- Ensured example files are properly linked and consistent with the schema
+- Added cross-references between related documentation sections
+**Files**:
+- Updated `/docs/protocols/MCP_MESSAGE_FORMAT.md`
+- Updated `/schemas/MCP_MESSAGE_SCHEMA.json`
+- Verified `/schemas/examples/task_result_scored.json`
+- Verified `/schemas/examples/task_result_simple.json`
+- Updated `TASK_CARDS.md`
+**Branch**: `feat/TASK-074D-mcp-doc-update`
+
 ### TASK-074A: Extend MCP Message Format with Output Evaluation Fields
 **Status**: ✅ Done
 **Owner**: ARCH
@@ -1193,6 +1230,46 @@
 - `/apps/api/main.py` - Updated to include metrics router
 - `/logs/agent_scores.json` - Sample agent metrics data
 **Branch**: feat/TASK-074C-api-metrics-endpoints
+
+### TASK-074D-A: Update System Architecture and Roadmap Docs to Reflect v0.6.2 Milestone
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Updated ARCHITECTURE_REBOOT.md and ROADMAP.md to reflect v0.6.2 capabilities: MCP envelope parsing, retry logic, output evaluation logging, and metrics API endpoints. Marked Phase 6.2 as complete and outlined Phase 6.3.
+**Details**:
+- Documented MCP envelope enforcement and evaluation fields
+- Added sections for retry logic, escalation, and output-aware routing
+- Described log tracking and backend metrics endpoints
+- Updated roadmap for Phase 6.2 (complete) and Phase 6.3 (planned)
+**Files**:
+- `/docs/system/ARCHITECTURE_REBOOT.md`
+- `/docs/system/ROADMAP.md`
+
+### TASK-075C: Implement Outbound Notification Delivery (Console, Webhook, File)
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Enabled delivery of alert messages via console log, webhook, or file write with comprehensive retry logic and failure handling.
+**Details**:
+- Created notification_dispatcher.py with support for 3 delivery methods
+- Console logging with formatted alert output and visual indicators
+- File logging with JSON structured format to /logs/notifications.log
+- Webhook delivery with POST requests and configurable headers
+- Retry logic for webhook failures (5xx responses) with exponential backoff
+- Client error handling (4xx responses) without retry
+- Dry-run/test mode for safety during development
+- Policy-based configuration support for multiple delivery methods
+- Alert processing from ARCH agent with MCP message format compatibility
+- Comprehensive test suite with 15 test cases covering all functionality
+**Files**:
+- `/tools/arch/notification_dispatcher.py` - Main notification dispatcher module
+- `/tools/arch/tests/test_notification_dispatcher.py` - Comprehensive test suite
+- `/logs/notifications.log` - Generated notification log file
+**Features**:
+- 3 delivery methods: console_log, file_log, webhook
+- Webhook retry logic: max 3 attempts with exponential backoff
+- Failure case handling: log and continue on webhook error
+- Test coverage: 15/15 tests passing
+- Dry-run mode for safe testing
+**Branch**: feat/TASK-075C-alert-delivery-system
 
 ## ⏭️ Planned Tasks (Backlog)
 

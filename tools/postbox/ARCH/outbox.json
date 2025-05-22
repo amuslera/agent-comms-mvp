@@ -11,5 +11,31 @@
         "summary": "ARCH MCP test suite: 26/26 passing. All MCP envelope, parser, router, and retry logic validated. System stable and ready for merge."
       }
     }
+  },
+  {
+    "sender_id": "CC",
+    "recipient_id": "ARCH",
+    "trace_id": "eval-2025-05-21T20:37:57.450282",
+    "retry_count": 0,
+    "task_id": "TASK-074B",
+    "payload": {
+      "type": "eval_tracker_report",
+      "content": {
+        "summary": "Output evaluation tracker is live. Logs are being generated in logs/agent_scores.json. Rolling summaries and per-agent stats are available."
+      }
+    }
+  },
+  {
+    "sender_id": "CC",
+    "recipient_id": "ARCH",
+    "trace_id": "doc-2025-05-21T20:59:44.927323",
+    "retry_count": 0,
+    "task_id": "TASK-074D-A",
+    "payload": {
+      "type": "doc_update",
+      "content": {
+        "summary": "System architecture and roadmap docs updated for v0.6.2: MCP envelope, retry logic, output evaluation logging, metrics API, Phase 6.2 complete, Phase 6.3 planned."
+      }
+    }
   }
 ]

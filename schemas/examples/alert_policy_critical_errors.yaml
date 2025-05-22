@@ -1,0 +1,56 @@
+# Critical Error Alert Policy
+# Monitors for critical system errors and notifies the team
+
+version: "1.0.0"
+description: "Critical error monitoring and notification policy"
+
+rules:
+  # Notify on critical CA agent errors
+  - name: "Critical CA Errors"
+    enabled: true
+    condition:
+      type: error
+      agent: CA
+      error_code: "E_CRITICAL"
+    action:
+      notify: webhook
+      url: https://alerts.example.com/api/v1/notify
+      method: POST
+      headers:
+        Authorization: "Bearer ${ALERT_API_KEY}"
+        Content-Type: "application/json"
+      template: |
+        {
+          "alert_type": "critical_error",
+          "title": "🚨 Critical Error in {{.AgentID}}",
+          "message": "{{.Message}}",
+          "task_id": "{{.TaskID}}",
+          "timestamp": "{{.Timestamp | formatTime "2006-01-02T15:04:05Z07:00"}}",
+          "details": {
+            "error_code": "{{.Error.Code}}",
+            "retry_count": {{.TaskResult.retry_count | default 0}},
+            "agent": "{{.AgentID}}"
+          }
+        }
+      timeout_seconds: 15
+
+  # Notify on any agent error after 3 retries
+  - name: "Persistent Errors"
+    enabled: true
+    condition:
+      type: error
+      retry_count: 3
+    action:
+      notify: webhook
+      url: https://alerts.example.com/api/v1/notify
+      template: |
+        {
+          "alert_type": "persistent_error",
+          "title": "⚠️ Persistent Error After Multiple Retries",
+          "message": "Task failed after {{.Condition.retry_count}} attempts",
+          "task_id": "{{.TaskID}}",
+          "agent": "{{.AgentID}}",
+          "error": "{{.Message}}",
+          "timestamp": "{{.Timestamp | formatTime "2006-01-02T15:04:05Z07:00"}}",
+          "priority": "high"
+        }

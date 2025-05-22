@@ -244,3 +244,27 @@ policies:
 ## 📅 Changelog
 
 - **2025-05-21**: Initial version
+
+## Phase 6.1: MCP Envelope Parsing
+- All agent messages are now validated and parsed using the MCP-compatible envelope schema.
+- Required fields: sender_id, recipient_id, trace_id, retry_count, task_id, payload
+- Payload includes type, content, and optional evaluation fields (success, score, duration_sec, notes)
+
+## Retry Logic and Policy-Based Escalation
+- ARCH agent enforces retry logic for error messages based on phase_policy.yaml
+- Retries are tracked per message (using retry_count in the envelope)
+- Escalation to human or fallback agent occurs when retry limits are exceeded
+- Policy-based escalation rules are configurable per error type
+
+## Output-Aware Routing
+- Routing decisions can now incorporate evaluation results (success, score, etc.)
+- Output evaluation fields are extracted from MCP messages and logged for future routing/learning
+
+## ARCH Log Tracking for Evaluation Results
+- All output evaluation fields (success, score, duration, notes) are logged per agent/task in logs/agent_scores.json
+- Rolling summaries and per-agent statistics are available for monitoring and learning
+
+## Backend Metrics API Endpoints
+- FastAPI backend exposes /metrics/agents and /metrics/plans/{plan_id} endpoints
+- Endpoints return agent and plan performance metrics (average score, success rate, task count, last activity, etc.)
+- Metrics are computed from logs/agent_scores.json

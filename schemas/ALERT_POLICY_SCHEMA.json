@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Alert Policy Schema",
+  "description": "Schema for defining alert policies in Bluelabel Agent OS",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["version", "rules"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of the alert policy format (semver)",
+      "examples": ["1.0.0"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the policy"
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "condition", "action"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique name for the rule"
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether the rule is active"
+          },
+          "condition": {
+            "type": "object",
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "const": "error",
+                    "description": "Trigger on task errors"
+                  },
+                  "agent": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9_*]+$",
+                    "description": "Filter by agent ID (use '*' for any)"
+                  },
+                  "retry_count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Minimum number of retries before triggering"
+                  },
+                  "error_code": {
+                    "type": "string",
+                    "description": "Specific error code to match"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "const": "task_result",
+                    "description": "Trigger on task results"
+                  },
+                  "agent": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9_*]+$",
+                    "description": "Filter by agent ID (use '*' for any)",
+                    "default": "*"
+                  },
+                  "score_below": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "exclusiveMaximum": true,
+                    "description": "Trigger if score is below this value"
+                  },
+                  "score_above": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "exclusiveMinimum": true,
+                    "description": "Trigger if score is above this value"
+                  },
+                  "duration_above": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Trigger if duration exceeds this many seconds"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["success", "partial_success", "failed"],
+                    "description": "Filter by task status"
+                  }
+                },
+                "oneOf": [
+                  { "required": ["score_below"] },
+                  { "required": ["score_above"] },
+                  { "required": ["duration_above"] },
+                  { "required": ["status"] }
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "action": {
+            "type": "object",
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["notify", "method"],
+                "properties": {
+                  "notify": {
+                    "const": "human",
+                    "description": "Human notification target"
+                  },
+                  "method": {
+                    "const": "console_log",
+                    "description": "Log to console"
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": ["debug", "info", "warning", "error", "critical"],
+                    "default": "info",
+                    "description": "Log level"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Custom message template"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": ["notify", "url"],
+                "properties": {
+                  "notify": {
+                    "const": "webhook",
+                    "description": "Webhook notification target"
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Webhook URL"
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+                    "default": "POST",
+                    "description": "HTTP method"
+                  },
+                  "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "HTTP headers"
+                  },
+                  "template": {
+                    "type": "string",
+                    "description": "Request body template (Go template syntax)"
+                  },
+                  "timeout_seconds": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "default": 10,
+                    "description": "Request timeout in seconds"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "MCP Message Envelope",
-  "description": "Schema for MCP-compatible message envelope used in Bluelabel Agent OS",
+  "description": "Schema for MCP-compatible message envelope used in Bluelabel Agent OS (v1.3.0)",
+  "$comment": "Schema version: 1.3.0 - Added evaluation fields (success, score, duration_sec, notes)",
   "type": "object",
   "required": [
     "type",
@@ -109,6 +110,32 @@
                       "minimum": 0
                     }
                   }
+                },
+                "success": {
+                  "type": "boolean",
+                  "description": "Indicates if the task was successful. Should be consistent with the status field - true for 'success', false otherwise.",
+                  "$comment": "Used for quick success/failure determination. Should align with the 'status' field."
+                },
+                "score": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "maximum": 1.0,
+                  "description": "Normalized score between 0.0 (complete failure) and 1.0 (perfect success) indicating task performance",
+                  "examples": [0.0, 0.85, 1.0],
+                  "$comment": "Values between 0.0 and 1.0 indicate partial success. Should be consistent with the 'success' field."
+                },
+                "duration_sec": {
+                  "type": "number",
+                  "minimum": 0,
+                  "description": "Duration of the task in seconds. More precise than metrics.duration_ms",
+                  "examples": [1.5, 10.25, 60.0],
+                  "$comment": "Should be synchronized with metrics.duration_ms when both are present"
+                },
+                "notes": {
+                  "type": "string",
+                  "description": "Additional notes or observations about the task execution",
+                  "maxLength": 1000,
+                  "$comment": "Free-form text field for human-readable information. Max 1000 characters."
                 }
               }
             }

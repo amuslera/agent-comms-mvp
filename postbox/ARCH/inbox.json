@@ -75,5 +75,137 @@
         "test_framework"
       ]
     }
+  },
+  {
+    "trace_id": "MILESTONE-v0.6.1-20250116",
+    "sender_id": "CC",
+    "recipient_id": "ARCH",
+    "task_id": "TASK-073-MERGE+TAG",
+    "timestamp": "2025-01-16T23:50:00Z",
+    "retry_count": 0,
+    "message_type": "milestone",
+    "protocol_version": "1.0.0",
+    "payload": {
+      "type": "milestone",
+      "milestone": "v0.6.1",
+      "status": "completed",
+      "subject": "Phase 6.1 Complete: MCP Envelope Protocol + Policy-Based Retry Logic",
+      "summary": "Successfully implemented and integrated MCP-compatible message envelope format with comprehensive retry logic system. All ARCH agent components now support policy-based error handling and message reassignment.",
+      "achievements": [
+        "MCP envelope protocol with trace_id, sender_id, recipient_id, retry_count support",
+        "Policy-based retry logic with escalation rules from phase_policy.yaml",
+        "Error message detection and automatic reassignment to original agents",
+        "Human escalation when retry limits exceeded",
+        "Complete test suite migration to MCP envelope format",
+        "JSON schema validation and comprehensive documentation",
+        "26/26 tests passing with full ARCH component coverage"
+      ],
+      "artifacts": [
+        {
+          "type": "protocol",
+          "path": "/docs/protocols/MCP_MESSAGE_FORMAT.md",
+          "description": "MCP Message Format Specification"
+        },
+        {
+          "type": "schema",
+          "path": "/schemas/MCP_MESSAGE_SCHEMA.json",
+          "description": "JSON Schema for MCP message validation"
+        },
+        {
+          "type": "implementation",
+          "path": "/tools/arch/message_router.py",
+          "description": "Enhanced message router with retry logic"
+        },
+        {
+          "type": "tests", 
+          "path": "/tools/arch/tests/",
+          "description": "Complete test suite with MCP envelope support"
+        }
+      ],
+      "next_phase_readiness": "System now ready for Phase 6.2 autonomous execution features"
+    },
+    "metadata": {
+      "commit_hash": "f26bae6",
+      "tag": "v0.6.1",
+      "milestone_type": "feature_release",
+      "test_results": "26/26 tests passing",
+      "system_status": "enhanced_operational",
+      "branches_consolidated": [
+        "feat/TASK-073A-arch-retry-logic",
+        "feat/TASK-073B-mcp-envelope-spec", 
+        "feat/TASK-073C-mcp-envelope-integration",
+        "feat/TASK-073E-arch-mcp-test-patch"
+      ]
+    }
+  },
+  {
+    "trace_id": "MILESTONE-v0.6.2-20250117",
+    "sender_id": "CC",
+    "recipient_id": "ARCH",
+    "task_id": "TASK-074-MERGE+TAG",
+    "timestamp": "2025-01-17T00:05:00Z",
+    "retry_count": 0,
+    "message_type": "milestone",
+    "protocol_version": "1.0.0",
+    "payload": {
+      "type": "milestone",
+      "milestone": "v0.6.2",
+      "status": "completed",
+      "subject": "Phase 6.2 Complete: Output Scoring, Task Evaluation Tracking, and Metrics API Endpoints",
+      "summary": "Phase 6.2 complete — system now logs, scores, and exposes task evaluation metrics through comprehensive API endpoints and tracking mechanisms.",
+      "achievements": [
+        "MCP message format extended with output evaluation fields (success, score, duration_sec, notes)",
+        "Output evaluation tracker implemented for ARCH agent with automatic logging to logs/agent_scores.json",
+        "Comprehensive metrics API endpoints: GET /metrics/agents and GET /metrics/plans/{id}",
+        "MetricsService with basic aggregation logic and fallback to dummy data",
+        "JSON schema validation and enhanced documentation for evaluation fields",
+        "Rolling summaries and per-agent statistics tracking",
+        "All endpoints tested and confirmed working with sample data"
+      ],
+      "components_delivered": [
+        {
+          "component": "MCP Message Format Extensions",
+          "description": "Enhanced task_result payload with evaluation metrics",
+          "files": ["docs/protocols/MCP_MESSAGE_FORMAT.md", "schemas/MCP_MESSAGE_SCHEMA.json", "schemas/examples/"]
+        },
+        {
+          "component": "Output Evaluation Tracker",
+          "description": "ARCH agent tracker for parsing and logging task evaluation metrics",
+          "files": ["tools/arch/output_tracker.py", "tools/arch/tests/test_output_tracker.py"]
+        },
+        {
+          "component": "Metrics API Endpoints",
+          "description": "FastAPI endpoints for agent and plan performance metrics",
+          "files": ["apps/api/models/metrics.py", "apps/api/services/metrics_service.py", "apps/api/routers/metrics.py"]
+        },
+        {
+          "component": "Agent Scores Data",
+          "description": "Structured logging and storage for agent performance data",
+          "files": ["logs/agent_scores.json"]
+        }
+      ],
+      "next_phase_readiness": "System ready for Phase 6.3 advanced monitoring and autonomous decision-making features"
+    },
+    "metadata": {
+      "commit_hash": "2db5d45",
+      "tag": "v0.6.2",
+      "milestone_type": "feature_release",
+      "system_status": "metrics_operational",
+      "endpoints_verified": [
+        "GET /metrics/agents - 4 agents tracked",
+        "GET /metrics/plans/{id} - plan execution metrics available"
+      ],
+      "branches_merged": [
+        "feat/TASK-074A-mcp-output-metrics",
+        "feat/TASK-074B-arch-eval-tracker",
+        "feat/TASK-074C-api-metrics-endpoints"
+      ],
+      "verification_complete": {
+        "logs_exist": true,
+        "endpoints_working": true,
+        "task_cards_updated": true,
+        "arch_notified": true
+      }
+    }
   }
 ]

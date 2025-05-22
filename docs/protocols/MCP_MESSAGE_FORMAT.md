@@ -2,7 +2,26 @@
 
 ## Overview
 
-This document defines the standard message envelope format for inter-agent communication within the Bluelabel Agent OS. The format is inspired by the MCP (Message Control Protocol) and ensures consistent message handling across all agents.
+This document defines the standard message envelope format (v1.3) for inter-agent communication within the Bluelabel Agent OS. The format is inspired by the MCP (Message Control Protocol) and ensures consistent message handling across all agents.
+
+> **Version**: 1.3.0  
+> **Status**: Active  
+> **Last Updated**: 2025-05-21
+
+## Version History
+
+| Version | Date       | Description                                      |
+|---------|------------|--------------------------------------------------|
+| 1.3.0   | 2025-05-21 | Added evaluation fields (success, score, etc.)    |
+| 1.2.0   | 2025-05-15 | Added support for task dependencies               |
+| 1.1.0   | 2025-05-10 | Added context field for additional metadata       |
+| 1.0.0   | 2025-05-01 | Initial release                                   |
+
+## Related Endpoints
+
+- `GET /metrics` - Retrieve system and task metrics
+- `POST /evaluate` - Submit task results for evaluation
+- `GET /evaluation/{task_id}` - Retrieve evaluation results for a task
 
 ## Envelope Structure
 
@@ -26,7 +45,43 @@ This document defines the standard message envelope format for inter-agent commu
 #### 1. Task Result (`task_result`)
 Sent when an agent successfully completes a task.
 
-**Example Payload:**
+**Core Fields:**
+- `status` (string, required): The status of the task. One of: `success`, `partial_success`, `failed`
+- `result` (object, required): The result of the task
+  - `output` (string): Human-readable output of the task
+  - `artifacts` (array): List of artifacts produced by the task
+
+**Evaluation Fields:**
+- `success` (boolean, optional): Indicates if the task was successful
+  - Used for quick success/failure determination
+  - Should be consistent with the `status` field
+  - Example: `true` for 'success', `false` for 'failed' or 'partial_success'
+
+- `score` (number, optional, 0.0-1.0): Normalized score indicating task performance
+  - 0.0 represents complete failure
+  - 1.0 represents perfect success
+  - Values in between indicate partial success
+  - Example: `0.85` for a task that met 85% of success criteria
+
+- `duration_sec` (number, optional): Duration of the task in seconds
+  - More precise than `metrics.duration_ms`
+  - Should be synchronized with `metrics.duration_ms`
+  - Example: `12.345` for 12 seconds and 345 milliseconds
+
+- `notes` (string, optional): Additional notes or observations
+  - Free-form text field for human-readable information
+  - Can include reasoning behind scores or success/failure
+  - Example: "Task succeeded but with minor warnings"
+
+**Performance Metrics:**
+- `metrics` (object, optional): System and task metrics
+  - `duration_ms` (number): Duration in milliseconds
+  - `memory_usage_mb` (number): Peak memory usage in MB
+  - `cpu_usage_percent` (number, optional): Average CPU usage
+  - `network_io_mb` (number, optional): Network I/O in MB
+  - `disk_usage_mb` (number, optional): Disk space used in MB
+
+**Example Payload (Basic):**
 ```json
 {
   "status": "success",
@@ -45,6 +100,32 @@ Sent when an agent successfully completes a task.
     "memory_usage_mb": 256
   }
 }
+```
+
+**Example Payload (With Evaluation Metrics):**
+```json
+{
+  "status": "success",
+  "success": true,
+  "score": 0.95,
+  "duration_sec": 12.34,
+  "notes": "Task completed with high accuracy",
+  "result": {
+    "output": "Analysis completed with 95% confidence",
+    "artifacts": [
+      {
+        "type": "report",
+        "path": "/reports/analysis-20250521.pdf",
+        "description": "Detailed analysis report"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 12340,
+    "memory_usage_mb": 342
+  }
+}
+```
 ```
 
 #### 2. Error (`error`)
