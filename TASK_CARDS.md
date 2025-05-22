@@ -1280,6 +1280,48 @@
 - Dry-run mode for safe testing
 **Branch**: feat/TASK-075C-alert-delivery-system
 
+### TASK-076B: Add Backend API Endpoints for Plan and Task History
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Created REST endpoints that expose recent plans and tasks, including retry history and evaluation scores.
+**Details**:
+- Implemented GET /plans/history endpoint returning plan execution history
+- Implemented GET /tasks/recent endpoint returning recent task executions with scores
+- Created comprehensive Pydantic models for schema validation
+- Built HistoryService with data aggregation from multiple sources (logs, postbox, plan files)
+- Added dummy data fallback when log files are missing
+- Integrated endpoints into main FastAPI application
+- Both endpoints tested and working with proper JSON output format
+- Supports query parameters for pagination and time filtering
+**Endpoints**:
+- `GET /plans/history` - Returns plan_id, submitted_at, agent_count, status
+- `GET /tasks/recent` - Returns trace_id, agent, score, success, retry_count, duration_sec
+**Files**:
+- `/apps/api/models/history.py` - Pydantic models for plan and task history
+- `/apps/api/services/history_service.py` - Data aggregation service with multiple source support
+- `/apps/api/routers/history.py` - API routes for history endpoints
+- `/apps/api/main.py` - Updated to include history router
+**Features**:
+- Schema validation with Pydantic models
+- Multiple data source support (logs, postbox, plan files)
+- Dummy data fallback for testing
+- Query parameter support (limit, hours)
+- Proper error handling and HTTP status codes
+**Branch**: feat/TASK-076B-api-task-plan-history
+
+### TASK-076C: Create Frontend Page for Plan & Task History
+- [x] Create /history route and React page
+- [x] Fetch from GET /plans/history and GET /tasks/recent
+- [x] Display plans table: ID, submitted_at, status, agent count
+- [x] Display tasks table: trace_id, agent, score, retry count, success
+- [x] Loading and error states for both tables
+- [x] Basic pagination for both tables
+- [x] Tailwind styling for responsive, clean layout
+- [x] Expandable row stub for future task detail
+- [x] Working /history page with real API data
+- [x] Responsive UI and clean layout
+- [ ] ARCH notified via outbox
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### 📘 Phase 5: UI & Visualization

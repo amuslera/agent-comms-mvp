@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_ENDPOINTS } from './config';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -6,6 +7,18 @@ export interface PlanSubmissionResponse {
   plan_id: string;
   status: string;
   message?: string;
+}
+
+export interface PlanHistoryItem {
+  plan_id: string;
+  submitted_at: string;
+  status: string;
+  agent_count: number;
+}
+
+export interface PlanHistoryResponse {
+  plans: PlanHistoryItem[];
+  count: number;
 }
 
 export const submitPlan = async (planContent: string): Promise<PlanSubmissionResponse> => {
@@ -39,6 +52,19 @@ export const submitPlan = async (planContent: string): Promise<PlanSubmissionRes
       const message = error.response?.data?.detail || error.message;
       throw new Error(`Failed to submit plan: ${message}`);
     }
+    throw error;
+  }
+};
+
+export const getPlanHistory = async (params?: { limit?: number; offset?: number }): Promise<PlanHistoryResponse> => {
+  try {
+    const response = await axios.get<PlanHistoryResponse>(
+      `${API_BASE_URL}${API_ENDPOINTS.PLANS_HISTORY}`,
+      { params }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching plan history:', error);
     throw error;
   }
 };

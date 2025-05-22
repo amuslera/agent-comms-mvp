@@ -546,5 +546,139 @@
       ],
       "commit_hash": "pending_commit"
     }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-076C-COMPLETE",
+    "timestamp": "2025-05-22T12:00:00Z",
+    "sender": "CA",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-076C",
+      "status": "completed",
+      "progress": 100,
+      "details": "The /history page is now live. It displays plan and task execution history with status, score, retry info, loading/error states, pagination, and a responsive layout. See TASK_CARDS.md for details.",
+      "changes": [
+        "Created /history route and React page",
+        "Fetched from GET /plans/history and GET /tasks/recent",
+        "Displayed plans and tasks tables with all required fields",
+        "Implemented loading and error states, pagination, and responsive Tailwind layout",
+        "Added expandable row stub for future detail view"
+      ],
+      "artifacts": [
+        {
+          "type": "frontend",
+          "path": "apps/web/src/app/history/page.tsx",
+          "description": "Plan & Task History UI page"
+        },
+        {
+          "type": "api_client",
+          "path": "apps/web/src/api/planApi.ts, apps/web/src/api/taskApi.ts",
+          "description": "API client functions for plan and task history"
+        },
+        {
+          "type": "documentation",
+          "path": "TASK_CARDS.md",
+          "description": "Task completion and implementation notes"
+        }
+      ]
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-076B-COMPLETE",
+    "timestamp": "2025-01-17T00:45:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-076B",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully implemented backend API endpoints for plan and task history with comprehensive data aggregation and schema validation.",
+      "changes": [
+        "Implemented GET /plans/history endpoint returning plan execution history",
+        "Implemented GET /tasks/recent endpoint returning recent task executions with scores",
+        "Created comprehensive Pydantic models for schema validation",
+        "Built HistoryService with data aggregation from multiple sources (logs, postbox, plan files)",
+        "Added dummy data fallback when log files are missing",
+        "Integrated endpoints into main FastAPI application",
+        "Both endpoints tested and working with proper JSON output format",
+        "Added query parameter support for pagination and time filtering"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/plans/history",
+          "description": "Returns plan execution history with metadata",
+          "parameters": ["limit (1-200)"],
+          "sample_response": {
+            "plan_id": "test-plan-001",
+            "submitted_at": "2025-05-21T20:00:00Z",
+            "agent_count": 3,
+            "status": "complete"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tasks/recent",
+          "description": "Returns recent task executions with evaluation scores",
+          "parameters": ["limit (1-500)", "hours (1-168)"],
+          "sample_response": {
+            "trace_id": "abc123",
+            "agent": "CA",
+            "score": 0.91,
+            "success": true,
+            "retry_count": 1,
+            "duration_sec": 3.8
+          }
+        }
+      ],
+      "data_sources": [
+        "logs/agent_scores.json - Task execution data with scores",
+        "postbox/*/outbox.json - Recent agent activity messages",
+        "plans/*.yaml - Plan definition files",
+        "logs/*plan*.json - Plan execution logs",
+        "dummy_data - Fallback when logs are missing"
+      ],
+      "artifacts": [
+        {
+          "type": "models",
+          "path": "apps/api/models/history.py",
+          "description": "Pydantic models for plan and task history"
+        },
+        {
+          "type": "service",
+          "path": "apps/api/services/history_service.py",
+          "description": "Data aggregation service with multiple source support"
+        },
+        {
+          "type": "router",
+          "path": "apps/api/routers/history.py",
+          "description": "API routes for history endpoints"
+        },
+        {
+          "type": "integration",
+          "path": "apps/api/main.py",
+          "description": "Updated main FastAPI app with history router"
+        }
+      ]
+    },
+    "metadata": {
+      "branch": "feat/TASK-076B-api-task-plan-history",
+      "test_results": "Both endpoints tested and working with proper output format",
+      "features_implemented": [
+        "schema_validation",
+        "multi_source_aggregation",
+        "dummy_data_fallback",
+        "query_parameters",
+        "error_handling",
+        "fastapi_integration"
+      ],
+      "endpoints_count": 2,
+      "data_sources_count": 5,
+      "commit_hash": "pending_commit"
+    }
   }
 ]

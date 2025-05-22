@@ -26,6 +26,20 @@ interface GetTasksParams {
   offset?: number;
 }
 
+export interface RecentTask {
+  trace_id: string;
+  agent: string;
+  score: number;
+  retry_count: number;
+  success: boolean;
+  submitted_at: string;
+}
+
+export interface RecentTasksResponse {
+  tasks: RecentTask[];
+  count: number;
+}
+
 /**
  * Fetches a list of tasks from the API
  * @param params Query parameters for filtering and pagination
@@ -57,6 +71,19 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
     return response.data;
   } catch (error) {
     console.error(`Error fetching task ${taskId}:`, error);
+    throw error;
+  }
+};
+
+export const getRecentTasks = async (params?: { limit?: number; offset?: number }): Promise<RecentTasksResponse> => {
+  try {
+    const response = await axios.get<RecentTasksResponse>(
+      `${API_BASE_URL}${API_ENDPOINTS.TASKS_RECENT}`,
+      { params }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching recent tasks:', error);
     throw error;
   }
 };
