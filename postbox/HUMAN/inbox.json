@@ -1,0 +1,10 @@
+[
+  {
+    "type": "plan_escalation",
+    "plan_id": "test-plan-002",
+    "timestamp": "2025-05-22T06:15:26.189395+00:00",
+    "priority": "normal",
+    "message": "Plan test-plan-002 has been escalated for human review",
+    "requested_by": "api-action-endpoint"
+  }
+]

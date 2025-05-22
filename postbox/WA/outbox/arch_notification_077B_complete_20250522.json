@@ -1,0 +1,43 @@
+{
+  "message_id": "msg_wa_077B_complete_20250522",
+  "timestamp": "2025-05-22T08:30:00Z",
+  "message_type": "task_completion_notification",
+  "sender": "WA",
+  "recipient": "ARCH",
+  "content": {
+    "task_id": "TASK-077B",
+    "title": "Add Plan Control Bar UI Component",
+    "status": "completed",
+    "description": "Implemented a control bar for plan actions with toast notifications.",
+    "components_added": [
+      {
+        "name": "PlanControlBar",
+        "path": "/apps/web/src/components/plan/PlanControlBar.tsx",
+        "description": "Reusable component with resubmit, escalate, and cancel actions"
+      }
+    ],
+    "pages_updated": [
+      {
+        "path": "/apps/web/src/app/plan/page.tsx",
+        "changes": [
+          "Integrated PlanControlBar component",
+          "Added plan details section",
+          "Improved layout and styling"
+        ]
+      }
+    ],
+    "features_implemented": [
+      "Three action buttons with loading states",
+      "Toast notifications for user feedback",
+      "Responsive design with Tailwind CSS",
+      "Mock API integration ready for backend"
+    ],
+    "next_steps": [
+      "Backend implementation of the API endpoints",
+      "Integration with real plan data",
+      "User testing for the control flow"
+    ]
+  },
+  "status": "pending",
+  "priority": "normal"
+}

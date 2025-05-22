@@ -585,5 +585,93 @@
       "protocol_version": "1.0.0",
       "branch": "feat/TASK-071A-arch-tests"
     }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-076A-pushed",
+    "timestamp": "2025-05-22T05:30:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-076A",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully completed and pushed Plan DAG Viewer implementation to GitHub. ReactFlow-based visualization with color-coded task nodes, interactive controls, and responsive design is now ready for review and merge."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "feat/TASK-076A-dag-viewer-cc",
+      "github_url": "https://github.com/amuslera/agent-comms-mvp/pull/new/feat/TASK-076A-dag-viewer-cc",
+      "files_implemented": [
+        "/apps/web/src/components/PlanDAGViewer.tsx",
+        "/apps/web/src/app/plan/page.tsx",
+        "/apps/web/src/App.tsx (routing update)"
+      ],
+      "features_completed": [
+        "ReactFlow DAG visualization",
+        "Color-coded task status nodes (✅ success, ❌ failed, 🔄 retry, ⏳ running, ⏸️ pending)",
+        "Interactive controls with zoom, pan, minimap",
+        "Tailwind CSS styling (no emotion/styled)",
+        "Tooltips with agent metadata and scores",
+        "Mock data support with task dependencies",
+        "Responsive container design",
+        "Route integration at /plan"
+      ],
+      "integration_notes": [
+        "Fixed ReactFlow v11 import compatibility issues",
+        "Component accepts tasks prop or uses hardcoded mock data",
+        "Ready for integration with real plan API data",
+        "Tested and working on localhost:3000/plan"
+      ],
+      "sprint_milestone": "Phase 6.4 Sprint 1",
+      "ready_for_review": true,
+      "commit_hash": "a6d85a5"
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-077C-status",
+    "timestamp": "2025-05-22T05:45:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-077C",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully implemented FastAPI backend routes for task and plan control operations. Created comprehensive actions router with resubmit, escalate, and cancel endpoints."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "feat/TASK-077C-task-action-router",
+      "files_created": [
+        "/apps/api/routers/actions.py"
+      ],
+      "files_updated": [
+        "/apps/api/main.py",
+        "/TASK_CARDS.md"
+      ],
+      "endpoints_implemented": [
+        "POST /api/v1/plans/{plan_id}/resubmit",
+        "POST /api/v1/plans/{plan_id}/escalate", 
+        "POST /api/v1/plans/{plan_id}/cancel"
+      ],
+      "features_completed": [
+        "ActionResult response model with structured metadata",
+        "Comprehensive logging to logs/plan_actions.log",
+        "Simulation stubs for plan reposting, human escalation, task cancellation",
+        "Full error handling and HTTP status codes",
+        "Integration with FastAPI main application"
+      ],
+      "simulation_behavior": {
+        "resubmit": "Marks plan for reposting to orchestrator queue",
+        "escalate": "Writes escalation message to HUMAN inbox",
+        "cancel": "Simulates stopping tasks and marking plan cancelled"
+      },
+      "ready_for_testing": true,
+      "safe_with_mock_data": true,
+      "phase_milestone": "Phase 6.4 Sprint 1"
+    }
   }
 ]

@@ -1,7 +1,5 @@
 import axios from 'axios';
-import { API_ENDPOINTS } from './config';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { API_BASE_URL, API_ENDPOINTS } from './config';
 
 export interface PlanSubmissionResponse {
   plan_id: string;
@@ -24,20 +22,19 @@ export interface PlanHistoryResponse {
 export const submitPlan = async (planContent: string): Promise<PlanSubmissionResponse> => {
   try {
     // Try to parse as JSON first
-    let parsedContent;
     try {
-      parsedContent = JSON.parse(planContent);
+      JSON.parse(planContent);
     } catch (e) {
       // If not valid JSON, try to parse as YAML
       try {
         const { default: yaml } = await import('yaml');
-        parsedContent = yaml.parse(planContent);
+        yaml.parse(planContent);
       } catch (yamlError) {
         throw new Error('Content is neither valid JSON nor YAML');
       }
     }
 
-    const response = await axios.post(`${API_BASE_URL}/plans/`, {
+    const response = await axios.post(`${API_BASE_URL}${API_ENDPOINTS.PLANS}/`, {
       plan: planContent,
       execute: false
     }, {

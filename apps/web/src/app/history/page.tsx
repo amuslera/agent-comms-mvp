@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getPlanHistory, PlanHistoryItem } from '../../api/planApi';
 import { getRecentTasks, RecentTask } from '../../api/taskApi';
+import Drawer from '../../components/ui/Drawer';
 
 const PAGE_SIZE = 10;
 
@@ -18,6 +19,10 @@ export default function HistoryPage() {
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState<string | null>(null);
   const [tasksPage, setTasksPage] = useState(0);
+
+  // Drawer state
+  const [selectedTask, setSelectedTask] = useState<RecentTask | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Fetch plans
   useEffect(() => {
@@ -44,6 +49,18 @@ export default function HistoryPage() {
       .catch((err) => setTasksError(err.message || 'Failed to load recent tasks'))
       .finally(() => setTasksLoading(false));
   }, [tasksPage]);
+
+  // Handler to open drawer
+  const handleTaskClick = (task: RecentTask) => {
+    setSelectedTask(task);
+    setDrawerOpen(true);
+  };
+
+  // Handler to close drawer
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+    setTimeout(() => setSelectedTask(null), 200); // Wait for animation
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -133,7 +150,11 @@ export default function HistoryPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {tasks.map((task) => (
-                  <tr key={task.trace_id} className="hover:bg-gray-50 transition">
+                  <tr
+                    key={task.trace_id}
+                    className="hover:bg-gray-50 transition cursor-pointer"
+                    onClick={() => handleTaskClick(task)}
+                  >
                     <td className="px-4 py-2 font-mono text-sm">{task.trace_id}</td>
                     <td className="px-4 py-2 text-sm">{task.agent}</td>
                     <td className="px-4 py-2 text-sm">{task.score != null ? task.score.toFixed(2) : '-'}</td>
@@ -178,6 +199,49 @@ export default function HistoryPage() {
             Next
           </button>
         </div>
+        {/* Task Detail Drawer */}
+        <Drawer open={drawerOpen} onClose={handleDrawerClose} title="Task Details">
+          {selectedTask ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="text-gray-500 text-xs">Trace ID</div>
+                <div className="font-mono text-xs break-all">{selectedTask.trace_id || 'N/A'}</div>
+                <div className="text-gray-500 text-xs">Agent</div>
+                <div>{selectedTask.agent || 'N/A'}</div>
+                <div className="text-gray-500 text-xs">Status</div>
+                <div>{selectedTask.success === true ? 'Success' : selectedTask.success === false ? 'Failed' : 'N/A'}</div>
+                <div className="text-gray-500 text-xs">Score</div>
+                <div>{selectedTask.score != null ? selectedTask.score.toFixed(2) : 'N/A'}</div>
+                <div className="text-gray-500 text-xs">Duration (sec)</div>
+                <div>{selectedTask.duration_sec != null ? selectedTask.duration_sec : 'N/A'}</div>
+                <div className="text-gray-500 text-xs">Retry Count</div>
+                <div>{selectedTask.retry_count != null ? selectedTask.retry_count : 'N/A'}</div>
+              </div>
+              <div>
+                <div className="text-gray-500 text-xs mb-1">Input Payload</div>
+                <pre className="bg-gray-100 rounded p-2 text-xs overflow-x-auto">{JSON.stringify(selectedTask.input_payload || {}, null, 2)}</pre>
+              </div>
+              <div>
+                <div className="text-gray-500 text-xs mb-1">Output Payload</div>
+                <pre className="bg-gray-100 rounded p-2 text-xs overflow-x-auto">{JSON.stringify(selectedTask.output_payload || {}, null, 2)}</pre>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="text-gray-500 text-xs">Submitted</div>
+                <div>{selectedTask.submitted_at ? new Date(selectedTask.submitted_at).toLocaleString() : 'N/A'}</div>
+                <div className="text-gray-500 text-xs">Started</div>
+                <div>{selectedTask.started_at ? new Date(selectedTask.started_at).toLocaleString() : 'N/A'}</div>
+                <div className="text-gray-500 text-xs">Completed</div>
+                <div>{selectedTask.completed_at ? new Date(selectedTask.completed_at).toLocaleString() : 'N/A'}</div>
+              </div>
+              <div>
+                <div className="text-gray-500 text-xs mb-1">Retry History</div>
+                <div className="text-xs text-gray-400 italic">(stub) Retry history coming soon.</div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center text-gray-400">No task selected.</div>
+          )}
+        </Drawer>
       </section>
     </div>
   );

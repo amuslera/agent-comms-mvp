@@ -680,5 +680,153 @@
       "data_sources_count": 5,
       "commit_hash": "pending_commit"
     }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-076E+G-COMPLETE",
+    "timestamp": "2025-05-22T14:00:00Z",
+    "sender": "CA",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-076E+G",
+      "status": "completed",
+      "progress": 100,
+      "details": "CONTRIBUTING.md and folder structure plan have been added. CONTRIBUTING.md provides onboarding, workflow, and PR guidelines. FOLDER_STRUCTURE_PLAN.md audits current folders, notes inconsistencies, and proposes a consistent naming convention with migration suggestions.",
+      "changes": [
+        "Created /CONTRIBUTING.md with quickstart, folder overview, .env usage, task workflow, and PR process",
+        "Audited all top-level folders and naming conventions",
+        "Documented inconsistencies and proposed a consistent naming convention (kebab-case for folders, snake_case for Python, camelCase for React components, etc.)",
+        "Added migration suggestions and example structure to /docs/system/FOLDER_STRUCTURE_PLAN.md"
+      ],
+      "artifacts": [
+        {
+          "type": "documentation",
+          "path": "/CONTRIBUTING.md",
+          "description": "Contributor onboarding and workflow guide"
+        },
+        {
+          "type": "documentation",
+          "path": "/docs/system/FOLDER_STRUCTURE_PLAN.md",
+          "description": "Folder structure audit and naming proposal"
+        },
+        {
+          "type": "documentation",
+          "path": "TASK_CARDS.md",
+          "description": "Task completion and implementation notes"
+        }
+      ]
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-076H-COMPLETE",
+    "timestamp": "2025-05-22T16:00:00Z",
+    "sender": "CA",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-076H",
+      "status": "completed",
+      "progress": 100,
+      "details": "Full UI + API functionality test pass completed for Phase 6.4 Sprint 1 and cleanup. All major routes, API endpoints, environment variable handling, error boundaries, and build/lint checks were tested. No blocking issues found.",
+      "checklist": [
+        "/plan: DAG viewer loads, node colors/status/tooltips correct, zoom/pan/minimap work",
+        "/history: Plans and tasks tables load, pagination works, expandable row stub visible",
+        "GET /plans/history returns mock entries",
+        "GET /tasks/recent returns retry data and scores",
+        "Error fallback tested (log file renamed, fallback triggered)",
+        ".env.example present, Vite reads VITE_API_BASE_URL, API requests use env value",
+        "Error boundary: runtime error triggers fallback UI, refresh reloads app, error logged to console",
+        "npm run lint passes (minor warnings only)",
+        "npm run build passes, no blocking errors",
+        "npm run dev hot reload works"
+      ],
+      "artifacts": [
+        {
+          "type": "test_report",
+          "path": "TASK_CARDS.md",
+          "description": "Checklist summary and test results"
+        },
+        {
+          "type": "screenshots",
+          "path": "(see repo or attached)",
+          "description": "Screenshots of tested UI states"
+        }
+      ],
+      "open_issues": []
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-077A-COMPLETE",
+    "timestamp": "2025-05-22T18:00:00Z",
+    "sender": "CA",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-077A",
+      "status": "completed",
+      "progress": 100,
+      "details": "Task detail drawer is now live on the /history page. Users can click any task row to view a drawer with full task information, including trace_id, agent, status, score, duration, retry count, input/output payloads, timestamps, and a retry history stub. Drawer is responsive, accessible, and handles missing fields gracefully.",
+      "changes": [
+        "Created reusable Drawer component in components/ui/Drawer.tsx",
+        "Updated /history page to support click-to-open drawer for task rows",
+        "Drawer displays all required task details and handles missing fields",
+        "Drawer closes on overlay, close button, or ESC key",
+        "Responsive Tailwind styling, works with real or mock data"
+      ],
+      "artifacts": [
+        {
+          "type": "frontend",
+          "path": "apps/web/src/app/history/page.tsx",
+          "description": "/history page with task detail drawer"
+        },
+        {
+          "type": "component",
+          "path": "apps/web/src/components/ui/Drawer.tsx",
+          "description": "Reusable Drawer component"
+        },
+        {
+          "type": "documentation",
+          "path": "TASK_CARDS.md",
+          "description": "Task completion and implementation notes"
+        }
+      ]
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-077D-COMPLETE",
+    "timestamp": "2025-05-22T20:00:00Z",
+    "sender": "CA",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-077D",
+      "status": "completed",
+      "progress": 100,
+      "details": "Agent metrics dashboard page is now live at /agents. The page displays a responsive, color-coded table of agent performance metrics, including agent ID, task count, success rate, average score, and retry count. Table is styled with Tailwind, supports loading/error states, and is ready for future enhancements like sorting and trend lines.",
+      "changes": [
+        "Created /agents route and page in the app router",
+        "Fetched agent metrics from GET /metrics/agents",
+        "Displayed agent metrics in a responsive, color-coded table",
+        "Added loading and error states",
+        "Used Tailwind for styling and responsive layout",
+        "Color-coded score bars for success rate and average score"
+      ],
+      "artifacts": [
+        {
+          "type": "frontend",
+          "path": "apps/web/src/app/agents/page.tsx",
+          "description": "/agents page with agent metrics dashboard"
+        },
+        {
+          "type": "documentation",
+          "path": "TASK_CARDS.md",
+          "description": "Task completion and implementation notes"
+        }
+      ]
+    }
   }
 ]

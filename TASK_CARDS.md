@@ -1320,7 +1320,155 @@
 - [x] Expandable row stub for future task detail
 - [x] Working /history page with real API data
 - [x] Responsive UI and clean layout
-- [ ] ARCH notified via outbox
+- [x] ARCH notified via outbox (msg_wa_076DF_complete_20250521)
+
+### TASK-076D: Add .env Support
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Added environment variable support for the frontend application.
+**Details**:
+- Created/updated `.env.example` with required environment variables
+- Added frontend configuration in Vite
+- Updated API clients to use environment variables
+- Added proper TypeScript types for environment variables
+- Ensured `.env` is in `.gitignore`
+**Files**:
+- `/.env.example`
+- `/apps/web/src/api/config.ts`
+- `/apps/web/src/api/*.ts`
+- `/.gitignore`
+
+### TASK-076F: Add Global React Error Boundary
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Implemented global error handling with React Error Boundary.
+**Details**:
+- Created `ErrorBoundary` component with TypeScript support
+- Added error fallback UI with retry functionality
+- Integrated error boundary at the app root level
+- Added error logging to console
+- Implemented proper TypeScript types for error handling
+**Files**:
+- `/apps/web/src/components/ErrorBoundary.tsx`
+- `/apps/web/src/App.tsx`
+
+### TASK-076A: Repair or Replace the Plan DAG Viewer in React UI
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Repaired the broken Plan DAG Viewer component by replacing complex emotion/styled implementation with simplified ReactFlow + Tailwind CSS approach.
+**Details**:
+- Replaced broken PlanDAGViewer component with clean ReactFlow implementation
+- Converted from emotion/styled components to Tailwind CSS classes
+- Implemented color-coded nodes by status (✅ success → green, ❌ error → red, 🔄 retrying → yellow)
+- Added tooltips showing agent_id, score, and status information
+- Created working /plan route with DAG visualization
+- Added mock data with task dependencies and status examples
+- Verified development server and TypeScript compilation
+- Removed broken imports and complex styled component dependencies
+**Files**:
+- `/apps/web/src/components/PlanDAGViewer.tsx` - Simplified ReactFlow component
+- `/apps/web/src/app/plan/page.tsx` - New plan view route
+**Features**:
+- ReactFlow DAG with task nodes and edges
+- Status-based color coding with emoji indicators
+- Hover tooltips with metadata
+- Responsive container with controls and minimap
+- Mock data for testing with dependency relationships
+- Clean Tailwind CSS styling
+**Branch**: feat/TASK-076A-dag-viewer-cc
+
+### TASK-076E: Write CONTRIBUTING.md
+- [x] Created /CONTRIBUTING.md with quickstart, folder overview, .env usage, task workflow, and PR process.
+
+### TASK-076G: Folder Structure Audit & Proposal
+- [x] Audited all top-level folders and naming conventions.
+- [x] Documented inconsistencies and proposed a consistent naming convention (kebab-case for folders, snake_case for Python, camelCase for React components, etc.).
+- [x] Added migration suggestions and example structure to /docs/system/FOLDER_STRUCTURE_PLAN.md.
+
+### TASK-076H: Full UI + API Functionality Test After Sprint 1 + Cleanup
+- [x] Route & Component Testing
+  - [x] /plan: DAG viewer loads, node colors/status/tooltips correct, zoom/pan/minimap work
+  - [x] /history: Plans and tasks tables load, pagination works, expandable row stub visible
+- [x] API Test
+  - [x] GET /plans/history returns mock entries
+  - [x] GET /tasks/recent returns retry data and scores
+  - [x] Error fallback tested (log file renamed, fallback triggered)
+- [x] Environment Variable Test
+  - [x] .env.example present
+  - [x] Vite reads VITE_API_BASE_URL
+  - [x] API requests use env value (verified in browser devtools)
+- [x] Error Boundary Test
+  - [x] Runtime error injected, fallback UI appears, refresh reloads app, error logged to console
+- [x] Lint + Build Checks
+  - [x] npm run lint passes (minor warnings only)
+  - [x] npm run build passes, no blocking errors
+  - [x] npm run dev hot reload works
+- [x] Screenshots and details available in test report (see repo or attached)
+- [x] ARCH notified via outbox with summary and any open issues
+
+### TASK-077B: Add Plan Control Bar UI Component
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Added a control bar for plan actions (resubmit, escalate, cancel) with toast notifications.
+**Details**:
+- Created reusable `PlanControlBar` component with three action buttons
+- Implemented loading states and error handling
+- Added toast notifications for user feedback
+- Integrated with the plan page layout
+- Used Tailwind CSS for styling
+- Mock API calls ready for backend integration
+**Files**:
+- `/apps/web/src/components/plan/PlanControlBar.tsx` (new)
+- `/apps/web/src/app/plan/page.tsx` (updated)
+- `TASK_CARDS.md` (updated)
+
+### TASK-077A: Implement Task Detail Drawer in /history Page
+- [x] Created reusable Drawer component in components/ui/Drawer.tsx
+- [x] Updated /history page to support click-to-open drawer for task rows
+- [x] Drawer displays trace_id, agent, status, score, duration_sec, retry_count, input_payload, output_payload, timestamps, and retry history stub
+- [x] Error handling for missing/incomplete fields (shows N/A)
+- [x] Drawer closes on overlay, close button, or ESC key
+- [x] Responsive Tailwind styling
+- [x] Works with real or mock data
+- [x] ARCH notified via outbox
+
+### TASK-077C: Add Backend Routes for Task and Plan Control
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Implemented FastAPI endpoints for core plan/task control functions including resubmission, escalation, and cancellation.
+**Details**:
+- Created comprehensive actions router with three main endpoints:
+  * POST /api/v1/plans/{plan_id}/resubmit - Resubmits plan for execution
+  * POST /api/v1/plans/{plan_id}/escalate - Escalates plan to human review
+  * POST /api/v1/plans/{plan_id}/cancel - Cancels plan and marks inactive
+- Implemented structured logging to logs/plan_actions.log for all actions
+- Added comprehensive response models with ActionResult, metadata schemas
+- Simulated realistic behavior for each action type:
+  * Resubmit: Marks plan for reposting to orchestrator queue
+  * Escalate: Writes escalation message to HUMAN inbox
+  * Cancel: Simulates stopping tasks and marking plan cancelled
+- Full error handling and HTTP status codes
+- Integrated with FastAPI main application
+**Files**:
+- `/apps/api/routers/actions.py` - Main actions router with all endpoints
+- `/apps/api/main.py` - Updated to include actions router
+**Features**:
+- Standard ActionResult response model with success, message, metadata
+- Structured action logging with timestamps and plan tracking
+- Simulation stubs for integration with existing plan/task logic
+- Safe to work with mock data and real plan IDs
+- Comprehensive error handling and logging
+**Branch**: feat/TASK-077C-task-action-router
+
+### TASK-077D: Build Agent Metrics Dashboard Page
+- [x] Created /agents route and page in the app router
+- [x] Fetched agent metrics from GET /metrics/agents
+- [x] Displayed agent metrics in a responsive, color-coded table: Agent ID, Task Count, Success Rate, Average Score, Retry Count
+- [x] Added loading and error states
+- [x] Used Tailwind for styling and responsive layout
+- [x] Color-coded score bars for success rate and average score
+- [x] Table-based layout for scalability and future sorting/filtering
+- [x] ARCH notified via outbox
 
 ## ⏭️ Planned Tasks (Backlog)
 
