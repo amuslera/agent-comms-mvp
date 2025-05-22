@@ -1,0 +1,30 @@
+{
+  "type": "task_result",
+  "protocol_version": "1.0",
+  "sender_id": "WA",
+  "recipient_id": "ARCH",
+  "timestamp": "2025-05-21T21:15:00Z",
+  "task_id": "TASK-074A-002",
+  "trace_id": "simple-456-abc-123",
+  "payload": {
+    "status": "success",
+    "result": {
+      "output": "Task completed successfully",
+      "artifacts": [
+        {
+          "type": "log",
+          "path": "/logs/task-074A-002.log",
+          "description": "Execution log file"
+        }
+      ]
+    },
+    "metrics": {
+      "duration_ms": 1234,
+      "memory_usage_mb": 128
+    }
+  },
+  "context": {
+    "component": "worker-node-01",
+    "environment": "production"
+  }
+}

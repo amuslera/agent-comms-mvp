@@ -1,0 +1,49 @@
+{
+  "type": "task_result",
+  "protocol_version": "1.0",
+  "sender_id": "CA",
+  "recipient_id": "ARCH",
+  "timestamp": "2025-05-21T21:30:00Z",
+  "task_id": "TASK-074A-001",
+  "retry_count": 0,
+  "trace_id": "score-123-xyz-789",
+  "payload": {
+    "status": "success",
+    "success": true,
+    "score": 0.92,
+    "duration_sec": 8.45,
+    "notes": "Task completed with high confidence. All validations passed.",
+    "result": {
+      "output": "Data processing completed successfully with 92% confidence score",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "/reports/analysis-20250521-2130.pdf",
+          "description": "Detailed analysis report with confidence scores"
+        },
+        {
+          "type": "dataset",
+          "path": "/data/processed/results-20250521-2130.json",
+          "description": "Processed dataset with confidence metrics"
+        }
+      ]
+    },
+    "metrics": {
+      "duration_ms": 8450,
+      "memory_usage_mb": 512,
+      "cpu_usage_percent": 78.5,
+      "network_io_mb": 12.3
+    }
+  },
+  "context": {
+    "pipeline_id": "pipe-074A",
+    "execution_id": "exec-074A-001",
+    "environment": "staging",
+    "evaluation_metrics": {
+      "precision": 0.94,
+      "recall": 0.91,
+      "f1_score": 0.925,
+      "threshold_used": 0.85
+    }
+  }
+}

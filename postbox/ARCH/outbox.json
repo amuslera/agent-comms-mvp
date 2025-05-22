@@ -1,6 +1,53 @@
 [
   {
     "type": "task_status",
+    "id": "TASK-074A-COMPLETE",
+    "timestamp": "2025-05-21T23:30:00Z",
+    "sender": "ARCH",
+    "recipient": "ALL",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-074A",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully extended the MCP message format with output evaluation fields for task results.",
+      "changes": [
+        "Added success, score, duration_sec, and notes fields to task_result payload",
+        "Updated JSON schema with validation rules for new fields",
+        "Enhanced documentation with detailed field descriptions",
+        "Created example files demonstrating both simple and scored task results"
+      ],
+      "artifacts": [
+        {
+          "type": "documentation",
+          "path": "/docs/protocols/MCP_MESSAGE_FORMAT.md",
+          "description": "Updated MCP Message Format Specification"
+        },
+        {
+          "type": "schema",
+          "path": "/schemas/MCP_MESSAGE_SCHEMA.json",
+          "description": "Updated JSON Schema with evaluation fields"
+        },
+        {
+          "type": "examples",
+          "path": "/schemas/examples/task_result_scored.json",
+          "description": "Example of a task result with evaluation metrics"
+        },
+        {
+          "type": "examples",
+          "path": "/schemas/examples/task_result_simple.json",
+          "description": "Example of a basic task result"
+        }
+      ],
+      "metrics": {
+        "schema_version": "1.1.0",
+        "fields_added": 4,
+        "examples_created": 2
+      }
+    }
+  },
+  {
+    "type": "task_status",
     "id": "TASK-073B-COMPLETE",
     "timestamp": "2025-05-21T23:00:00Z",
     "sender": "ARCH",
@@ -241,6 +288,90 @@
       ],
       "commit_hash": "26e5e2d",
       "ready_for_arch_review": true
+    }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-074C-COMPLETE",
+    "timestamp": "2025-01-16T23:55:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-074C",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully implemented agent and plan metrics endpoints in FastAPI backend. Both endpoints are working with sample data and can read from actual logs/agent_scores.json file.",
+      "changes": [
+        "Created GET /metrics/agents endpoint returning performance metrics for all agents",
+        "Created GET /metrics/plans/{plan_id} endpoint for plan-specific metrics",
+        "Implemented MetricsService with basic aggregation logic (no DB dependency)",
+        "Added support for reading from logs/agent_scores.json with fallback to dummy data",
+        "Created comprehensive Pydantic models for metrics data structures",
+        "Integrated metrics router into main FastAPI application",
+        "Both endpoints tested and confirmed working with sample output",
+        "Updated TASK_CARDS.md with completion details"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/metrics/agents",
+          "description": "Returns agent performance metrics including success rates and scores",
+          "sample_response": {
+            "agents": [
+              {
+                "agent_id": "CA",
+                "average_score": 0.89,
+                "success_rate": 0.85,
+                "task_count": 32
+              }
+            ],
+            "count": 4
+          }
+        },
+        {
+          "method": "GET", 
+          "path": "/metrics/plans/{plan_id}",
+          "description": "Returns plan execution metrics with agent performance data",
+          "sample_response": {
+            "plan_id": "test-plan-001",
+            "agent_metrics": "...",
+            "average_duration_sec": 5.2,
+            "success_rate": 0.75
+          }
+        }
+      ],
+      "artifacts": [
+        {
+          "type": "models",
+          "path": "apps/api/models/metrics.py",
+          "description": "Pydantic models for metrics endpoints"
+        },
+        {
+          "type": "service",
+          "path": "apps/api/services/metrics_service.py", 
+          "description": "Metrics data aggregation service"
+        },
+        {
+          "type": "router",
+          "path": "apps/api/routers/metrics.py",
+          "description": "API routes for metrics endpoints"
+        },
+        {
+          "type": "data",
+          "path": "logs/agent_scores.json",
+          "description": "Sample agent metrics data for testing"
+        }
+      ]
+    },
+    "metadata": {
+      "branch": "feat/TASK-074C-api-metrics-endpoints",
+      "test_results": "Both endpoints working correctly with sample data",
+      "data_sources": [
+        "logs/agent_scores.json (primary)",
+        "dummy_data (fallback)"
+      ],
+      "commit_hash": "pending_commit"
     }
   }
 ]

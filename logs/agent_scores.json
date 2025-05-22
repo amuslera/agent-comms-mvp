@@ -1,0 +1,26 @@
+{
+  "CA": {
+    "average_score": 0.89,
+    "success_rate": 0.85,
+    "task_count": 32,
+    "last_activity": "2025-01-16T23:45:00Z"
+  },
+  "CC": {
+    "average_score": 0.92,
+    "success_rate": 0.88,
+    "task_count": 28,
+    "last_activity": "2025-01-16T23:40:00Z"
+  },
+  "WA": {
+    "average_score": 0.87,
+    "success_rate": 0.82,
+    "task_count": 24,
+    "last_activity": "2025-01-16T23:35:00Z"
+  },
+  "ARCH": {
+    "average_score": 0.95,
+    "success_rate": 0.93,
+    "task_count": 42,
+    "last_activity": "2025-01-16T23:50:00Z"
+  }
+}

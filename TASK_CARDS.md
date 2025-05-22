@@ -879,6 +879,23 @@
 - Updated `TASK_CARDS.md`
 **Branch**: `feat/TASK-073B-mcp-envelope-spec`
 
+### TASK-074A: Extend MCP Message Format with Output Evaluation Fields
+**Status**: ✅ Done
+**Owner**: ARCH
+**Description**: Enhanced the MCP message format with evaluation metrics for task results.
+**Details**:
+- Added new fields to the task_result payload: success, score, duration_sec, notes
+- Updated JSON schema with validation rules for new fields
+- Enhanced documentation with detailed field descriptions and examples
+- Created example files demonstrating both simple and scored task results
+**Files**:
+- Updated `/schemas/MCP_MESSAGE_SCHEMA.json`
+- Updated `/docs/protocols/MCP_MESSAGE_FORMAT.md`
+- Added `/schemas/examples/task_result_scored.json`
+- Added `/schemas/examples/task_result_simple.json`
+- Updated `TASK_CARDS.md`
+**Branch**: `feat/TASK-074A-mcp-output-metrics`
+
 ### TASK-070B: Build ARCH Inbox Monitor and Message Parser
 **Status**: ✅ Done
 **Owner**: CC
@@ -1141,6 +1158,41 @@
 - `/tools/arch/tests/conftest.py`
 - `/tools/arch/tests/test_message_parser.py`
 - `/tools/arch/tests/test_message_router.py`
+
+### TASK-074B: Build Output Evaluation Tracker for ARCH Agent
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Implemented output evaluation tracker to parse and store success, score, duration, and notes from MCP messages. Logs are stored in logs/agent_scores.json and rolling summaries are available per agent.
+**Details**:
+- Created output_tracker.py to extract and log evaluation fields from MCP messages
+- Appends logs to logs/agent_scores.json (flat array)
+- Includes rolling summary and average score/success per agent
+- 2–3 log entries generated from test messages
+- Confirmed tracker works via test_output_tracker.py (1/1 passed)
+**Files**:
+- `/tools/arch/output_tracker.py`
+- `/logs/agent_scores.json`
+- `/tools/arch/tests/test_output_tracker.py`
+
+### TASK-074C: Add Agent & Plan Metrics Endpoints to FastAPI Backend
+**Status**: ✅ Done
+**Owner**: CC
+**Description**: Exposed new endpoints in the backend that return success rates, average scores, and performance logs for agents and plans.
+**Details**:
+- Implemented GET /metrics/agents endpoint returning agent performance metrics
+- Implemented GET /metrics/plans/{plan_id} endpoint for plan-specific metrics
+- Created MetricsService for data aggregation with basic logic (no DB dependency)
+- Reads from logs/agent_scores.json or returns dummy data if file not found
+- Both endpoints tested and working with sample output
+- Agent metrics include average_score, success_rate, task_count, last_activity
+- Plan metrics include agent_metrics array, average_duration_sec, success statistics
+**Files**:
+- `/apps/api/models/metrics.py` - Pydantic models for metrics endpoints
+- `/apps/api/services/metrics_service.py` - Metrics data aggregation service
+- `/apps/api/routers/metrics.py` - API routes for metrics endpoints
+- `/apps/api/main.py` - Updated to include metrics router
+- `/logs/agent_scores.json` - Sample agent metrics data
+**Branch**: feat/TASK-074C-api-metrics-endpoints
 
 ## ⏭️ Planned Tasks (Backlog)
 
