@@ -26,27 +26,37 @@ export default function HistoryPage() {
 
   // Fetch plans
   useEffect(() => {
+    console.log('Fetching plans...');
     setPlansLoading(true);
     setPlansError(null);
     getPlanHistory({ limit: PAGE_SIZE, offset: plansPage * PAGE_SIZE })
       .then((data) => {
+        console.log('Plans data received:', data);
         setPlans(data.plans);
         setPlansCount(data.count);
       })
-      .catch((err) => setPlansError(err.message || 'Failed to load plan history'))
+      .catch((err) => {
+        console.error('Plans error:', err);
+        setPlansError(err.message || 'Failed to load plan history');
+      })
       .finally(() => setPlansLoading(false));
   }, [plansPage]);
 
   // Fetch tasks
   useEffect(() => {
+    console.log('Fetching tasks...');
     setTasksLoading(true);
     setTasksError(null);
     getRecentTasks({ limit: PAGE_SIZE, offset: tasksPage * PAGE_SIZE })
       .then((data) => {
+        console.log('Tasks data received:', data);
         setTasks(data.tasks);
         setTasksCount(data.count);
       })
-      .catch((err) => setTasksError(err.message || 'Failed to load recent tasks'))
+      .catch((err) => {
+        console.error('Tasks error:', err);
+        setTasksError(err.message || 'Failed to load recent tasks');
+      })
       .finally(() => setTasksLoading(false));
   }, [tasksPage]);
 

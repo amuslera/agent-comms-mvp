@@ -9,6 +9,9 @@ import PlanSubmission from './pages/PlanSubmission';
 import MessagesPage from './pages/arch/Messages';
 import PlanPage from './app/plan/page';
 import HistoryPage from './app/history/page';
+import HistoryDebug from './app/history/debug';
+import SimpleHistory from './app/history/simple';
+import WorkingHistory from './app/history/working';
 
 // Temporary simple PlanView without ReactFlow to avoid the error
 const SimplePlanView: React.FC = () => {
@@ -76,7 +79,9 @@ export const App: React.FC = () => {
               <Route index element={<Dashboard />} />
               <Route path="agents" element={<Agents />} />
               <Route path="plans/submit" element={<PlanSubmission />} />
-              <Route path="history" element={<HistoryPage />} />
+              <Route path="history" element={<WorkingHistory />} />
+              <Route path="history-debug" element={<HistoryDebug />} />
+              <Route path="history-full" element={<HistoryPage />} />
               <Route path="arch/messages" element={<MessagesPage />} />
             </Route>
             <Route path="/plans/view/:planId" element={<SimplePlanView />} />
