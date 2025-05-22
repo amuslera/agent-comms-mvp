@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { getPlanHistory, PlanHistoryItem } from '../../api/planApi';
-import { getRecentTasks, RecentTask } from '../../api/taskApi';
+import { getPlanHistory } from '../../api/planApi';
+import { getRecentTasks } from '../../api/taskApi';
+
+interface PlanHistoryItem {
+  plan_id: string;
+  submitted_at: string;
+  status: string;
+  agent_count: number;
+}
+
+interface RecentTask {
+  trace_id: string;
+  agent: string;
+  score: number;
+  retry_count: number;
+  success: boolean;
+  submitted_at: string;
+}
 import Drawer from '../../components/ui/Drawer';
 
 const PAGE_SIZE = 10;
@@ -203,7 +219,7 @@ export default function HistoryPage() {
           <span className="text-sm">Page {tasksPage + 1}</span>
           <button
             className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-            onClick={() => setTasksPage((p) => ((p + 1) * PAGE_SIZE < tasksCount ? p + 1 : p))}}
+            onClick={() => setTasksPage((p) => ((p + 1) * PAGE_SIZE < tasksCount ? p + 1 : p))}
             disabled={(tasksPage + 1) * PAGE_SIZE >= tasksCount}
           >
             Next

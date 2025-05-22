@@ -79,7 +79,7 @@ export const App: React.FC = () => {
               <Route index element={<Dashboard />} />
               <Route path="agents" element={<Agents />} />
               <Route path="plans/submit" element={<PlanSubmission />} />
-              <Route path="history" element={<WorkingHistory />} />
+              <Route path="history" element={<HistoryPage />} />
               <Route path="history-debug" element={<HistoryDebug />} />
               <Route path="history-full" element={<HistoryPage />} />
               <Route path="arch/messages" element={<MessagesPage />} />

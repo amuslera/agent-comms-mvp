@@ -32,9 +32,9 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(history.router)
 app.include_router(plans.router)
 app.include_router(metrics.router)
-app.include_router(history.router)
 app.include_router(actions.router)
 
 @app.get("/health", tags=["Health"])
@@ -168,6 +168,116 @@ async def get_task(
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
     
     return TASKS_BY_ID[task_id]
+
+
+class RecentTask(BaseModel):
+    trace_id: str
+    agent: str
+    score: Optional[float]
+    retry_count: int
+    success: bool
+    submitted_at: Optional[str] = None
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    duration_sec: Optional[float] = None
+    input_payload: Optional[dict] = None
+    output_payload: Optional[dict] = None
+
+
+class RecentTasksResponse(BaseModel):
+    tasks: List[RecentTask]
+    count: int
+
+
+@app.get("/tasks/recent", response_model=RecentTasksResponse, tags=["Tasks"])
+async def get_recent_tasks(
+    limit: int = Query(10, description="Maximum number of tasks to return"),
+    offset: int = Query(0, description="Number of tasks to skip")
+):
+    """
+    Get recent task runs with execution details.
+    
+    Args:
+        limit: Maximum number of tasks to return
+        offset: Number of tasks to skip
+        
+    Returns:
+        RecentTasksResponse: List of recent tasks with execution details
+    """
+    # Sample recent tasks data with more realistic information
+    sample_tasks = [
+        RecentTask(
+            trace_id="summary-ARCH-1737071400",
+            agent="ARCH",
+            score=0.95,
+            success=True,
+            retry_count=0,
+            duration_sec=2.3,
+            submitted_at="2025-01-16T23:50:00Z",
+            started_at="2025-01-16T23:50:01Z",
+            completed_at="2025-01-16T23:50:03Z",
+            input_payload={"task": "orchestrate_plan", "plan_id": "plan_001"},
+            output_payload={"status": "completed", "tasks_assigned": 3}
+        ),
+        RecentTask(
+            trace_id="summary-CA-1737071100",
+            agent="CA",
+            score=0.89,
+            success=True,
+            retry_count=1,
+            duration_sec=4.7,
+            submitted_at="2025-01-16T23:45:00Z",
+            started_at="2025-01-16T23:45:02Z",
+            completed_at="2025-01-16T23:45:07Z",
+            input_payload={"task": "analyze_context", "data": "user_request"},
+            output_payload={"analysis": "task_classification", "confidence": 0.89}
+        ),
+        RecentTask(
+            trace_id="summary-CC-1737070800",
+            agent="CC", 
+            score=0.92,
+            success=True,
+            retry_count=0,
+            duration_sec=1.8,
+            submitted_at="2025-01-16T23:40:00Z",
+            started_at="2025-01-16T23:40:01Z",
+            completed_at="2025-01-16T23:40:03Z",
+            input_payload={"task": "generate_code", "requirements": "api_endpoint"},
+            output_payload={"code_generated": True, "files_created": 2}
+        ),
+        RecentTask(
+            trace_id="summary-WA-1737070500",
+            agent="WA",
+            score=0.87,
+            success=True,
+            retry_count=0,
+            duration_sec=3.1,
+            submitted_at="2025-01-16T23:35:00Z",
+            started_at="2025-01-16T23:35:01Z",
+            completed_at="2025-01-16T23:35:04Z",
+            input_payload={"task": "web_interaction", "url": "https://example.com"},
+            output_payload={"data_extracted": True, "pages_processed": 1}
+        ),
+        RecentTask(
+            trace_id="failed-task-1737070200",
+            agent="CC",
+            score=0.25,
+            success=False,
+            retry_count=3,
+            duration_sec=12.5,
+            submitted_at="2025-01-16T23:30:00Z",
+            started_at="2025-01-16T23:30:02Z",
+            completed_at="2025-01-16T23:30:15Z",
+            input_payload={"task": "complex_analysis", "timeout": 10},
+            output_payload={"error": "timeout_exceeded", "partial_results": True}
+        )
+    ]
+    
+    # Apply pagination
+    total_count = len(sample_tasks)
+    paginated_tasks = sample_tasks[offset:offset + limit]
+    
+    return RecentTasksResponse(tasks=paginated_tasks, count=total_count)
 
 
 if __name__ == "__main__":

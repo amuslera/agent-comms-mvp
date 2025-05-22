@@ -71,6 +71,55 @@ async def list_plans(
         
     return plans
 
+@router.get("/history", response_model=Dict[str, Any])
+async def get_plan_history(
+    limit: int = Query(10, description="Number of plans to return"),
+    offset: int = Query(0, description="Number of plans to skip"),
+    plan_service: PlanService = Depends(get_plan_service)
+) -> Dict[str, Any]:
+    """Get plan history with pagination.
+    
+    Args:
+        limit: Number of plans to return (default: 10)
+        offset: Number of plans to skip (default: 0)
+        
+    Returns:
+        Dict[str, Any]: Plans history with count
+    """
+    # Get all plans and return a sample for now
+    plans = await plan_service.list_plans()
+    
+    # Sample plan history data
+    sample_plans = [
+        {
+            "plan_id": "plan_001",
+            "submitted_at": "2025-01-16T20:00:00Z",
+            "status": "completed",
+            "agent_count": 3
+        },
+        {
+            "plan_id": "plan_002", 
+            "submitted_at": "2025-01-16T19:30:00Z",
+            "status": "failed",
+            "agent_count": 2
+        },
+        {
+            "plan_id": "plan_003",
+            "submitted_at": "2025-01-16T19:00:00Z", 
+            "status": "in_progress",
+            "agent_count": 4
+        }
+    ]
+    
+    # Apply pagination
+    total_count = len(sample_plans)
+    paginated_plans = sample_plans[offset:offset + limit]
+    
+    return {
+        "plans": paginated_plans,
+        "count": total_count
+    }
+
 @router.post("/{plan_id}/execute", response_model=PlanResponse)
 async def execute_plan(
     plan_id: str,
