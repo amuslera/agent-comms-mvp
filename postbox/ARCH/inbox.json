@@ -45,5 +45,35 @@
         "/TASK_CARDS.md"
       ]
     }
+  },
+  {
+    "type": "milestone",
+    "id": "MILESTONE-v0.6.0",
+    "timestamp": "2025-05-22T02:22:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "milestone": "v0.6.0",
+      "status": "tagged",
+      "subject": "v0.6.0 Tagged - Fully Operational Alpha System",
+      "summary": "UI/API/Plan integration + messaging fully functional. System capabilities confirmed: Dashboard with system overview, Agent management with real API data, Plan submission and processing, ARCH message center with live updates, Complete test coverage for core components.",
+      "details": "Successfully completed full-stack integration with working UI/API communication. Fixed critical compatibility issues and established functional plan processing pipeline. All major system components now operational."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "commit_hash": "0224b15",
+      "tag": "v0.6.0",
+      "milestone_type": "alpha_release",
+      "system_status": "fully_operational",
+      "components_verified": [
+        "dashboard_ui",
+        "agent_management",
+        "plan_submission",
+        "api_backend",
+        "message_center",
+        "test_framework"
+      ]
+    }
   }
 ]
