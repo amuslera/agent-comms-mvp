@@ -1591,6 +1591,24 @@
 - `apps/api/main.py` (router order and endpoints)
 - `apps/api/routers/plans.py` (plan history endpoint)
 
+### TASK-080A: YAML Plan Schema + Sample Plan
+**Status**: ✅ Done
+**Owner**: CC
+**Branch**: feat/TASK-080A-plan-schema
+**Description**: Created comprehensive JSON schema for plan YAML files with MCP-compatible sample plan.
+**Details**:
+- Defined complete JSON schema for YAML plan validation in `/schemas/PLAN_SCHEMA.json`
+- Created comprehensive sample plan demonstrating all schema features in `/plans/sample-plan-001.yaml`
+- Ensured full MCP message protocol compatibility (agent IDs, task IDs, field mapping)
+- Validated schema supports all required fields: plan_id, description, tasks with task_id, agent, task_type, content, parameters
+- Added extensive validation patterns, conditional execution, retry strategies, and notification systems
+- Implemented dependency management for task orchestration
+- Schema supports all four agents (ARCH, CA, CC, WA) and multiple task types
+- Comprehensive 7-task sample pipeline demonstrates data processing workflow with parallel execution
+**Files**:
+- `/schemas/PLAN_SCHEMA.json` - Complete JSON schema with validation rules
+- `/plans/sample-plan-001.yaml` - Comprehensive sample plan with all features
+
 ### 🔮 Phase 6: Advanced Features (Future)
 - API gateway for external agent comms
 - Persistent task loops

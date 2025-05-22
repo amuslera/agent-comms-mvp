@@ -1,0 +1,311 @@
+# Comprehensive Sample Plan for Bluelabel Agent OS
+# Version: 1.0.0
+# Description: Demonstrates full schema capabilities with data processing pipeline
+
+metadata:
+  plan_id: "sample-plan-001"
+  version: "1.0.0"
+  created: "2025-05-22T08:00:00Z"
+  description: "Comprehensive data processing and reporting pipeline with error handling"
+  priority: "high"
+  timeout: "2h"
+  tags: ["data-processing", "reporting", "sample", "comprehensive"]
+  author: "CC Agent"
+  environment: "development"
+
+# Plan-level variables that can be referenced in tasks
+variables:
+  data_source: "/data/input"
+  report_destination: "/reports/output"
+  notification_channel: "pipeline-alerts"
+  max_file_size: "100MB"
+  processing_mode: "batch"
+
+# Plan-level notification configuration
+notifications:
+  on_start: ["admin@bluelabel.com"]
+  on_complete: ["team@bluelabel.com", "admin@bluelabel.com"]
+  on_failure: ["oncall@bluelabel.com", "admin@bluelabel.com"]
+
+# Execution hooks
+hooks:
+  before_start: 
+    - "echo 'Starting data processing pipeline'"
+    - "mkdir -p /tmp/pipeline_logs"
+  after_complete:
+    - "echo 'Pipeline completed successfully'"
+    - "cleanup_temp_files.sh"
+  on_failure:
+    - "echo 'Pipeline failed - initiating rollback'"
+    - "rollback_changes.sh"
+
+tasks:
+  # Task 1: Data Validation and Preprocessing
+  - task_id: "VALIDATE_INPUT_DATA"
+    agent: "CA"
+    task_type: "data_processing"
+    description: "Validate and preprocess incoming data files"
+    priority: "critical"
+    deadline: "2025-05-22T08:30:00Z"
+    
+    content:
+      action: "validate_data"
+      parameters:
+        input_directory: "${data_source}"
+        validation_rules:
+          - "check_file_format"
+          - "validate_schema"
+          - "check_completeness"
+        max_file_size: "${max_file_size}"
+        file_patterns: ["*.csv", "*.json"]
+        output_directory: "/data/validated"
+      requirements:
+        - "python>=3.8"
+        - "pandas>=1.5.0"
+        - "jsonschema>=4.0.0"
+      input_files:
+        - "/data/input/*.csv"
+        - "/data/input/*.json"
+      output_files:
+        - "/data/validated/processed_data.csv"
+        - "/data/validated/validation_report.json"
+      environment_variables:
+        PYTHONPATH: "/opt/pipeline/lib"
+        LOG_LEVEL: "INFO"
+    
+    dependencies: []
+    max_retries: 2
+    timeout: "15m"
+    retry_strategy: "exponential_backoff"
+    retry_delay: "30s"
+    
+    notifications:
+      on_failure: ["data-team@bluelabel.com"]
+    
+    metadata:
+      cost_center: "data-ops"
+      compliance_required: true
+
+  # Task 2: Data Transformation (depends on validation)
+  - task_id: "TRANSFORM_DATA"
+    agent: "CA"
+    task_type: "data_processing"
+    description: "Apply business rules and transform validated data"
+    priority: "high"
+    deadline: "2025-05-22T09:00:00Z"
+    
+    content:
+      action: "transform_data"
+      parameters:
+        input_file: "/data/validated/processed_data.csv"
+        transformation_config: "/config/transform_rules.yaml"
+        output_format: "parquet"
+        partitioning_scheme: "date"
+        compression: "snappy"
+      requirements:
+        - "pyarrow>=10.0.0"
+        - "pyspark>=3.3.0"
+      input_files:
+        - "/data/validated/processed_data.csv"
+        - "/config/transform_rules.yaml"
+      output_files:
+        - "/data/transformed/dataset.parquet"
+        - "/data/transformed/transformation_log.json"
+    
+    dependencies: ["VALIDATE_INPUT_DATA"]
+    max_retries: 3
+    fallback_agent: "CC"
+    timeout: "20m"
+    retry_strategy: "fixed_delay"
+    retry_delay: "2m"
+    
+    conditions:
+      when: "validation_status == 'success'"
+    
+    notifications:
+      on_retry: ["data-team@bluelabel.com"]
+
+  # Task 3: Quality Assessment (runs in parallel after transformation)
+  - task_id: "ASSESS_DATA_QUALITY"
+    agent: "CA"
+    task_type: "validation"
+    description: "Perform comprehensive data quality assessment"
+    priority: "medium"
+    deadline: "2025-05-22T09:15:00Z"
+    
+    content:
+      action: "quality_assessment"
+      parameters:
+        input_file: "/data/transformed/dataset.parquet"
+        quality_metrics:
+          - "completeness"
+          - "accuracy"
+          - "consistency"
+          - "timeliness"
+        thresholds:
+          completeness: 0.95
+          accuracy: 0.98
+        output_report: "/reports/quality_assessment.html"
+      requirements:
+        - "great-expectations>=0.15.0"
+        - "plotly>=5.0.0"
+      output_files:
+        - "/reports/quality_assessment.html"
+        - "/reports/quality_metrics.json"
+    
+    dependencies: ["TRANSFORM_DATA"]
+    max_retries: 1
+    timeout: "10m"
+
+  # Task 4: Generate Business Report (depends on both transformation and quality assessment)
+  - task_id: "GENERATE_BUSINESS_REPORT"
+    agent: "WA"
+    task_type: "report_generation"
+    description: "Generate comprehensive business intelligence report"
+    priority: "high"
+    deadline: "2025-05-22T09:45:00Z"
+    
+    content:
+      action: "generate_report"
+      parameters:
+        data_source: "/data/transformed/dataset.parquet"
+        quality_metrics: "/reports/quality_metrics.json"
+        report_template: "/templates/business_report.jinja2"
+        output_format: "html"
+        include_charts: true
+        chart_types: ["bar", "line", "pie"]
+        destination: "${report_destination}/business_report.html"
+      requirements:
+        - "jinja2>=3.0.0"
+        - "matplotlib>=3.5.0"
+        - "seaborn>=0.11.0"
+      input_files:
+        - "/data/transformed/dataset.parquet"
+        - "/reports/quality_metrics.json"
+        - "/templates/business_report.jinja2"
+      output_files:
+        - "/reports/output/business_report.html"
+        - "/reports/output/charts/"
+    
+    dependencies: ["TRANSFORM_DATA", "ASSESS_DATA_QUALITY"]
+    max_retries: 2
+    fallback_agent: "CC"
+    timeout: "25m"
+    
+    notifications:
+      on_success: ["business-team@bluelabel.com"]
+      on_failure: ["dev-team@bluelabel.com"]
+
+  # Task 5: System Health Check (runs independently)
+  - task_id: "SYSTEM_HEALTH_CHECK"
+    agent: "CC"
+    task_type: "health_check"
+    description: "Monitor system resources during pipeline execution"
+    priority: "low"
+    deadline: "2025-05-22T10:00:00Z"
+    
+    content:
+      action: "health_check"
+      parameters:
+        check_services: ["database", "file_system", "network", "memory"]
+        thresholds:
+          cpu_usage: 85
+          memory_usage: 90
+          disk_usage: 80
+        monitoring_interval: "30s"
+        alert_channels: ["${notification_channel}"]
+      requirements:
+        - "psutil>=5.8.0"
+        - "requests>=2.25.0"
+      output_files:
+        - "/logs/health_check.log"
+        - "/reports/system_metrics.json"
+    
+    dependencies: []
+    max_retries: 1
+    timeout: "45m"
+    retry_strategy: "immediate"
+    
+    conditions:
+      unless: "environment == 'production'"
+
+  # Task 6: Data Archive and Cleanup
+  - task_id: "ARCHIVE_AND_CLEANUP"
+    agent: "CC"
+    task_type: "custom"
+    description: "Archive processed data and clean up temporary files"
+    priority: "low"
+    deadline: "2025-05-22T10:15:00Z"
+    
+    content:
+      action: "archive_data"
+      parameters:
+        archive_location: "/archive/$(date +%Y-%m-%d)"
+        files_to_archive:
+          - "/data/validated/"
+          - "/data/transformed/"
+        cleanup_patterns:
+          - "/tmp/pipeline_*"
+          - "/data/temp/"
+        retention_days: 30
+        compression: "gzip"
+      requirements:
+        - "tar"
+        - "gzip"
+      environment_variables:
+        ARCHIVE_KEY: "pipeline-archive-key"
+    
+    dependencies: ["GENERATE_BUSINESS_REPORT"]
+    max_retries: 2
+    timeout: "15m"
+
+  # Task 7: Send Final Notification
+  - task_id: "SEND_COMPLETION_NOTIFICATION"
+    agent: "WA"
+    task_type: "notification"
+    description: "Send final notification with pipeline results"
+    priority: "medium"
+    deadline: "2025-05-22T10:30:00Z"
+    
+    content:
+      action: "send_notification"
+      parameters:
+        message: "Data processing pipeline completed successfully"
+        channel: "${notification_channel}"
+        include_attachments: true
+        attachments:
+          - "/reports/output/business_report.html"
+          - "/reports/quality_assessment.html"
+        recipients: ["team@bluelabel.com"]
+        notification_type: "success"
+      requirements:
+        - "requests>=2.25.0"
+        - "email-validator>=1.1.0"
+    
+    dependencies: ["GENERATE_BUSINESS_REPORT", "ARCHIVE_AND_CLEANUP"]
+    max_retries: 3
+    timeout: "5m"
+    
+    notifications:
+      on_failure: ["admin@bluelabel.com"]
+    
+    metadata:
+      importance: "high"
+      delivery_confirmation: true
+
+# Expected Execution Flow:
+# 1. validate-input-data (CA) - validates and preprocesses data
+# 2. transform-data (CA) - transforms validated data, fallback to CC if needed
+# 3. assess-data-quality (CA) - runs after transformation completes
+# 4. generate-business-report (WA) - waits for both transform-data and assess-data-quality
+# 5. system-health-check (CC) - runs independently throughout pipeline
+# 6. archive-and-cleanup (CC) - runs after report generation
+# 7. send-completion-notification (WA) - final task after report and cleanup
+#
+# The pipeline demonstrates:
+# - Sequential dependencies (1→2→3,4→6→7)
+# - Parallel execution (3,4 run in parallel after 2; 5 runs independently)
+# - Error handling with retries and fallbacks
+# - Different task types and agent assignments
+# - Variable substitution and environment configuration
+# - Comprehensive notification and monitoring
