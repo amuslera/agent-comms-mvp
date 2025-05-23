@@ -2079,3 +2079,20 @@ python tools/arch/plan_runner.py plans/my-plan.yaml --log-trace
 - Parallel task execution
 - Empty or malformed plans
 **Testing**: Validated with demo showing all features including skips, failures, retries, and parallel execution
+
+### TASK-150Q: Author and Save /postbox/WA/WA_BOOT.md
+- Status: ✅ Done
+- Owner: CA
+- Branch: meta/wa-bootfile-TASK-150Q
+- Description: Documented and persisted WA's new operating protocol in /postbox/WA/WA_BOOT.md.
+- Implementation:
+  - Created WA_BOOT.md with checklist-driven UI task requirements and restrictions
+  - Linked WA_BOOT.md in /WA_CHECKLIST.md under "Reference"
+- Files Added:
+  - /postbox/WA/WA_BOOT.md
+- Files Modified:
+  - /WA_CHECKLIST.md
+  - /TASK_CARDS.md
+  - /postbox/CA/outbox.json
+- Testing: Confirmed file creation and checklist link
+- Notes: ARCH-AI will review WA output for compliance; this file is the standing instruction for all WA tasks
