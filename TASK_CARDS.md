@@ -1907,6 +1907,34 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 - `/TASK_CARDS.md` - This update
 **Recommendation**: System shows promise but needs automation features for production readiness
 
+### TASK-150A: Auto-Branch Creation from YAML Plans
+**Status**: ✅ Done
+**Owner**: CC
+**Branch**: core/auto-branching-TASK-150A
+**Description**: Implemented automatic Git branch creation for YAML plan tasks to enable proper development workflow.
+**Details**:
+- Created `GitBranchManager` class in `/core/branch_utils.py` for branch creation logic
+- Integrated auto-branching into ARCH Plan Runner CLI (`tools/cli/cli_runner.py`)
+- Added new `branch` command for standalone branch creation
+- Added `--no-branch` flag to disable auto-branching in `run` command
+- Added `--base-branch` flag to specify base branch for new branches
+- Branch names follow format: `feat/{task-id}-{sanitized-description}`
+- Comprehensive error handling and validation for Git operations
+- Dry-run support for testing branch creation
+**Features**:
+- ✅ Parses task IDs from YAML plans
+- ✅ Creates branches with format `feat/TASK-ID-description-slug`
+- ✅ Uses `main` as default base branch
+- ✅ Summary printed at start of execution
+- ✅ CLI supports `--no-branch` flag to disable
+- ✅ Standalone `branch` command for manual branch creation
+- ✅ Comprehensive error handling and Git validation
+**Files**:
+- `/core/branch_utils.py` - Core branch creation utilities and GitBranchManager class
+- `/tools/cli/cli_runner.py` - Updated CLI with auto-branching integration
+- `/TASK_CARDS.md` - This update
+**Testing**: Verified with sample plans including `test_retry_plan.yaml` and `sample-plan-001.yaml`
+
 ### TASK-150P: Postmortem Integration for Phase 6.9
 **Status**: ✅ Done
 **Owner**: CA

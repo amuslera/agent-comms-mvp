@@ -16,6 +16,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from arch_orchestrator import ArchOrchestrator
 from tools.cli.plan_linter import PlanLinter
+from core.branch_utils import GitBranchManager, BranchCreationError
 
 class CLIRunner:
     """CLI interface for running ARCH plans."""
@@ -89,7 +90,34 @@ class CLIRunner:
         
         print("=" * 80 + "\n")
     
-    def run_plan(self) -> bool:
+    def create_branches_for_plan(self, base_branch: str = "main", dry_run: bool = False) -> bool:
+        """Create Git branches for all tasks in the loaded plan."""
+        if not self.plan_path:
+            print("Error: No plan loaded")
+            return False
+            
+        try:
+            manager = GitBranchManager()
+            results = manager.create_branches_for_plan(
+                str(self.plan_path), 
+                base_branch=base_branch,
+                dry_run=dry_run
+            )
+            
+            if not dry_run:
+                manager.print_summary(results)
+            
+            # Return success if no errors occurred
+            return len(results['errors']) == 0 and results['branches_failed'] == 0
+            
+        except BranchCreationError as e:
+            print(f"❌ Branch creation failed: {e}")
+            return False
+        except Exception as e:
+            print(f"❌ Unexpected error during branch creation: {e}")
+            return False
+
+    def run_plan(self, create_branches: bool = True, base_branch: str = "main") -> bool:
         """Execute the loaded plan and return success status."""
         if not self.orchestrator:
             print("Error: No plan loaded")
@@ -99,6 +127,12 @@ class CLIRunner:
         print("-" * 60)
         
         try:
+            # Create branches first if requested
+            if create_branches:
+                print("🌿 Creating branches for plan tasks...")
+                if not self.create_branches_for_plan(base_branch=base_branch):
+                    print("⚠️  Branch creation had issues, but continuing with plan execution...")
+            
             # Get initial task summary
             tasks = self.get_task_summary()
             self.print_summary(tasks)
@@ -157,12 +191,24 @@ def main():
     run_parser.add_argument('plan', help='Path to plan file (YAML)')
     run_parser.add_argument('--summary', '-s', action='store_true', 
                           help='Show plan summary without executing')
+    run_parser.add_argument('--no-branch', action='store_true',
+                          help='Skip automatic branch creation for plan tasks')
+    run_parser.add_argument('--base-branch', '-b', default='main',
+                          help='Base branch for creating new task branches (default: main)')
     
     # Lint command
     lint_parser = subparsers.add_parser('lint', help='Validate a plan')
     lint_parser.add_argument('plan', help='Path to plan file (YAML)')
     lint_parser.add_argument('--dry-run', action='store_true',
                            help='Show execution order and parallel groups')
+    
+    # Branch command for standalone branch creation
+    branch_parser = subparsers.add_parser('branch', help='Create branches for plan tasks')
+    branch_parser.add_argument('plan', help='Path to plan file (YAML)')
+    branch_parser.add_argument('--base-branch', '-b', default='main',
+                             help='Base branch for creating new task branches (default: main)')
+    branch_parser.add_argument('--dry-run', '-n', action='store_true',
+                             help='Show what branches would be created without creating them')
     
     args = parser.parse_args()
     
@@ -183,10 +229,21 @@ def main():
         
         # Execute the plan unless --summary flag is set
         if not args.summary:
-            success = runner.run_plan()
+            # Auto-branch creation is enabled by default, disabled with --no-branch
+            create_branches = not args.no_branch
+            success = runner.run_plan(
+                create_branches=create_branches,
+                base_branch=args.base_branch
+            )
             sys.exit(0 if success else 1)
     elif args.command == 'lint':
         success = runner.lint_plan(dry_run=args.dry_run)
+        sys.exit(0 if success else 1)
+    elif args.command == 'branch':
+        success = runner.create_branches_for_plan(
+            base_branch=args.base_branch,
+            dry_run=args.dry_run
+        )
         sys.exit(0 if success else 1)
     
     sys.exit(0)
