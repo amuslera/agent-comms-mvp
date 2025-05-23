@@ -213,3 +213,5 @@ python tools/flow_visualizer.py
 ---
 
 *Version 1.4.1 confirms the successful testing and verification of retry/fallback orchestration through comprehensive live testing.*
+
+📄 [Phase 6.9 Postmortem](release_notes/PHASE_6.9_POSTMORTEM.md)
