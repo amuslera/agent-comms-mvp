@@ -2181,3 +2181,31 @@ python tools/arch/plan_runner.py plans/my-plan.yaml --log-trace
 - `/docs/templates.md` (New documentation file)
 - `/TASK_CARDS.md` (This update)
 **Branch**: docs/plan-template-docs-TASK-150U
+
+### TASK-150R: Review and Merge Phase 6.10 Non-WA Branches
+**Status**: ✅ Done
+**Owner**: CC
+**Branch**: main (merge task)
+**Description**: Reviewed and merged all completed non-WA branches from Phase 6.10.
+**Details**:
+- Reviewed 7 branches for proper documentation and deliverables
+- Merged all branches into main with conflict resolution
+- Created SPRINT_HISTORY.md documenting the phase completion
+- Created v0.6.10 tag for milestone release
+- Added release notification to ARCH outbox
+**Branches Merged**:
+- cli/plan-templates-TASK-150G (CA)
+- cli/plan-dry-run-TASK-150H (CA)
+- meta/arch-continuity-TASK-150J (CA)
+- core/mcp-schema-fix-TASK-150C (CC)
+- cli/sprint-summary-TASK-150M (CA)
+- core/execution-trace-logger-TASK-150K (CC)
+- meta/wa-bootfile-TASK-150Q (CA)
+**Merge Conflicts Resolved**: 7 (across TASK_CARDS.md, cli_runner.py, plan_linter.py, postbox/CA/outbox.json)
+**Key Achievements**:
+- 5 new CLI commands added to bluelabel
+- Comprehensive MCP schema validation system
+- Structured JSON execution trace logging
+- Sprint documentation infrastructure
+- WA operating protocol established
+**Testing**: All merged features tested and validated working correctly

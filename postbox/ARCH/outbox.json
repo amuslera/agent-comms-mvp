@@ -1153,5 +1153,83 @@
       "status": "completed",
       "details": "WA execution checklist (WA_CHECKLIST.md) created and committed. TASK_CARDS.md and CA outbox updated. Checklist provides formal process for all frontend/UI tasks. Branch meta/wa-checklist-TASK-150F-A pushed for review."
     }
+  },
+  {
+    "type": "release_tag",
+    "id": "v0.6.10-release",
+    "timestamp": "2025-05-23T19:30:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "tag": "v0.6.10",
+      "phase": "6.10",
+      "milestone": "CLI Enhancements & Infrastructure",
+      "status": "completed",
+      "summary": "Phase 6.10 complete with 7 non-WA branches merged successfully",
+      "branches_merged": [
+        {
+          "branch": "cli/plan-templates-TASK-150G",
+          "owner": "CA",
+          "task": "TASK-150G",
+          "description": "Reusable YAML plan templates"
+        },
+        {
+          "branch": "cli/plan-dry-run-TASK-150H",
+          "owner": "CA",
+          "task": "TASK-150H",
+          "description": "Plan dry-run execution preview"
+        },
+        {
+          "branch": "meta/arch-continuity-TASK-150J",
+          "owner": "CA",
+          "task": "TASK-150J",
+          "description": "ARCH continuity & agent scorecard"
+        },
+        {
+          "branch": "core/mcp-schema-fix-TASK-150C",
+          "owner": "CC",
+          "task": "TASK-150C",
+          "description": "MCP schema compliance improvements"
+        },
+        {
+          "branch": "cli/sprint-summary-TASK-150M",
+          "owner": "CA",
+          "task": "TASK-150M",
+          "description": "Sprint summary generator CLI"
+        },
+        {
+          "branch": "core/execution-trace-logger-TASK-150K",
+          "owner": "CC",
+          "task": "TASK-150K",
+          "description": "Execution trace logger"
+        },
+        {
+          "branch": "meta/wa-bootfile-TASK-150Q",
+          "owner": "CA",
+          "task": "TASK-150Q",
+          "description": "WA bootfile creation"
+        }
+      ],
+      "key_deliverables": [
+        "5 new CLI commands added to bluelabel",
+        "Comprehensive MCP schema validation",
+        "Structured JSON execution trace logging",
+        "ARCH continuity documentation",
+        "WA operating protocol document"
+      ],
+      "merge_conflicts_resolved": 5,
+      "documentation_updated": [
+        "/docs/releases/SPRINT_HISTORY.md",
+        "/TASK_CARDS.md"
+      ]
+    },
+    "metadata": {
+      "git_tag": "v0.6.10",
+      "total_commits": 15,
+      "files_added": 20,
+      "files_modified": 30,
+      "next_phase": "Phase 6.11"
+    }
   }
 ]
