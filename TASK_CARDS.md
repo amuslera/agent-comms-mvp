@@ -1968,3 +1968,48 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 - `/tools/cli/wa_checklist_validator.py` - CLI validation tool
 - `/plans/test_wa_checklist.yaml` - Test plan for verification
 **Testing**: Verified enforcement with test plan showing checklist integration and validation functionality
+
+### TASK-150C: MCP Schema Compliance Fix
+**Status**: ✅ Done
+**Owner**: CC
+**Branch**: core/mcp-schema-fix-TASK-150C
+**Description**: Improved and enforced MCP schema compliance in plan execution with strict validation.
+**Details**:
+- Created comprehensive MCPSchemaValidator class in `/core/mcp_schema.py`
+- Fixed incorrect message type in plan_runner.py (was "task_result", now "task_assignment")
+- Added strict validation for all required fields: agent, task_id, action, parameters, etc.
+- Implemented clear error messages with field-specific details and suggestions
+- Created TASK_ASSIGNMENT_SCHEMA.json for proper task assignment validation
+- Added `bluelabel schema-check` CLI command for plan and message validation
+**Schema Issues Found**:
+- plan_runner was using wrong message type ("task_result" instead of "task_assignment")
+- No validation for required fields like agent, task_id, action
+- Missing enum validation for agents, priorities, task types
+- No format validation for task_id (uppercase alphanumeric)
+- No dependency validation (checking if referenced tasks exist)
+**Fixes Implemented**:
+- ✅ Strict field validation with helpful error messages
+- ✅ Enum validation for agents (CA, CC, WA), priorities, task types
+- ✅ Format validation for task_id, protocol_version, timestamps
+- ✅ Dependency existence and circular dependency checks
+- ✅ Separate schemas for task assignments vs results
+- ✅ CLI tool with auto-detection of file types
+**Files**:
+- `/core/mcp_schema.py` - Comprehensive MCP validator module
+- `/schemas/TASK_ASSIGNMENT_SCHEMA.json` - New schema for task assignments
+- `/tools/arch/plan_runner.py` - Updated to use correct message type and validation
+- `/tools/cli/schema_checker.py` - CLI tool for validation
+- `/bluelabel` - Main CLI entry point with schema-check command
+- `/tools/cli/lint_utils.py` - Fixed f-string syntax error
+**CLI Examples**:
+```bash
+# Check a plan file
+bluelabel schema-check plans/my-plan.yaml
+
+# Check with verbose output
+bluelabel schema-check plans/my-plan.yaml --verbose
+
+# Check a message file
+bluelabel schema-check postbox/CC/outbox.json --type message
+```
+**Testing**: Validated with edge cases including invalid agents, missing fields, format violations

@@ -876,5 +876,69 @@
       "tested": true,
       "ready_for_review": true
     }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-150C-status",
+    "timestamp": "2025-05-23T13:30:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-150C",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully improved and enforced MCP schema compliance. Created comprehensive validator module, fixed message type issues, and added bluelabel schema-check CLI command."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "core/mcp-schema-fix-TASK-150C",
+      "files_created": [
+        "/core/mcp_schema.py",
+        "/schemas/TASK_ASSIGNMENT_SCHEMA.json",
+        "/tools/cli/schema_checker.py",
+        "/bluelabel"
+      ],
+      "files_updated": [
+        "/tools/arch/plan_runner.py",
+        "/tools/cli/lint_utils.py",
+        "/TASK_CARDS.md"
+      ],
+      "schema_issues_found": [
+        "Wrong message type in plan_runner (task_result instead of task_assignment)",
+        "No validation for required fields (agent, task_id, action)",
+        "Missing enum validation for agents and priorities",
+        "No format validation for task_id (uppercase alphanumeric)",
+        "No dependency existence validation"
+      ],
+      "fixes_implemented": [
+        "MCPSchemaValidator class with strict field validation",
+        "Clear error messages with field-specific details",
+        "Enum validation for agents (CA, CC, WA), priorities, task types",
+        "Format validation using regex patterns",
+        "Dependency validation with circular dependency detection",
+        "TASK_ASSIGNMENT_SCHEMA.json for proper task validation",
+        "bluelabel CLI with schema-check command"
+      ],
+      "edge_cases_tested": [
+        "Invalid agent IDs",
+        "Missing required fields",
+        "Invalid task_id formats",
+        "Non-existent dependencies",
+        "Invalid priorities",
+        "Type mismatches"
+      ],
+      "cli_commands": [
+        "bluelabel schema-check plans/my-plan.yaml",
+        "bluelabel schema-check --verbose plans/my-plan.yaml",
+        "bluelabel schema-check --type message postbox/CC/outbox.json"
+      ],
+      "validation_improvements": {
+        "before": "Basic JSON schema validation only",
+        "after": "Comprehensive field validation with helpful error messages"
+      },
+      "tested": true,
+      "ready_for_review": true
+    }
   }
 ]

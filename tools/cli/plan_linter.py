@@ -346,25 +346,38 @@ class PlanLinter:
             self.lint_result.add_issue(create_issue(
                 'error',
                 f"Error while checking for unreachable tasks: {str(e)}",
-                details={'type': 'unreachable_check_error'}
+                details={"type": "unreachable_check_error"}
             ))
 
-    def print_issues(self):
-        """Print all validation issues with color coding."""
-        if not self.issues:
-            print("✅ Plan is valid!")
-            return
+    def print_issues(self, output_format: str = 'text', output_file: Optional[Path] = None) -> None:
+        """Print all validation issues using the lint result formatter.
+        
+        Args:
+            output_format: The output format ('text' or 'json')
+            output_file: Optional file path to write the output to
+        """
+        if output_format not in ['text', 'json']:
+            raise ValueError(f"Invalid output format: {output_format}. Must be 'text' or 'json'.")
             
-        for issue in self.issues:
-            prefix = {
-                ValidationLevel.INFO: "ℹ️ ",
-                ValidationLevel.WARNING: "⚠️ ",
-                ValidationLevel.ERROR: "❌ "
-            }[issue.level]
+        # Format the output
+        output = self.lint_result.format(output_format)
+        
+        # Write to file if specified, otherwise print to stdout
+        if output_file:
+            try:
+                output_file = Path(output_file)
+                output_file.parent.mkdir(parents=True, exist_ok=True)
+                with output_file.open('w') as f:
+                    f.write(output)
+                print(f"Lint results written to: {output_file}")
+            except Exception as e:
+                print(f"Error writing to output file: {e}", file=sys.stderr)
+        else:
+            print(output)
             
-            print(f"{prefix} {issue.message}")
-            if issue.details:
-                print(f"   Details: {json.dumps(issue.details, indent=2)}")
+        # Print summary if available
+        if hasattr(self.lint_result, 'print_summary'):
+            self.lint_result.print_summary(output_format=output_format)
 
     def print_dry_run(self):
         """Print execution order and parallel groups."""

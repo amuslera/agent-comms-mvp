@@ -11,15 +11,23 @@ from tools.arch.wa_checklist_enforcer import enforce_wa_checklist_on_message, cr
 import yaml
 from jsonschema import validate, ValidationError
 
+# Import the new MCP validator
+sys.path.append(str(Path(__file__).parent.parent.parent))
+from core.mcp_schema import MCPSchemaValidator, MCPValidationError
+
 # Configurable constants
 PLAN_SCHEMA_PATH = Path('schemas/PLAN_SCHEMA.json')
 MCP_SCHEMA_PATH = Path('schemas/MCP_MESSAGE_SCHEMA.json')
+TASK_ASSIGNMENT_SCHEMA_PATH = Path('schemas/TASK_ASSIGNMENT_SCHEMA.json')
 POSTBOX_ROOT = Path('postbox')
 LOGS_TASKS_DIR = Path('logs/tasks')
 LOGS_TRACES_DIR = Path('logs/traces')
 PHASE_POLICY_PATH = Path('phase_policy.yaml')
 RESPONSE_TIMEOUT = 60  # seconds
 RETRY_DELAY = 5        # seconds
+
+# Initialize MCP validator
+mcp_validator = MCPSchemaValidator()
 
 # Load phase policy for retry logic
 def get_retry_limit() -> int:
@@ -49,12 +57,21 @@ def wait_for_response(agent: str, trace_id: str, timeout: int = RESPONSE_TIMEOUT
 
 # Construct MCP message for a task
 def build_mcp_message(task_node: TaskNode, trace_id: str, plan_id: str, retry_count: int = 0) -> Dict[str, Any]:
-    with open(MCP_SCHEMA_PATH) as f:
-        mcp_schema = json.load(f)
     now = plan_utils.now_iso()
     
+    # Validate required fields from task_node
+    if not task_node.agent:
+        raise MCPValidationError("Task node missing required 'agent' field", field="agent")
+    if not task_node.task_id:
+        raise MCPValidationError("Task node missing required 'task_id' field", field="task_id")
+    if not task_node.description:
+        raise MCPValidationError("Task node missing required 'description' field", field="description")
+    if not task_node.content.get("action"):
+        raise MCPValidationError("Task node missing required 'action' in content", field="content.action")
+    
+    # Build the correct message structure for task assignment
     message = {
-        "type": "task_result",
+        "type": "task_assignment",  # Fixed: was incorrectly "task_result"
         "protocol_version": "1.3",
         "sender_id": "ARCH",
         "recipient_id": task_node.agent,
@@ -81,10 +98,16 @@ def build_mcp_message(task_node: TaskNode, trace_id: str, plan_id: str, retry_co
         "timestamp": now
     }
     
-    try:
-        validate(instance=message, schema=mcp_schema)
-    except ValidationError as e:
-        raise ValueError(f"MCP message validation failed: {e.message}")
+    # Use the new strict validator
+    is_valid, errors = mcp_validator.validate_task_assignment(message)
+    if not is_valid:
+        error_details = "\n".join(f"  - {err}" for err in errors)
+        raise MCPValidationError(
+            f"Task assignment validation failed:\n{error_details}",
+            suggestions=["Check that all required fields are present", 
+                        "Verify agent ID is valid (CA, CC, or WA)",
+                        "Ensure task_id follows format: uppercase alphanumeric with - or _"]
+        )
     
     # Apply WA checklist enforcement if this is a WA task
     if task_node.agent == "WA":

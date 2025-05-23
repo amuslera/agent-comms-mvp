@@ -145,7 +145,9 @@ class LintResult:
                 
                 # Print any additional details
                 if issue.details:
-                    print(f"     {Style.DIM}details: {json.dumps(issue.details, indent=4).replace('\n', '\n     ')}")
+                    details_str = json.dumps(issue.details, indent=4)
+                    details_str = details_str.replace('\n', '\n     ')
+                    print(f"     {Style.DIM}details: {details_str}")
     
     def _print_json_summary(self) -> None:
         """Print a JSON summary of the linting results."""

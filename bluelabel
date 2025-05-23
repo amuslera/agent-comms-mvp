@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""
+Bluelabel CLI - Main entry point for Bluelabel Agent OS commands
+
+This CLI provides various commands for managing and validating plans,
+checking schemas, and running agent orchestration.
+"""
+
+import sys
+import argparse
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.append(str(Path(__file__).parent))
+
+from tools.cli.cli_runner import main as run_plan
+from tools.cli.plan_linter import main as lint_plan
+from tools.cli.schema_checker import main as check_schema
+
+
+def main():
+    """Main entry point for the bluelabel CLI."""
+    parser = argparse.ArgumentParser(
+        prog='bluelabel',
+        description='Bluelabel Agent OS CLI - Manage plans and agent orchestration',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Run a plan
+  bluelabel run plans/my-plan.yaml
+  
+  # Lint a plan
+  bluelabel lint plans/my-plan.yaml
+  
+  # Check schema compliance
+  bluelabel schema-check plans/my-plan.yaml
+  
+  # Run with dry-run
+  bluelabel run plans/my-plan.yaml --dry-run
+        """
+    )
+    
+    subparsers = parser.add_subparsers(
+        dest='command',
+        help='Available commands',
+        required=True
+    )
+    
+    # Run command
+    run_parser = subparsers.add_parser(
+        'run',
+        help='Run a YAML plan through the orchestrator'
+    )
+    run_parser.add_argument(
+        'plan_path',
+        type=Path,
+        help='Path to the YAML plan file'
+    )
+    run_parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Show what would be executed without running'
+    )
+    run_parser.add_argument(
+        '--no-branch',
+        action='store_true',
+        help='Skip automatic Git branch creation'
+    )
+    run_parser.add_argument(
+        '--verbose', '-v',
+        action='count',
+        default=0,
+        help='Increase verbosity'
+    )
+    
+    # Lint command
+    lint_parser = subparsers.add_parser(
+        'lint',
+        help='Validate a plan file against schema and best practices'
+    )
+    lint_parser.add_argument(
+        'plan_path',
+        type=Path,
+        help='Path to the YAML plan file'
+    )
+    lint_parser.add_argument(
+        '--format',
+        choices=['text', 'json'],
+        default='text',
+        help='Output format'
+    )
+    lint_parser.add_argument(
+        '--output', '-o',
+        type=Path,
+        help='Output file (default: stdout)'
+    )
+    
+    # Schema-check command
+    schema_parser = subparsers.add_parser(
+        'schema-check',
+        help='Check MCP schema compliance for plans and messages'
+    )
+    schema_parser.add_argument(
+        'file_path',
+        type=Path,
+        help='Path to the file to validate (plan or message)'
+    )
+    schema_parser.add_argument(
+        '--type',
+        choices=['plan', 'message', 'auto'],
+        default='auto',
+        help='Type of validation to perform'
+    )
+    schema_parser.add_argument(
+        '--verbose', '-v',
+        action='store_true',
+        help='Show detailed validation errors'
+    )
+    
+    args = parser.parse_args()
+    
+    # Route to appropriate command
+    if args.command == 'run':
+        # Build args for run command
+        run_args = [str(args.plan_path)]
+        if args.dry_run:
+            run_args.append('--dry-run')
+        if args.no_branch:
+            run_args.append('--no-branch')
+        if args.verbose:
+            run_args.extend(['-v'] * args.verbose)
+        
+        sys.argv = ['cli_runner.py'] + run_args
+        run_plan()
+        
+    elif args.command == 'lint':
+        # Build args for lint command
+        lint_args = [str(args.plan_path)]
+        if args.format:
+            lint_args.extend(['--format', args.format])
+        if args.output:
+            lint_args.extend(['--output', str(args.output)])
+        
+        sys.argv = ['plan_linter.py'] + lint_args
+        lint_plan()
+        
+    elif args.command == 'schema-check':
+        # Build args for schema-check command
+        check_args = [str(args.file_path)]
+        if args.type != 'auto':
+            check_args.extend(['--type', args.type])
+        if args.verbose:
+            check_args.append('--verbose')
+        
+        sys.argv = ['schema_checker.py'] + check_args
+        check_schema()
+
+
+if __name__ == '__main__':
+    main()
