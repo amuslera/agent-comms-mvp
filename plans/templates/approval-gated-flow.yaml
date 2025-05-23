@@ -1,45 +1,54 @@
 # Approval-Gated Flow Plan Template
-plan_id: approval-gated-demo
-version: 1.0
-name: Approval-Gated Plan
-owner: CA
-created_at: 2025-05-23
+# This template demonstrates a workflow that requires human approval at specific stages.
+# Flow: Draft -> Review (requires approval) -> Finalize
+# The ARCH agent handles the approval gate, ensuring human review before proceeding.
 
+# Plan metadata - required for all plans
+plan_id: approval-gated-demo    # Unique identifier for this plan
+version: 1.0                    # Plan version number
+name: Approval-Gated Plan       # Human-readable plan name
+owner: CA                       # Agent responsible for this plan
+created_at: 2025-05-23         # Creation timestamp
+
+# Task definitions - array of tasks to be executed
 tasks:
-  - task_id: draft-001
-    agent: CA
+  # First task: Initial draft by CA
+  - task_id: draft-001         # Unique identifier for this task
+    agent: CA                  # Code Assistant creates initial draft
     task_type: data_processing
     description: Draft initial report
     content:
-      input:
-        data_path: /data/raw.csv
-      parameters:
-        draft: true
-      requires: []
-      approval: false
+      input:                  # Input data for the task
+        data_path: /data/raw.csv  # Path to raw data
+      parameters:             # Task-specific parameters
+        draft: true          # Indicates this is a draft version
+      requires: []           # No dependencies (root task)
+      approval: false        # No approval needed for draft
 
-  - task_id: review-001
-    agent: ARCH
-    task_type: approval
+  # Second task: Human review by ARCH
+  - task_id: review-001      # Unique identifier for this task
+    agent: ARCH              # ARCH agent handles human review
+    task_type: approval      # Special task type for approvals
     description: Review and approve the draft report
     content:
-      input:
-        from_task: draft-001
+      input:                 # Input from previous task
+        from_task: draft-001  # References output from draft-001
       parameters:
-        approval_required: true
-      requires:
-        - draft-001
-      approval: true
+        approval_required: true  # Indicates human approval is required
+      requires:              # Dependencies
+        - draft-001         # Must wait for draft-001 to complete
+      approval: true        # This task requires human approval
 
-  - task_id: finalize-001
-    agent: WA
+  # Third task: Finalization by WA
+  - task_id: finalize-001    # Unique identifier for this task
+    agent: WA                # Web Assistant handles finalization
     task_type: report_generation
     description: Finalize and publish the report after approval
     content:
-      input:
-        from_task: review-001
+      input:                 # Input from previous task
+        from_task: review-001  # References output from review-001
       parameters:
-        publish: true
-      requires:
-        - review-001
-      approval: false 
+        publish: true        # Indicates this is the final version
+      requires:              # Dependencies
+        - review-001        # Must wait for review-001 to complete
+      approval: false       # No approval needed for finalization 

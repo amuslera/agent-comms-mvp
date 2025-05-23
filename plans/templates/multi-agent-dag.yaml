@@ -1,58 +1,69 @@
 # Multi-Agent DAG Plan Template
-plan_id: multi-agent-dag-demo
-version: 1.0
-name: Multi-Agent DAG Plan
-owner: CA
-created_at: 2025-05-23
+# This template demonstrates a complex plan with multiple agents working in sequence.
+# Tasks form a directed acyclic graph (DAG) where each task depends on its predecessors.
+# DAG Structure:
+# ingest-001 -> process-001 -> validate-001 -> report-001
 
+# Plan metadata - required for all plans
+plan_id: multi-agent-dag-demo    # Unique identifier for this plan
+version: 1.0                     # Plan version number
+name: Multi-Agent DAG Plan       # Human-readable plan name
+owner: CA                        # Agent responsible for this plan
+created_at: 2025-05-23          # Creation timestamp
+
+# Task definitions - array of tasks to be executed
 tasks:
-  - task_id: ingest-001
-    agent: WA
-    task_type: data_ingestion
+  # First task: Data ingestion by WA
+  - task_id: ingest-001         # Unique identifier for this task
+    agent: WA                    # Web Assistant handles data ingestion
+    task_type: data_ingestion   # Type of task
     description: Ingest data from external source
     content:
-      input:
-        source_url: https://example.com/data.csv
-      parameters:
-        format: csv
-      requires: []
-      approval: false
+      input:                    # Input data for the task
+        source_url: https://example.com/data.csv  # External data source
+      parameters:               # Task-specific parameters
+        format: csv            # Input data format
+      requires: []             # No dependencies (root task)
+      approval: false          # No approval needed
 
-  - task_id: process-001
-    agent: CA
+  # Second task: Data processing by CA
+  - task_id: process-001       # Unique identifier for this task
+    agent: CA                  # Code Assistant handles data processing
     task_type: data_processing
     description: Process ingested data
     content:
-      input:
-        from_task: ingest-001
+      input:                   # Input from previous task
+        from_task: ingest-001  # References output from ingest-001
       parameters:
-        method: clean
-      requires:
-        - ingest-001
+        method: clean         # Processing method
+      requires:               # Dependencies
+        - ingest-001         # Must wait for ingest-001 to complete
       approval: false
 
-  - task_id: validate-001
-    agent: CC
+  # Third task: Validation by CC
+  - task_id: validate-001     # Unique identifier for this task
+    agent: CC                 # Code Claude handles validation
     task_type: validation
     description: Validate processed data
     content:
-      input:
-        from_task: process-001
+      input:                  # Input from previous task
+        from_task: process-001  # References output from process-001
       parameters:
-        schema: standard
-      requires:
-        - process-001
+        schema: standard      # Validation schema
+      requires:              # Dependencies
+        - process-001        # Must wait for process-001 to complete
       approval: false
 
-  - task_id: report-001
-    agent: WA
+  # Fourth task: Report generation by WA
+  - task_id: report-001      # Unique identifier for this task
+    agent: WA                # Web Assistant handles report generation
     task_type: report_generation
     description: Generate final report
     content:
-      input:
-        from_task: validate-001
+      input:                 # Input from previous task
+        from_task: validate-001  # References output from validate-001
       parameters:
-        format: pdf
-      requires:
-        - validate-001
+        format: pdf          # Report format
+      requires:             # Dependencies
+        - validate-001      # Must wait for validate-001 to complete
       approval: false 

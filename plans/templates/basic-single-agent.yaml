@@ -1,19 +1,26 @@
 # Basic Single-Agent Plan Template
-plan_id: basic-single-agent-demo
-version: 1.0
-name: Basic Single Agent Plan
-owner: CA
-created_at: 2025-05-23
+# This template demonstrates a simple plan with a single task and no dependencies.
+# Ideal for straightforward operations that can be completed by one agent.
 
+# Plan metadata - required for all plans
+plan_id: basic-single-agent-demo  # Unique identifier for this plan
+version: 1.0                      # Plan version number
+name: Basic Single Agent Plan     # Human-readable plan name
+owner: CA                         # Agent responsible for this plan
+created_at: 2025-05-23           # Creation timestamp
+
+# Task definitions - array of tasks to be executed
 tasks:
-  - task_id: task-001
-    agent: CA
-    task_type: data_processing
-    description: Process input data and generate a report
+  - task_id: task-001            # Unique identifier for this task
+    agent: CA                     # Agent assigned to this task (CA, CC, WA, or ARCH)
+    task_type: data_processing   # Type of task (e.g., data_processing, validation)
+    description: Process input data and generate a report  # Human-readable description
+    
+    # Task-specific configuration
     content:
-      input:
-        data_path: /data/input.csv
-      parameters:
-        report_type: summary
-      requires: []
-      approval: false 
+      input:                     # Input data for the task
+        data_path: /data/input.csv  # Path to input data file
+      parameters:                # Task-specific parameters
+        report_type: summary     # Parameter for report generation
+      requires: []               # Array of task dependencies (empty = no dependencies)
+      approval: false            # Whether human approval is required (false = no approval needed) 

@@ -2123,6 +2123,23 @@ python tools/arch/plan_runner.py plans/my-plan.yaml --log-trace
 - Empty or malformed plans
 **Testing**: Validated with demo showing all features including skips, failures, retries, and parallel execution
 
+### TASK-150Q: Author and Save /postbox/WA/WA_BOOT.md
+- Status: ✅ Done
+- Owner: CA
+- Branch: meta/wa-bootfile-TASK-150Q
+- Description: Documented and persisted WA's new operating protocol in /postbox/WA/WA_BOOT.md.
+- Implementation:
+  - Created WA_BOOT.md with checklist-driven UI task requirements and restrictions
+  - Linked WA_BOOT.md in /WA_CHECKLIST.md under "Reference"
+- Files Added:
+  - /postbox/WA/WA_BOOT.md
+- Files Modified:
+  - /WA_CHECKLIST.md
+  - /TASK_CARDS.md
+  - /postbox/CA/outbox.json
+- Testing: Confirmed file creation and checklist link
+- Notes: ARCH-AI will review WA output for compliance; this file is the standing instruction for all WA tasks
+
 ### TASK-150T: Agent Outbox Summary CLI Tool
 **Status**: ✅ Done
 **Owner**: CA
@@ -2145,3 +2162,22 @@ python tools/arch/plan_runner.py plans/my-plan.yaml --log-trace
 - `/bluelabel` - Updated with new command
 - `/TASK_CARDS.md` - This update
 **Branch**: cli/outbox-summary-TASK-150T
+
+### TASK-150U: Plan Template Documentation + Inline Annotations
+**Status**: ✅ Done
+**Owner**: CA
+**Branch**: docs/plan-template-docs-TASK-150U
+**Description**: Improved plan usability by adding comprehensive documentation and inline comments to plan templates.
+**Details**:
+- Added descriptive comments to all files in `/plans/templates/`
+- Created `/docs/templates.md` with template overview and usage guide
+- Documented task_id, agent, input, requires, parameters, approval fields
+- Added DAG structure explanations and flow diagrams
+- Included best practices and usage examples
+**Files**:
+- `/plans/templates/basic-single-agent.yaml` (Updated with comments)
+- `/plans/templates/multi-agent-dag.yaml` (Updated with comments)
+- `/plans/templates/approval-gated-flow.yaml` (Updated with comments)
+- `/docs/templates.md` (New documentation file)
+- `/TASK_CARDS.md` (This update)
+**Branch**: docs/plan-template-docs-TASK-150U
