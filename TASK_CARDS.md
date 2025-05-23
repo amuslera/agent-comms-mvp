@@ -2013,3 +2013,69 @@ bluelabel schema-check plans/my-plan.yaml --verbose
 bluelabel schema-check postbox/CC/outbox.json --type message
 ```
 **Testing**: Validated with edge cases including invalid agents, missing fields, format violations
+
+### TASK-150M: Sprint Closeout Generator
+- Status: ✅ Done
+- Owner: CA
+- Branch: cli/sprint-summary-TASK-150M
+- Description: Added CLI tool to generate a summary report for any completed sprint.
+- Implementation:
+  - Added bluelabel sprint-summary command with --sprint and --output flags
+  - Parses TASK_CARDS.md for completed tasks, owners, branches, and phase header
+  - Outputs phase header, completed tasks, edge cases, and key links (postmortem, checklist, scorecard, tag)
+  - Writes summary to /docs/releases/SPRINT_<sprint>_SUMMARY.md
+- Files Added:
+  - /tools/cli/sprint_summary.py
+- Files Modified:
+  - /bluelabel (CLI entrypoint)
+  - /TASK_CARDS.md
+  - /postbox/CA/outbox.json
+- Testing: Ran sprint-summary for 6.10, confirmed output file and content
+- Notes: CLI supports rapid sprint closeout documentation; see /docs/releases/SPRINT_6.10_SUMMARY.md for sample output
+
+### TASK-150K: Execution Trace Logger
+**Status**: ✅ Done
+**Owner**: CC
+**Branch**: core/execution-trace-logger-TASK-150K
+**Description**: Implemented structured JSON logging for YAML plan execution traces.
+**Details**:
+- Created ExecutionTraceLogger class in `/core/execution_trace_logger.py`
+- Captures complete execution traces in JSON format at `/logs/tasks/trace_<trace_id>.json`
+- Integrated with plan_runner.py for automatic trace generation
+- Added `--log-trace` flag to bluelabel CLI and standalone plan_runner
+- Tracks all execution details including DAG structure, timing, status, and context
+**Trace File Contents**:
+- Plan metadata (ID, name, path)
+- DAG structure with nodes, edges, and execution layers
+- Task execution details (start/end times, duration, status)
+- Dependencies and conditional execution results
+- Warnings, errors, and retry attempts
+- Final execution summary with counts
+**Features**:
+- ✅ Comprehensive execution trace in structured JSON
+- ✅ Task-level timing and status tracking
+- ✅ Conditional skip logging with reasons
+- ✅ Retry tracking and error capture
+- ✅ Context updates throughout execution
+- ✅ Summary export functionality
+**Files**:
+- `/core/execution_trace_logger.py` - Main trace logger implementation
+- `/tools/arch/plan_runner.py` - Updated with trace logging integration
+- `/tools/cli/cli_runner.py` - Added --log-trace flag support
+- `/bluelabel` - Updated with --log-trace flag
+**CLI Usage**:
+```bash
+# Run with trace logging
+bluelabel run plans/my-plan.yaml --log-trace
+
+# Direct plan_runner usage
+python tools/arch/plan_runner.py plans/my-plan.yaml --log-trace
+```
+**Edge Cases Handled**:
+- Missing task IDs
+- Circular dependencies
+- Conditional skips (when/unless)
+- Task failures and retries
+- Parallel task execution
+- Empty or malformed plans
+**Testing**: Validated with demo showing all features including skips, failures, retries, and parallel execution

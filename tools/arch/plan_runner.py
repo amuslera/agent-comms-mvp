@@ -3,7 +3,7 @@ import time
 import json
 import uuid
 from pathlib import Path
-from typing import Any, Dict, Set
+from typing import Any, Dict, Set, Optional
 from tools.arch import plan_utils
 from tools.arch.plan_utils import ExecutionDAG, TaskNode, ExecutionTracer, PlanContextEngine, evaluate_conditions, log_conditional_skip
 from tools.arch.wa_checklist_enforcer import enforce_wa_checklist_on_message, create_wa_validation_hook
@@ -11,9 +11,10 @@ from tools.arch.wa_checklist_enforcer import enforce_wa_checklist_on_message, cr
 import yaml
 from jsonschema import validate, ValidationError
 
-# Import the new MCP validator
+# Import the new MCP validator and trace logger
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from core.mcp_schema import MCPSchemaValidator, MCPValidationError
+from core.execution_trace_logger import ExecutionTraceLogger, TaskStatus
 
 # Configurable constants
 PLAN_SCHEMA_PATH = Path('schemas/PLAN_SCHEMA.json')
@@ -28,6 +29,9 @@ RETRY_DELAY = 5        # seconds
 
 # Initialize MCP validator
 mcp_validator = MCPSchemaValidator()
+
+# Global trace logger instance (initialized in run_plan)
+trace_logger: Optional[ExecutionTraceLogger] = None
 
 # Load phase policy for retry logic
 def get_retry_limit() -> int:
@@ -174,6 +178,15 @@ def execute_task_with_dag_logging(task_node: TaskNode, dag: ExecutionDAG, tracer
             tracer.log_event("task_skipped_condition", task_node.task_id, task_node.agent, 
                            execution_layer, {"reason": condition_reason}, trace_id)
             
+            # Log to trace logger if enabled
+            if trace_logger:
+                trace_logger.skip_task(
+                    task_id=task_node.task_id,
+                    agent=task_node.agent,
+                    reason=condition_reason,
+                    condition={"when": when_condition, "unless": unless_condition}
+                )
+            
             return True  # Return True as this is a successful skip, not a failure
         else:
             print(f"[INFO] Task {task_node.task_id} passed conditional evaluation: {condition_reason}")
@@ -192,9 +205,20 @@ def execute_task_with_dag_logging(task_node: TaskNode, dag: ExecutionDAG, tracer
         
         if attempt == 0:
             tracer.log_event("task_started", task_node.task_id, task_node.agent, execution_layer)
+            # Log to trace logger if enabled
+            if trace_logger:
+                trace_logger.start_task(
+                    task_id=task_node.task_id,
+                    agent=task_node.agent,
+                    dependencies=task_node.dependencies,
+                    trace_id=trace_id
+                )
         else:
             tracer.log_event("task_retry", task_node.task_id, task_node.agent, execution_layer, 
                            {"attempt": attempt + 1})
+            # Log retry to trace logger if enabled
+            if trace_logger:
+                trace_logger.retry_task(task_node.task_id, attempt)
         
         # Build and send MCP message
         mcp_msg = build_mcp_message(task_node, trace_id, plan_id, attempt)
@@ -220,10 +244,25 @@ def execute_task_with_dag_logging(task_node: TaskNode, dag: ExecutionDAG, tracer
             tracer.log_event("task_completed", task_node.task_id, task_node.agent, execution_layer,
                            {"duration_sec": duration, "score": result.get('payload', {}).get('content', {}).get('score')})
             
+            # Log to trace logger if enabled
+            if trace_logger:
+                trace_logger.complete_task(
+                    task_id=task_node.task_id,
+                    status=TaskStatus.SUCCESS,
+                    result={
+                        "score": result.get('payload', {}).get('content', {}).get('score'),
+                        "output": result.get('payload', {}).get('content', {}).get('output', ''),
+                        "duration_sec": duration
+                    }
+                )
+            
             # Update plan context with task result
             if plan_context:
                 plan_context.update_from_task_result(task_node.task_id, result)
                 print(f"[INFO] Updated plan context from task {task_node.task_id}")
+                # Update trace logger context
+                if trace_logger:
+                    trace_logger.update_context(plan_context.context)
             
             print(f"[INFO] Task {task_node.task_id} completed successfully (layer {execution_layer})")
             return True
@@ -246,21 +285,36 @@ def execute_task_with_dag_logging(task_node: TaskNode, dag: ExecutionDAG, tracer
                                                  "Max retries exceeded")
                 tracer.log_event("task_timeout", task_node.task_id, task_node.agent, execution_layer)
     
+    # Log task failure to trace logger if enabled
+    if trace_logger:
+        trace_logger.complete_task(
+            task_id=task_node.task_id,
+            status=TaskStatus.FAILED,
+            error=f"Task failed after {retry_limit} attempts: timeout"
+        )
+    
     print(f"[ERROR] Task {task_node.task_id} failed after {retry_limit} attempts")
     return False
 
-def run_plan(plan_path: Path) -> bool:
+def run_plan(plan_path: Path, enable_trace_logging: bool = False) -> bool:
     """
     Enhanced plan runner with DAG awareness and comprehensive logging.
+    
+    Args:
+        plan_path: Path to the YAML plan file
+        enable_trace_logging: Enable execution trace logging to JSON files
     
     Returns:
         bool: True if all tasks completed successfully, False otherwise
     """
+    global trace_logger
+    
     print(f"[INFO] Starting DAG-aware plan execution: {plan_path}")
     
     # Load and validate plan
     plan_dict = plan_utils.load_and_validate_plan(plan_path, PLAN_SCHEMA_PATH)
     plan_id = plan_dict.get('metadata', {}).get('plan_id', plan_path.stem)
+    plan_name = plan_dict.get('name', plan_path.stem)
     
     # Build execution DAG
     dag = plan_utils.build_execution_dag(plan_dict)
@@ -270,10 +324,40 @@ def run_plan(plan_path: Path) -> bool:
     tracer = ExecutionTracer(plan_dict, dag, LOGS_TRACES_DIR)
     tracer.log_event("plan_started", details={"plan_path": str(plan_path)})
     
+    # Initialize trace logger if enabled
+    if enable_trace_logging:
+        trace_logger = ExecutionTraceLogger(LOGS_TASKS_DIR)
+        # Generate unique trace ID for this run
+        main_trace_id = str(uuid.uuid4())
+        
+        # Extract DAG structure for logging
+        dag_structure = {
+            "nodes": {task_id: {
+                "agent": node.agent,
+                "dependencies": node.dependencies,
+                "priority": node.priority
+            } for task_id, node in dag.nodes.items()},
+            "edges": dict(dag.edges),
+            "execution_layers": dag.get_execution_layers()
+        }
+        
+        trace_logger.start_plan(
+            trace_id=main_trace_id,
+            plan_id=plan_id,
+            plan_name=plan_name,
+            plan_path=str(plan_path),
+            dag_structure=dag_structure
+        )
+        print(f"[INFO] Execution trace logging enabled: {trace_logger.get_trace_path()}")
+    
     # Initialize plan context engine
     initial_context = plan_dict.get('context', {})
     plan_context = PlanContextEngine(initial_context)
     print(f"[INFO] Plan context initialized with: {list(plan_context.context.keys())}")
+    
+    # Update trace logger context if enabled
+    if trace_logger:
+        trace_logger.update_context(plan_context.context)
     
     # Get execution layers for parallel processing
     execution_layers = dag.get_execution_layers()
@@ -332,6 +416,23 @@ def run_plan(plan_path: Path) -> bool:
     final_status = "success" if all_success else "partial_success" if completed_tasks else "failure"
     tracer.finalize_trace(final_status)
     
+    # Complete trace logging if enabled
+    if trace_logger:
+        trace_logger.complete_plan(final_status)
+        print(f"[INFO] Execution trace saved: {trace_logger.get_trace_path()}")
+        
+        # Print summary
+        summary = trace_logger.export_summary()
+        print(f"\n[INFO] Execution Summary:")
+        print(f"  Duration: {summary.get('duration_sec', 0):.2f}s")
+        print(f"  Tasks: {summary['task_summary']['completed']}/{summary['task_summary']['total']} completed")
+        print(f"  Failed: {summary['task_summary']['failed']}")
+        print(f"  Skipped: {summary['task_summary']['skipped']}")
+        if summary['warnings_count'] > 0:
+            print(f"  Warnings: {summary['warnings_count']}")
+        if summary['errors_count'] > 0:
+            print(f"  Errors: {summary['errors_count']}")
+    
     # Save plan context evaluation log
     if plan_context and plan_context.evaluation_log:
         context_log_path = LOGS_TRACES_DIR / f"context_evaluation_{tracer.get_execution_id()}.json"
@@ -358,9 +459,11 @@ def run_plan(plan_path: Path) -> bool:
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("Usage: python plan_runner.py <plan_path>")
+        print("Usage: python plan_runner.py <plan_path> [--log-trace]")
         print("Example: python plan_runner.py plans/sample-plan-001.yaml")
+        print("         python plan_runner.py plans/sample-plan-001.yaml --log-trace")
         sys.exit(1)
     
-    success = run_plan(Path(sys.argv[1]))
+    enable_trace = '--log-trace' in sys.argv
+    success = run_plan(Path(sys.argv[1]), enable_trace_logging=enable_trace)
     sys.exit(0 if success else 1)
