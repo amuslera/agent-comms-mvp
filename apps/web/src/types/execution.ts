@@ -34,6 +34,7 @@ export interface PlanExecution {
 }
 
 export interface TaskNodeData {
+  id?: string;
   label: string;
   status: TaskStatus;
   agent: string;
