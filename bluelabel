@@ -16,6 +16,7 @@ sys.path.append(str(Path(__file__).parent))
 from tools.cli.cli_runner import main as run_plan
 from tools.cli.plan_linter import main as lint_plan
 from tools.cli.schema_checker import main as check_schema
+from tools.cli.sprint_summary import main as sprint_summary_main
 
 
 def main():
@@ -117,6 +118,23 @@ Examples:
         help='Show detailed validation errors'
     )
     
+    # Sprint-summary command
+    sprint_parser = subparsers.add_parser(
+        'sprint-summary',
+        help='Generate a summary report for a completed sprint'
+    )
+    sprint_parser.add_argument(
+        '--sprint',
+        required=True,
+        help='Sprint or phase identifier (e.g., 6.10)'
+    )
+    sprint_parser.add_argument(
+        '--output',
+        type=Path,
+        default=None,
+        help='Output file (default: /docs/releases/SPRINT_<sprint>_SUMMARY.md)'
+    )
+    
     args = parser.parse_args()
     
     # Route to appropriate command
@@ -154,6 +172,13 @@ Examples:
         
         sys.argv = ['schema_checker.py'] + check_args
         check_schema()
+
+    elif args.command == 'sprint-summary':
+        sprint_args = ['--sprint', args.sprint]
+        if args.output:
+            sprint_args.extend(['--output', str(args.output)])
+        sys.argv = ['sprint_summary.py'] + sprint_args
+        sprint_summary_main()
 
 
 if __name__ == '__main__':
