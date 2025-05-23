@@ -30,6 +30,7 @@
 - **Autonomy:** 8/10
 - **Notable Issues:** Needs clear scope to avoid overreach
 - **Override Rules:** May request scope clarification from ARCH
+- **TASK-150E Outcome:** ✅ Reassigned from WA, completed correctly within minutes. Included grouping, severity levels, help text, --json support. Score: ✅ CLI clarity, task matching, execution speed.
 
 ---
 
@@ -41,6 +42,7 @@
 - **Autonomy:** 6/10
 - **Notable Issues:** Must follow WA checklist; backend/CLI changes restricted
 - **Override Rules:** All UI work must be reviewed by ARCH/CC before merge
+- **TASK-150E Outcome:** ✘ Task was incorrectly assigned, WA implemented unscoped DAG validation, work not merged. Score: ✘ CLI ownership and self-correction.
 
 ---
 
