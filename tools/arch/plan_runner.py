@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, Set
 from tools.arch import plan_utils
 from tools.arch.plan_utils import ExecutionDAG, TaskNode, ExecutionTracer, PlanContextEngine, evaluate_conditions, log_conditional_skip
+from tools.arch.wa_checklist_enforcer import enforce_wa_checklist_on_message, create_wa_validation_hook
 
 import yaml
 from jsonschema import validate, ValidationError
@@ -84,6 +85,18 @@ def build_mcp_message(task_node: TaskNode, trace_id: str, plan_id: str, retry_co
         validate(instance=message, schema=mcp_schema)
     except ValidationError as e:
         raise ValueError(f"MCP message validation failed: {e.message}")
+    
+    # Apply WA checklist enforcement if this is a WA task
+    if task_node.agent == "WA":
+        message = enforce_wa_checklist_on_message(message)
+        # Create validation hook for later compliance review
+        validation_data = {
+            "task_id": task_node.task_id,
+            "description": task_node.description,
+            "trace_id": trace_id,
+            "plan_id": plan_id
+        }
+        create_wa_validation_hook(task_node.task_id, validation_data)
     
     return message
 

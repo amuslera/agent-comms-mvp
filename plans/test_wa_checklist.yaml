@@ -1,0 +1,49 @@
+# Test plan for WA checklist enforcement
+metadata:
+  plan_id: "test-wa-checklist"
+  version: "1.0.0"
+  description: "Test plan to verify WA checklist enforcement"
+  priority: "medium"
+  created: "2025-05-23T18:00:00Z"
+
+tasks:
+  - task_id: "TEST_WA_COMPONENT"
+    agent: "WA"
+    task_type: "task_assignment"
+    description: "Create a new metrics dashboard component"
+    priority: "high"
+    
+    content:
+      action: "create_component"
+      parameters:
+        component_name: "MetricsDashboard"
+        location: "/apps/web/src/components/dashboard/"
+        props:
+          - "metrics: MetricData[]"
+          - "refreshInterval: number"
+          - "onRefresh: () => void"
+      requirements:
+        - "Use TypeScript"
+        - "Implement with Tailwind CSS"
+        - "Add loading states"
+        - "Make responsive"
+    
+    dependencies: []
+    max_retries: 1
+    timeout: "30m"
+
+  - task_id: "TEST_CA_TASK"
+    agent: "CA"
+    task_type: "data_processing"
+    description: "Process metrics data for dashboard"
+    priority: "medium"
+    
+    content:
+      action: "process_data"
+      parameters:
+        input: "/data/raw_metrics.json"
+        output: "/data/processed_metrics.json"
+    
+    dependencies: []
+    max_retries: 2
+    timeout: "15m"

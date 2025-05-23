@@ -1936,3 +1936,35 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
   - /postbox/CA/outbox.json
 - Testing: All templates validated with bluelabel lint
 - Notes: CLI now supports rapid plan creation from reusable templates
+
+### TASK-150F-B: WA Checklist Enforcement in Planning
+**Status**: ✅ Done
+**Owner**: CC
+**Branch**: meta/wa-policy-enforcement-TASK-150F-B
+**Description**: Implemented automatic enforcement of WA checklist during task planning to ensure compliance.
+**Details**:
+- Created `WAChecklistEnforcer` class in `/tools/arch/wa_checklist_enforcer.py`
+- Integrated enforcement into plan_runner.py for automatic checklist inclusion
+- Added checklist summary to all WA task descriptions
+- Created validation hooks for manual compliance review
+- Implemented validation logic to check task completion against checklist
+- Created CLI tool for validation: `/tools/cli/wa_checklist_validator.py`
+**Features**:
+- ✅ Automatic checklist summary added to WA task descriptions
+- ✅ Prompt-level reminder: "Did WA follow the checklist?"
+- ✅ Validation hooks created for each WA task
+- ✅ CLI tool for reviewing and validating compliance
+- ✅ Compliance scoring and issue detection
+- ✅ Recommendations for non-compliant tasks
+**Enforcement includes**:
+- Branch naming conventions (feat/TASK-XXX or fix/TASK-XXX)
+- TypeScript requirement enforcement
+- Component location verification
+- Documentation requirements (screenshots, TASK_CARDS.md, outbox updates)
+- Restriction reminders (no CLI/backend modifications)
+**Files**:
+- `/tools/arch/wa_checklist_enforcer.py` - Core enforcement module
+- `/tools/arch/plan_runner.py` - Updated with WA enforcement integration
+- `/tools/cli/wa_checklist_validator.py` - CLI validation tool
+- `/plans/test_wa_checklist.yaml` - Test plan for verification
+**Testing**: Verified enforcement with test plan showing checklist integration and validation functionality
