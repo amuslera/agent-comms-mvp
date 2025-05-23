@@ -1946,3 +1946,34 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 **Owner**: CA
 **Completion Date**: 2025-05-23
 **Summary**: Implemented taskcard_writer.py for agent/CLI updates to TASK_CARDS.md. Supports marking tasks done/cancelled, adding summary, time, and resolution. CLI interface tested. Sample __main__.py stub provided for future CLI integration.
+
+### TASK-150F-A (CA): Create formal execution checklist for WA
+- Status: ✅ Done
+- Assigned: CA
+- Priority: High
+- Dependencies: None
+- Description: Create a comprehensive checklist for WA to follow on all frontend/UI tasks
+- Implementation:
+  - Created WA_CHECKLIST.md with detailed sections:
+    - Pre-Development Checklist
+    - Development Checklist
+    - Documentation & Reporting
+    - Code Review Preparation
+    - Restrictions
+    - Completion
+  - Includes specific requirements for:
+    - Branch naming and management
+    - File modifications
+    - UI verification and screenshots
+    - Documentation updates
+    - Code review process
+  - Added clear restrictions on:
+    - CLI/plan logic modifications
+    - Backend infrastructure changes
+    - File management and commits
+- Files Modified:
+  - WA_CHECKLIST.md (new)
+  - TASK_CARDS.md
+  - postbox/CA/outbox.json
+- Testing: N/A (documentation only)
+- Notes: Checklist provides clear guidelines for WA to ensure consistent and high-quality frontend implementations
