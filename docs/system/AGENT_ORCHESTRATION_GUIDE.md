@@ -75,6 +75,7 @@ If orchestration is ever reassigned:
 See also:
 - [ARCH_CONTINUITY.md](./ARCH_CONTINUITY.md): Current phase, agent-task map, ARCH preferences
 - [AGENT_SCORECARD.md](./AGENT_SCORECARD.md): Agent strengths, reliability, autonomy, and issues
+- [ARCH_AI_CONTEXT.md](./ARCH_AI_CONTEXT.md): ARCH-AI role, responsibilities, and operating protocol
 
 ---
 

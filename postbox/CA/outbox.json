@@ -46,5 +46,99 @@
       "status": "completed",
       "details": "Created /postbox/WA/WA_BOOT.md with WA's operating protocol and checklist requirements. Linked in /WA_CHECKLIST.md under Reference. File content matches ARCH-AI instructions. See TASK_CARDS.md for summary."
     }
+  },
+  {
+    "CA Reports": {
+      "task": "TASK-150U",
+      "summary": "Plan Template Documentation + Inline Annotations",
+      "implemented": [
+        "Added comprehensive inline comments to all plan templates in /plans/templates/",
+        "Created /docs/templates.md with template index, field documentation, usage, and best practices"
+      ],
+      "tested": [
+        "Verified all templates load and validate with bluelabel lint",
+        "Checked that comments are present and clear in each YAML file",
+        "Confirmed /docs/templates.md is accessible and accurate"
+      ],
+      "files_modified": [
+        "/plans/templates/basic-single-agent.yaml",
+        "/plans/templates/multi-agent-dag.yaml",
+        "/plans/templates/approval-gated-flow.yaml",
+        "/docs/templates.md",
+        "/TASK_CARDS.md"
+      ],
+      "edge_cases_notes": [
+        "Ensured comments do not break YAML syntax or schema validation",
+        "Templates remain MCP-compliant and pass all CLI checks"
+      ],
+      "timestamp": "2025-05-23T17:00:00Z"
+    }
+  },
+  {
+    "CA Reports": {
+      "task": "TASK-150W",
+      "summary": "Created ARCH-AI Role Context File for onboarding, handover, and reinitialization.",
+      "file_created": "/docs/system/ARCH_AI_CONTEXT.md",
+      "sections": [
+        "Role Overview",
+        "Responsibilities",
+        "Operating Protocol",
+        "Fallback/Restart Procedure",
+        "Tag and Maintenance Policy"
+      ],
+      "linked_in": "/docs/system/AGENT_ORCHESTRATION_GUIDE.md (System Metadata section)",
+      "clarifying_assumptions": [
+        "ARCH-AI is always subordinate to the human ARCH but retains planning authority for agent prompts and sprint structure.",
+        "ARCH-AI does not execute tasks directly but coordinates prompt and plan generation."
+      ],
+      "suggestions_for_future": [
+        "Expand with example prompt cycles and merge/tag instructions.",
+        "Add a section for common pitfalls and recovery scenarios.",
+        "Include a changelog for each update at milestone tags."
+      ],
+      "timestamp": "2025-05-23T21:00:00Z"
+    }
+  },
+  {
+    "CA Reports": {
+      "task": "TASK-150E",
+      "summary": "Enhanced bluelabel lint error messaging and feedback UX.",
+      "features_implemented": [
+        "Actionable suggestions for missing/invalid fields (e.g., 'Missing agent: → Add agent: CC below the task ID')",
+        "Grouping of issues by task ID",
+        "Clear error severity levels: error, warning, info",
+        "Structured output with --format json",
+        "Updated CLI help text and usage documentation with sample output"
+      ],
+      "edge_cases_tested": [
+        "Missing agent, task_type, or description",
+        "Duplicate task IDs",
+        "Invalid agent or task_type",
+        "Empty or whitespace-only descriptions",
+        "Invalid dependencies format",
+        "Plan-level missing 'tasks' field"
+      ],
+      "cli_output_examples": [
+        "📌 Task: task-001\n  ❌ Task 'task-001' is missing required field: agent\n     field: agent\n     💡 Suggestion: Add the required 'agent:' field below task_id: task-001, e.g. agent: CC\n  ⚠️ Task 'task-001' has non-standard task_type: 'foo'\n     field: task_type\n     💡 Suggestion: Consider using one of the standard task types: data_processing, report_generation, ...\n\n📄 Plan-level issues:\n  ❌ Plan is missing required 'tasks' field\n     💡 Suggestion: Ensure your plan has a 'tasks' list containing task definitions\n\n📋 Lint Summary for my-plan.yaml\n  Tasks: 2 total, 1 with issues\n  Issues: 1 errors, 1 warnings, 0 info\n  ✅ No issues found! (if plan is valid)"
+      ],
+      "timestamp": "2025-05-23T22:00:00Z"
+    }
+  },
+  {
+    "CA Reports": {
+      "task": "TASK-150Z",
+      "summary": "Updated agent scorecard for WA and CA based on TASK-150E reassignment and outcome.",
+      "updated_fields": [
+        "WA: Noted incorrect assignment, unscoped DAG validation, work not merged, score lowered for CLI ownership and self-correction.",
+        "CA: Noted reassignment, rapid completion, improved score for CLI clarity and execution speed."
+      ],
+      "assumptions": [
+        "Scorecard should be updated at every major task reassignment or outcome affecting agent roles."
+      ],
+      "suggestions": [
+        "Tag and review problematic reassignments in future sprints to ensure correct agent-task mapping."
+      ],
+      "timestamp": "2025-05-23T22:30:00Z"
+    }
   }
 ]
