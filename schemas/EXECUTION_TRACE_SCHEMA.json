@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Plan Execution Trace Schema",
+  "description": "Central timeline log for complete plan execution with DAG insights",
+  "$comment": "Schema version: 1.0.0 - Compatible with TASK-090C DAG-Aware Task Logger",
+  "type": "object",
+  "required": [
+    "plan_id",
+    "execution_id",
+    "plan_metadata",
+    "dag_analysis",
+    "execution_timeline",
+    "summary"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "description": "Identifier of the executed plan"
+    },
+    "execution_id": {
+      "type": "string",
+      "description": "Unique identifier for this execution instance",
+      "pattern": "^exec-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+    },
+    "plan_metadata": {
+      "type": "object",
+      "required": ["version", "description", "total_tasks"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Version of the executed plan"
+        },
+        "description": {
+          "type": "string",
+          "description": "Plan description"
+        },
+        "total_tasks": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of tasks in the plan"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "description": "Overall plan priority"
+        },
+        "author": {
+          "type": "string",
+          "description": "Plan author/creator"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Execution environment (development, staging, production)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "dag_analysis": {
+      "type": "object",
+      "required": ["execution_layers", "critical_path", "parallelizable_tasks"],
+      "properties": {
+        "execution_layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["layer", "tasks"],
+            "properties": {
+              "layer": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Layer number (0-based)"
+              },
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9_-]+$"
+                },
+                "description": "Tasks that can execute in parallel at this layer"
+              }
+            }
+          },
+          "description": "Analysis of execution layers for parallel processing"
+        },
+        "critical_path": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_-]+$"
+          },
+          "description": "Longest path through the DAG (determines minimum execution time)"
+        },
+        "parallelizable_tasks": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum number of tasks that can run simultaneously"
+        },
+        "total_depth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum depth of the DAG"
+        },
+        "agents_involved": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["ARCH", "CA", "CC", "WA"]
+          },
+          "description": "List of agents involved in plan execution"
+        }
+      },
+      "additionalProperties": false
+    },
+    "execution_timeline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["timestamp", "event_type", "task_id"],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this event occurred"
+          },
+          "event_type": {
+            "type": "string",
+            "enum": [
+              "plan_started",
+              "task_created", 
+              "task_waiting",
+              "task_ready",
+              "task_started",
+              "task_completed",
+              "task_failed",
+              "task_timeout",
+              "task_retry",
+              "layer_started",
+              "layer_completed",
+              "plan_completed",
+              "plan_failed"
+            ],
+            "description": "Type of execution event"
+          },
+          "task_id": {
+            "type": ["string", "null"],
+            "description": "Task identifier (null for plan-level events)"
+          },
+          "agent": {
+            "type": ["string", "null"],
+            "enum": ["ARCH", "CA", "CC", "WA", null],
+            "description": "Agent involved in this event"
+          },
+          "execution_layer": {
+            "type": ["integer", "null"],
+            "minimum": 0,
+            "description": "Execution layer for task events"
+          },
+          "details": {
+            "type": "object",
+            "description": "Additional event-specific details"
+          },
+          "trace_id": {
+            "type": ["string", "null"],
+            "description": "Trace ID for detailed task logs"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Chronological timeline of all execution events"
+    },
+    "summary": {
+      "type": "object",
+      "required": ["start_time", "end_time", "total_duration_sec", "status"],
+      "properties": {
+        "start_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When plan execution started"
+        },
+        "end_time": {
+          "type": "string",
+          "format": "date-time", 
+          "description": "When plan execution finished"
+        },
+        "total_duration_sec": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total execution time in seconds"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["success", "partial_success", "failure", "timeout"],
+          "description": "Overall plan execution status"
+        },
+        "tasks_completed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of tasks that completed successfully"
+        },
+        "tasks_failed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of tasks that failed"
+        },
+        "tasks_timeout": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of tasks that timed out"
+        },
+        "total_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of retry attempts across all tasks"
+        },
+        "avg_task_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Average quality score across completed tasks"
+        },
+        "parallelism_achieved": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Average number of tasks running simultaneously"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

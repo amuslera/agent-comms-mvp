@@ -3,18 +3,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
-
-export interface TaskExecution {
-  task_id: string;
-  agent: string;
-  type: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'retry';
-  score?: number;
-  retry_count: number;
-  started_at?: string;
-  completed_at?: string;
-  error?: string;
-}
+import type { TaskExecution } from '@/types/execution';
+import { statusColors } from '@/types/execution';
+import { cn } from '@/lib/utils';
 
 interface PlanExecutionViewerProps {
   tasks: TaskExecution[];
@@ -32,18 +23,16 @@ export function PlanExecutionViewer({
   onRetry
 }: PlanExecutionViewerProps) {
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <Badge variant="success">Completed</Badge>;
-      case 'in_progress':
-        return <Badge variant="secondary">In Progress</Badge>;
-      case 'failed':
-        return <Badge variant="destructive">Failed</Badge>;
-      case 'retry':
-        return <Badge variant="warning">Retry</Badge>;
-      default:
-        return <Badge variant="outline">Pending</Badge>;
-    }
+    const statusText = status
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+      
+    return (
+      <Badge className={cn('whitespace-nowrap', statusColors[status as keyof typeof statusColors])}>
+        {statusText}
+      </Badge>
+    );
   };
 
   const formatDate = (dateString?: string) => {

@@ -946,5 +946,51 @@
         }
       ]
     }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-090B-COMPLETE",
+    "timestamp": "2025-05-23T14:00:00Z",
+    "sender": "CA",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-090B",
+      "status": "completed",
+      "progress": 100,
+      "details": "ARCH DAG Executor is now implemented. plan_runner.py uses ExecutionDAG for dependency-aware, parallel task execution. Tracks per-task state (waiting, ready, running, done, failed, skipped), dispatches all ready tasks concurrently, dynamically unlocks new ready tasks, and skips tasks with failed dependencies. All retry, escalation, and logging logic is preserved. Operates correctly on sample-plan-001.yaml and other DAG plans.",
+      "changes": [
+        "Refactored plan_runner.py to use ExecutionDAG for dependency-aware, parallel task execution",
+        "Tracks per-task state: waiting, ready, running, done, failed, skipped",
+        "Begins execution with all root (dependency-free) tasks",
+        "Dynamically dispatches new ready tasks as dependencies complete",
+        "Supports parallel execution using asyncio.gather for all ready tasks",
+        "Skips tasks with failed dependencies and logs all state transitions",
+        "Preserves all retry, escalation, and logging logic",
+        "Operates correctly on sample-plan-001.yaml and other DAG plans"
+      ],
+      "artifacts": [
+        {
+          "type": "python_module",
+          "path": "tools/arch/plan_runner.py",
+          "description": "DAG-based plan execution logic"
+        },
+        {
+          "type": "python_module",
+          "path": "tools/arch/plan_utils.py",
+          "description": "ExecutionDAG and DAG utilities"
+        },
+        {
+          "type": "log",
+          "path": "logs/tasks/{trace_id}.json",
+          "description": "Per-task execution logs"
+        },
+        {
+          "type": "documentation",
+          "path": "TASK_CARDS.md",
+          "description": "Task completion and implementation notes"
+        }
+      ]
+    }
   }
 ]

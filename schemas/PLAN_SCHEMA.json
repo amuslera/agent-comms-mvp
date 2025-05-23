@@ -171,10 +171,20 @@
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^[A-Z0-9_-]+$"
+              "pattern": "^[A-Z0-9_-]+$",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Task ID that must complete successfully before this task starts"
             },
-            "description": "List of task_ids that must complete successfully before this task starts",
-            "default": []
+            "uniqueItems": true,
+            "maxItems": 20,
+            "description": "List of task_ids that must complete successfully before this task starts. Each dependency must refer to an existing task_id in the plan. Circular dependencies are not allowed.",
+            "default": [],
+            "examples": [
+              [],
+              ["VALIDATE_INPUT_DATA"],
+              ["TRANSFORM_DATA", "ASSESS_DATA_QUALITY"]
+            ]
           },
           "max_retries": {
             "type": "integer",
@@ -327,6 +337,7 @@
     }
   },
   "additionalProperties": false,
+  "$comment": "Additional Runtime Validation: This schema provides static validation. The plan loader also performs dynamic DAG validation including: 1) Cycle detection using topological sorting, 2) Dependency reference validation (all referenced task_ids must exist), 3) Execution order calculation, 4) Parallel execution layer analysis. These validations occur in tools/arch/plan_utils.py::build_execution_dag()",
   "$defs": {
     "agent_id": {
       "type": "string",

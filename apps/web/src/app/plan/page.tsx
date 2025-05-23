@@ -1,100 +1,105 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { PlanControlBar } from '@/components/plan/PlanControlBar';
 import { PlanExecutionViewer } from '@/components/plan/PlanExecutionViewer';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DagViewer } from '@/components/plan/DagViewer';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, LayoutDashboard, Table2, Loader2, RefreshCw } from 'lucide-react';
 import { getPlanExecution } from '@/api/executionApi';
-import type { PlanExecution } from '@/api/executionApi';
+import type { PlanExecution } from '@/types/execution';
 
-interface PlanPageParams {
-  planId: string;
+interface PlanPageProps {
+  params: {
+    planId: string;
+  };
 }
 
-export default function PlanPage() {
+export default function PlanPage({ params }: PlanPageProps) {
   const router = useRouter();
-  const { planId } = router.query as unknown as PlanPageParams;
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [plan, setPlan] = useState<PlanExecution | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Check if planId is available
-  useEffect(() => {
-    if (!planId) {
-      setError('No plan ID provided');
-      setLoading(false);
-    }
-  }, [planId]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const planId = params?.planId;
 
   const fetchPlan = async (id: string) => {
     try {
-      setLoading(true);
+      setRefreshing(true);
+      setError(null);
       const data = await getPlanExecution(id);
       setPlan(data);
-      setError(null);
     } catch (err) {
-      console.error('Error fetching plan:', err);
-      setError('Failed to load plan execution data');
+      console.error('Failed to fetch plan:', err);
+      setError('Failed to load plan. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchPlan(planId);
-  };
-
-  const handleActionComplete = (action: string) => {
-    console.log(`Action ${action} completed`);
-    // Refresh the plan data after an action
-    fetchPlan(planId);
-  };
-
   useEffect(() => {
     if (planId) {
       fetchPlan(planId);
+    } else {
+      setLoading(false);
+      setError('No plan ID provided');
     }
   }, [planId]);
 
-  if (loading && !refreshing) {
+  const handleRefresh = () => {
+    if (planId) {
+      fetchPlan(planId);
+    }
+  };
+
+  const handleActionComplete = () => {
+    if (planId) {
+      fetchPlan(planId);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading plan...</span>
+      </div>
+    );
+  }
+
+  if (!planId) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-muted-foreground">No plan ID provided</p>
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Go back
+        </Button>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="bg-destructive/10 border border-destructive text-destructive p-4 rounded-lg">
-          <p className="font-medium">Error loading plan</p>
-          <p className="text-sm mt-1">{error}</p>
-          <div className="mt-4 space-x-2">
-            <Button 
-              variant="outline" 
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Go Back
-            </Button>
-            {planId && (
-              <Button 
-                variant="outline" 
-                onClick={() => fetchPlan(planId)}
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Retry
-              </Button>
-            )}
-          </div>
-        </div>
+      <div className="p-4 text-center">
+        <p className="text-destructive">{error}</p>
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={() => planId && fetchPlan(planId)}
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Retry
+        </Button>
       </div>
     );
   }
@@ -131,7 +136,7 @@ export default function PlanPage() {
         </div>
       </div>
       
-      {plan ? (
+      {plan && (
         <>
           <div className="grid gap-6">
             <Card>
@@ -156,21 +161,56 @@ export default function PlanPage() {
               </CardContent>
             </Card>
 
-            <PlanExecutionViewer 
-              tasks={plan.tasks} 
-              className="w-full"
-              loading={loading}
-              error={error}
-              onRetry={() => fetchPlan(plan.plan_id)}
-            />
+            <Tabs defaultValue="dag" className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger value="dag">
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  DAG View
+                </TabsTrigger>
+                <TabsTrigger value="table">
+                  <Table2 className="h-4 w-4 mr-2" />
+                  Table View
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="dag" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Task Dependencies</CardTitle>
+                    <CardDescription>
+                      Visual representation of task dependencies and execution flow
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <DagViewer 
+                      tasks={plan.tasks} 
+                      loading={loading}
+                      error={error}
+                      onRefresh={() => plan && fetchPlan(plan.plan_id)}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="table" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Task Details</CardTitle>
+                    <CardDescription>
+                      Detailed view of all tasks in this plan
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <PlanExecutionViewer 
+                      tasks={plan.tasks} 
+                      loading={loading}
+                      error={error}
+                      onRetry={() => plan && fetchPlan(plan.plan_id)}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         </>
-      ) : (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">No plan data available</p>
-          </CardContent>
-        </Card>
       )}
     </div>
   );

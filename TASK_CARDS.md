@@ -2,6 +2,27 @@
 
 ## Completed Tasks
 
+### TASK-090D: DAG UI for Plan Execution
+**Status**: ✅ Done  
+**Owner**: WA  
+**Description**: Implemented an interactive DAG (Directed Acyclic Graph) viewer for visualizing task dependencies and execution status in the plan execution view.  
+**Details**:  
+- Created `DagViewer` component with ReactFlow integration for interactive DAG visualization  
+- Implemented `TaskNode` component with status indicators and task details  
+- Added support for different task statuses with color coding and icons  
+- Integrated with existing PlanExecutionViewer in a tabbed interface  
+- Added responsive design that works on all screen sizes  
+- Implemented zoom and pan controls for navigating complex DAGs  
+- Added visual indicators for task dependencies and execution flow  
+- Ensured TypeScript type safety throughout the implementation  
+**Files**:  
+- `/apps/web/src/components/plan/DagViewer.tsx` (New)  
+- `/apps/web/src/components/plan/TaskNode.tsx` (New)  
+- `/apps/web/src/types/execution.ts` (Updated)  
+- `/apps/web/src/app/plan/page.tsx` (Updated)  
+- `/TASK_CARDS.md` (this update)  
+**Branch**: feat/TASK-090D-dag-ui
+
 ### TASK-080D: Plan Viewer UI
 **Status**: ✅ Done  
 **Owner**: WA  
@@ -1567,6 +1588,17 @@
 - [x] Clear structure and separation of responsibilities
 - [x] ARCH notified via outbox
 
+### TASK-090B: ARCH DAG Executor (Core Loop)
+- [x] Refactored plan_runner.py to use ExecutionDAG for dependency-aware, parallel task execution
+- [x] Tracks per-task state: waiting, ready, running, done, failed, skipped
+- [x] Begins execution with all root (dependency-free) tasks
+- [x] Dynamically dispatches new ready tasks as dependencies complete
+- [x] Supports parallel execution using asyncio.gather for all ready tasks
+- [x] Skips tasks with failed dependencies and logs all state transitions
+- [x] Preserves all retry, escalation, and logging logic
+- [x] Operates correctly on sample-plan-001.yaml and other DAG plans
+- [x] ARCH notified via outbox
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### 📘 Phase 5: UI & Visualization
@@ -1655,6 +1687,52 @@
 **Files**:
 - `/schemas/PLAN_SCHEMA.json` - Complete JSON schema with validation rules
 - `/plans/sample-plan-001.yaml` - Comprehensive sample plan with all features
+
+### TASK-090A: DAG Plan Parser 
+**Status**: ✅ Done  
+**Owner**: CC  
+**Branch**: feat/TASK-090A-dag-parser  
+**Description**: Extended plan loader to support dependencies in YAML plans with cycle detection and execution graph generation for ARCH.  
+**Details**:  
+- Implemented comprehensive DAG (Directed Acyclic Graph) data structures with `TaskNode` and `ExecutionDAG` classes  
+- Added `build_execution_dag()` function to parse YAML plans into execution graphs with dependency validation  
+- Implemented cycle detection using topological sorting (Kahn's algorithm)  
+- Added dependency reference validation to ensure all referenced task_ids exist  
+- Created execution layer analysis for parallel task identification  
+- Implemented `get_ready_tasks()` and `get_execution_layers()` for dynamic task scheduling  
+- Added comprehensive validation with `validate_dag_integrity()` including statistics and warnings  
+- Created extensive unit test suite with 11 test scenarios covering linear, parallel, complex DAGs, and error conditions  
+- Enhanced PLAN_SCHEMA.json with robust dependency validation rules and runtime validation documentation  
+- Successfully tested with sample-plan-001.yaml (7 tasks, 6 execution layers, 2 parallel paths)  
+**Files**:  
+- `/tools/arch/plan_utils.py` - DAG classes and parser functions  
+- `/tests/test_dag_parser.py` - Comprehensive unit test suite  
+- `/schemas/PLAN_SCHEMA.json` - Enhanced with dependency validation rules  
+- `/TASK_CARDS.md` - This update  
+
+### TASK-090C: DAG-Aware Task Logger
+**Status**: ✅ Done  
+**Owner**: CC  
+**Branch**: feat/TASK-090C-task-logger  
+**Description**: Enhanced the existing logging system to include dependency and execution layer data for each task with structured metadata and state transitions.  
+**Details**:  
+- Designed comprehensive task logging schemas with DAG metadata including execution layers, dependencies, and parallel tasks  
+- Created `TASK_LOG_SCHEMA.json` and `EXECUTION_TRACE_SCHEMA.json` for structured, inspectable logs  
+- Enhanced `plan_utils.py` with DAG-aware logging functions: `create_enhanced_task_log()`, `update_task_log_state()`, `update_task_log_result()`, `add_retry_to_task_log()`  
+- Implemented `ExecutionTracer` class for central execution timeline logging with plan-level insights  
+- Updated `plan_runner.py` to integrate DAG-aware logging with state transitions (waiting → ready → running → completed/failed/timeout)  
+- Added comprehensive retry history tracking and error event logging  
+- Enhanced MCP message construction with full task context including dependencies, deadlines, and conditions  
+- Implemented layer-by-layer execution with parallel task identification and execution metadata  
+- Created structured logs in `/logs/tasks/{trace_id}.json` and central execution traces in `/logs/traces/execution_trace_{id}.json`  
+- Successfully tested all state transitions, retry scenarios, and schema validation with sample plan  
+- Logs are fully MCP-compatible and easily inspectable by UI/CLI tools  
+**Files**:  
+- `/tools/arch/plan_runner.py` - Enhanced with DAG-aware execution and logging  
+- `/tools/arch/plan_utils.py` - Added enhanced logging functions and ExecutionTracer class  
+- `/schemas/TASK_LOG_SCHEMA.json` - Comprehensive task log schema with DAG metadata  
+- `/schemas/EXECUTION_TRACE_SCHEMA.json` - Central execution trace schema with timeline  
+- `/TASK_CARDS.md` - This update  
 
 ### 🔮 Phase 6: Advanced Features (Future)
 - API gateway for external agent comms
