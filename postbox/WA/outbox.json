@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "message_id": "msg_123456789",
+    "type": "task_completion",
+    "sender": "WA",
+    "recipient": "ARCH",
+    "timestamp": "2025-05-23T00:19:21Z",
+    "content": {
+      "task_id": "TASK-080D",
+      "status": "completed",
+      "summary": "Successfully implemented Plan Viewer UI for displaying YAML plan execution results",
+      "details": {
+        "components_created": [
+          "/apps/web/src/app/plan/page.tsx",
+          "/apps/web/src/components/plan/PlanExecutionViewer.tsx"
+        ],
+        "components_updated": [
+          "/apps/web/src/components/plan/PlanControlBar.tsx",
+          "/apps/web/src/api/executionApi.ts",
+          "/apps/web/src/api/config.ts"
+        ],
+        "documentation_updated": [
+          "/TASK_CARDS.md"
+        ]
+      }
+    }
+  }
+]

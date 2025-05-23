@@ -1,9 +1,9 @@
-import { Button } from '../ui/button';
-import { useToast } from '../ui/use-toast';
+import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw, AlertTriangle, X } from 'lucide-react';
 import { useState } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../api/config';
+import toast from 'react-hot-toast';
 
 interface PlanControlBarProps {
   planId: string;
@@ -45,7 +45,6 @@ export function PlanControlBar({
   onActionComplete,
   className = '',
 }: PlanControlBarProps) {
-  const { toast } = useToast();
   const [loading, setLoading] = useState<ActionType | null>(null);
 
   const handleAction = async (action: ActionType) => {
@@ -60,21 +59,13 @@ export function PlanControlBar({
         },
       });
       
-      toast({
-        title: 'Success',
-        description: config.successMessage,
-        variant: 'default',
-      });
+      toast.success(config.successMessage);
       
       onActionComplete?.(action);
     } catch (error) {
       console.error(`${config.errorMessage}:`, error);
       
-      toast({
-        title: 'Error',
-        description: config.errorMessage,
-        variant: 'destructive',
-      });
+      toast.error(config.errorMessage);
     } finally {
       setLoading(null);
     }
