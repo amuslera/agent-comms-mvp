@@ -1969,6 +1969,7 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 - `/plans/test_wa_checklist.yaml` - Test plan for verification
 **Testing**: Verified enforcement with test plan showing checklist integration and validation functionality
 
+<<<<<<< HEAD
 ### TASK-150H: YAML Plan Dry-Run Execution Preview
 - Status: ✅ Done
 - Owner: CA
@@ -1990,6 +1991,8 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 - Testing: CLI outputs validated for all templates and sample plans
 - Notes: CLI now supports safe debugging and preview of plan execution
 
+=======
+>>>>>>> origin/core/mcp-schema-fix-TASK-150C
 ### TASK-150C: MCP Schema Compliance Fix
 **Status**: ✅ Done
 **Owner**: CC
@@ -2021,6 +2024,7 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 - `/tools/arch/plan_runner.py` - Updated to use correct message type and validation
 - `/tools/cli/schema_checker.py` - CLI tool for validation
 - `/bluelabel` - Main CLI entry point with schema-check command
+- `/tools/cli/lint_utils.py` - Fixed f-string syntax error
 **CLI Examples**:
 ```bash
 # Check a plan file

@@ -439,25 +439,32 @@ class PlanLinter:
             self.lint_result.add_issue(create_issue(
                 'error',
                 f"Error while checking for unreachable tasks: {str(e)}",
-                details={'type': 'unreachable_check_error'}
+                details={"type": "unreachable_check_error"}
             ))
 
-    def print_issues(self, output_format: str = 'text', output_file: Optional[Path] = None):
+    def print_issues(self, output_format: str = 'text', output_file: Optional[Path] = None) -> None:
         """Print all validation issues using the lint result formatter.
         
         Args:
             output_format: The output format ('text' or 'json')
             output_file: Optional file path to write the output to
         """
+        if output_format not in ['text', 'json']:
+            raise ValueError(f"Invalid output format: {output_format}. Must be 'text' or 'json'.")
+            
         # Get the formatted output from lint_result
         output = self.lint_result.get_formatted_output(format=output_format)
         
         # Write to file if specified, otherwise print to stdout
         if output_file:
-            output_file.parent.mkdir(parents=True, exist_ok=True)
-            with open(output_file, 'w') as f:
-                f.write(output)
-            print(f"Lint results written to: {output_file}", file=sys.stderr)
+            try:
+                output_file = Path(output_file)
+                output_file.parent.mkdir(parents=True, exist_ok=True)
+                with output_file.open('w') as f:
+                    f.write(output)
+                print(f"Lint results written to: {output_file}", file=sys.stderr)
+            except Exception as e:
+                print(f"Error writing to output file: {e}", file=sys.stderr)
         else:
             print(output)
             
