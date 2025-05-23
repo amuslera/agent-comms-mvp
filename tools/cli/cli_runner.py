@@ -158,7 +158,9 @@ def main():
     run_parser = subparsers.add_parser('run', help='Run a plan')
     run_parser.add_argument('plan', help='Path to plan file (YAML)')
     run_parser.add_argument('--summary', '-s', action='store_true', 
-                          help='Show plan summary without executing')
+                          help='Show one-line summary per task (with or without execution)')
+    run_parser.add_argument('--dry-run', action='store_true',
+                          help='Preview execution plan, DAG, routing, and approvals without running any tasks')
     
     # Lint command
     lint_parser = subparsers.add_parser('lint', help='Validate a plan')
@@ -209,14 +211,52 @@ def main():
         sys.exit(1)
     
     if args.command == 'run':
+        if args.dry_run:
+            # Dry-run preview mode: no execution, just show plan structure
+            from tools.arch.plan_utils import load_and_validate_plan, build_execution_dag
+            plan_path = Path(args.plan)
+            schema_path = Path('schemas/PLAN_SCHEMA.json')
+            plan_dict = load_and_validate_plan(plan_path, schema_path)
+            dag = build_execution_dag(plan_dict)
+            print(f"\n=== DRY RUN: Execution Plan Preview for {plan_path.name} ===")
+            print(f"Total tasks: {len(dag.nodes)}")
+            print(f"Execution order: {dag.execution_order}")
+            print(f"Execution layers (parallelizable):")
+            for i, layer in enumerate(dag.get_execution_layers()):
+                print(f"  Layer {i}: {layer}")
+            print("\nAgent routing table:")
+            for task_id in dag.execution_order:
+                node = dag.nodes[task_id]
+                print(f"  {task_id}: {node.agent} ({node.task_type})")
+            print("\nTask approvals and blockers:")
+            for task_id in dag.execution_order:
+                node = dag.nodes[task_id]
+                approval = node.content.get('approval', False)
+                deps = node.dependencies
+                blockers = [dep for dep in deps if dep not in dag.nodes]
+                print(f"  {task_id}: approval={approval}, dependencies={deps}, blockers={blockers if blockers else 'None'}")
+            if args.summary:
+                print("\n--- SUMMARY (one-liner per task) ---")
+                for task_id in dag.execution_order:
+                    node = dag.nodes[task_id]
+                    approval = node.content.get('approval', False)
+                    deps = node.dependencies
+                    print(f"{task_id} | agent={node.agent} | type={node.task_type} | deps={deps} | approval={approval}")
+            print("\n(No tasks were executed. This is a dry-run preview.)\n")
+            sys.exit(0)
         # Get and display task summary
         tasks = runner.get_task_summary()
-        runner.print_summary(tasks)
-        
-        # Execute the plan unless --summary flag is set
-        if not args.summary:
+        if args.summary:
+            print("\n--- SUMMARY (one-liner per task) ---")
+            for task in tasks:
+                print(f"{task['task_id']} | agent={task['agent']} | type={task['type']} | status={task['status']} | retries={task['retries']} | score={task['score']}")
+        else:
+            runner.print_summary(tasks)
+        # Execute the plan unless --summary or --dry-run flag is set
+        if not args.summary and not args.dry_run:
             success = runner.run_plan()
             sys.exit(0 if success else 1)
+        sys.exit(0)
     elif args.command == 'lint':
         success = runner.lint_plan(dry_run=args.dry_run)
         sys.exit(0 if success else 1)

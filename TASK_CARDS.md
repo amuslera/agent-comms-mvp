@@ -1968,3 +1968,24 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 - `/tools/cli/wa_checklist_validator.py` - CLI validation tool
 - `/plans/test_wa_checklist.yaml` - Test plan for verification
 **Testing**: Verified enforcement with test plan showing checklist integration and validation functionality
+
+### TASK-150H: YAML Plan Dry-Run Execution Preview
+- Status: ✅ Done
+- Owner: CA
+- Branch: cli/plan-dry-run-TASK-150H
+- Description: Added --dry-run and --summary flags to bluelabel run for previewing YAML plan execution order, DAG structure, agent routing, and approvals without running tasks.
+- Implementation:
+  - --dry-run: Shows ordered execution plan, DAG layers, agent routing, approvals/blockers
+  - --summary: One-liner per task (task_id, agent, type, deps, approval)
+  - No agent execution occurs in dry-run mode
+  - Both flags can be combined for compact preview
+- Edge Cases Tested:
+  - Linear, parallel, and diamond-shaped DAGs
+  - Cycles and missing dependencies flagged
+  - Approval-gated and multi-agent plans
+- Files Modified:
+  - /tools/cli/cli_runner.py
+  - /TASK_CARDS.md
+  - /postbox/CA/outbox.json
+- Testing: CLI outputs validated for all templates and sample plans
+- Notes: CLI now supports safe debugging and preview of plan execution

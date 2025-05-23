@@ -19,5 +19,14 @@
       "status": "completed",
       "details": "Created three MCP-compliant YAML plan templates and integrated them into the bluelabel new-plan command. Templates: basic-single-agent, multi-agent-dag, approval-gated-flow. CLI now supports --template flag for new-plan. All templates pass lint. See TASK_CARDS.md for details."
     }
+  },
+  {
+    "timestamp": "2025-05-23T17:00:00Z",
+    "type": "task_status",
+    "content": {
+      "task_id": "TASK-150H",
+      "status": "completed",
+      "details": "Added --dry-run and --summary flags to bluelabel run. Dry-run mode outputs execution order, DAG layers, agent routing, approvals/blockers. Summary mode gives one-liner per task. Tested with linear, parallel, diamond, approval-gated, and multi-agent plans. Cycles and missing dependencies flagged. No agent execution in dry-run. See TASK_CARDS.md for details."
+    }
   }
 ]
