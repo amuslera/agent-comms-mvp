@@ -1940,3 +1940,9 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 **Owner**: CA
 **Completion Date**: 2025-05-23
 **Summary**: Integrated the finalized Phase 6.9 postmortem into the documentation. Created /docs/release_notes/PHASE_6.9_POSTMORTEM.md, added a link in docs/RELEASE_NOTES.md, and confirmed all deliverables. See CA Reports in /postbox/CA/outbox.json.
+
+### TASK-150B: Auto-Update to /TASK_CARDS.md
+**Status**: ✅ Done
+**Owner**: CA
+**Completion Date**: 2025-05-23
+**Summary**: Implemented taskcard_writer.py for agent/CLI updates to TASK_CARDS.md. Supports marking tasks done/cancelled, adding summary, time, and resolution. CLI interface tested. Sample __main__.py stub provided for future CLI integration.
