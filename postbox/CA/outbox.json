@@ -10,5 +10,14 @@
       "link_created": "docs/RELEASE_NOTES.md",
       "task_status": "complete"
     }
+  },
+  {
+    "timestamp": "2025-05-23T16:00:00Z",
+    "type": "task_status",
+    "content": {
+      "task_id": "TASK-150G",
+      "status": "completed",
+      "details": "Created three MCP-compliant YAML plan templates and integrated them into the bluelabel new-plan command. Templates: basic-single-agent, multi-agent-dag, approval-gated-flow. CLI now supports --template flag for new-plan. All templates pass lint. See TASK_CARDS.md for details."
+    }
   }
 ]

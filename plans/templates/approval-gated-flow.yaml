@@ -1,0 +1,45 @@
+# Approval-Gated Flow Plan Template
+plan_id: approval-gated-demo
+version: 1.0
+name: Approval-Gated Plan
+owner: CA
+created_at: 2025-05-23
+
+tasks:
+  - task_id: draft-001
+    agent: CA
+    task_type: data_processing
+    description: Draft initial report
+    content:
+      input:
+        data_path: /data/raw.csv
+      parameters:
+        draft: true
+      requires: []
+      approval: false
+
+  - task_id: review-001
+    agent: ARCH
+    task_type: approval
+    description: Review and approve the draft report
+    content:
+      input:
+        from_task: draft-001
+      parameters:
+        approval_required: true
+      requires:
+        - draft-001
+      approval: true
+
+  - task_id: finalize-001
+    agent: WA
+    task_type: report_generation
+    description: Finalize and publish the report after approval
+    content:
+      input:
+        from_task: review-001
+      parameters:
+        publish: true
+      requires:
+        - review-001
+      approval: false 

@@ -10,6 +10,8 @@ import json
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
+import shutil
+import os
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -163,17 +165,47 @@ def main():
     lint_parser.add_argument('plan', help='Path to plan file (YAML)')
     lint_parser.add_argument('--dry-run', action='store_true',
                            help='Show execution order and parallel groups')
-    
+
+    # New-plan command
+    new_plan_parser = subparsers.add_parser('new-plan', help='Create a new plan from a template')
+    new_plan_parser.add_argument('name', help='Name for the new plan YAML file (no extension)')
+    new_plan_parser.add_argument('--template', choices=['basic-single-agent', 'multi-agent-dag', 'approval-gated-flow'], required=True, help='Template to use for the new plan')
+
     args = parser.parse_args()
     
     if not args.command:
         parser.print_help()
         sys.exit(1)
     
+    if args.command == 'new-plan':
+        # Copy the selected template to /plans/<name>.yaml
+        template_map = {
+            'basic-single-agent': 'basic-single-agent.yaml',
+            'multi-agent-dag': 'multi-agent-dag.yaml',
+            'approval-gated-flow': 'approval-gated-flow.yaml',
+        }
+        template_file = Path('plans/templates') / template_map[args.template]
+        dest_file = Path('plans') / f"{args.name}.yaml"
+        if dest_file.exists():
+            print(f"Error: {dest_file} already exists.")
+            sys.exit(1)
+        if not template_file.exists():
+            print(f"Error: Template file {template_file} not found.")
+            sys.exit(1)
+        shutil.copyfile(template_file, dest_file)
+        print(f"✅ Created new plan: {dest_file}")
+        print("You should now edit the plan to customize it for your use case.")
+        try:
+            import subprocess
+            subprocess.run([os.environ.get('EDITOR', 'nano'), str(dest_file)])
+        except Exception:
+            print(f"Open {dest_file} in your preferred editor to continue.")
+        sys.exit(0)
+    
     runner = CLIRunner()
     
     # Load the plan
-    if not runner.load_plan(args.plan):
+    if not runner.load_plan(getattr(args, 'plan', None)):
         sys.exit(1)
     
     if args.command == 'run':

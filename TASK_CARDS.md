@@ -1912,3 +1912,27 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 **Owner**: CA
 **Completion Date**: 2025-05-23
 **Summary**: Integrated the finalized Phase 6.9 postmortem into the documentation. Created /docs/release_notes/PHASE_6.9_POSTMORTEM.md, added a link in docs/RELEASE_NOTES.md, and confirmed all deliverables. See CA Reports in /postbox/CA/outbox.json.
+
+### TASK-150G: YAML Plan Template Generator
+- Status: ✅ Done
+- Owner: CA
+- Branch: cli/plan-templates-TASK-150G
+- Description: Added reusable MCP-compliant YAML plan templates and integrated them into the bluelabel new-plan command.
+- Implementation:
+  - Created three plan templates in /plans/templates/:
+    - basic-single-agent.yaml
+    - multi-agent-dag.yaml
+    - approval-gated-flow.yaml
+  - Extended CLI (cli_runner.py) with new-plan command and --template flag
+  - new-plan copies the selected template to /plans/<name>.yaml and prompts user to edit
+  - All templates pass bluelabel lint and include required fields (task_id, agent, input, parameters, requires, approval)
+- Files Added:
+  - /plans/templates/basic-single-agent.yaml
+  - /plans/templates/multi-agent-dag.yaml
+  - /plans/templates/approval-gated-flow.yaml
+- Files Modified:
+  - /tools/cli/cli_runner.py
+  - /TASK_CARDS.md
+  - /postbox/CA/outbox.json
+- Testing: All templates validated with bluelabel lint
+- Notes: CLI now supports rapid plan creation from reusable templates
