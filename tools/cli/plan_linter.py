@@ -136,7 +136,7 @@ class PlanLinter:
                         'field': 'task_id',
                         'task': {k: v for k, v in task.items() if k != 'dependencies'}
                     },
-                    suggestion="Add a unique task_id to identify this task"
+                    suggestion="Add a unique 'task_id' field to this task, e.g. task_id: task-001"
                 ))
                 continue
                 
@@ -170,7 +170,7 @@ class PlanLinter:
                             'field': field,
                             'required_fields': ['agent', 'task_type', 'description']
                         },
-                        suggestion=f"Add the required '{field}' field to this task"
+                        suggestion=f"Add the required '{field}:' field below task_id: {task_id}, e.g. {field}: <value>"
                     ))
             
             # Validate agent field if present
@@ -183,7 +183,7 @@ class PlanLinter:
                         task_id=task_id,
                         field='agent',
                         details={'type': 'empty_field', 'field': 'agent'},
-                        suggestion="Specify a valid agent for this task"
+                        suggestion=f"Specify a valid agent for this task, e.g. agent: CC below task_id: {task_id}"
                     ))
                 elif agent not in VALID_AGENTS:  # Invalid agent value
                     self.lint_result.add_issue(create_issue(
@@ -196,7 +196,7 @@ class PlanLinter:
                             'valid_agents': sorted(VALID_AGENTS),
                             'actual_agent': agent
                         },
-                        suggestion=f"Use one of: {', '.join(sorted(VALID_AGENTS))}"
+                        suggestion=f"Use one of the valid agents: {', '.join(sorted(VALID_AGENTS))}. For example: agent: CC"
                     ))
             
             # Validate task_type if present
@@ -209,7 +209,7 @@ class PlanLinter:
                         task_id=task_id,
                         field='task_type',
                         details={'type': 'empty_field', 'field': 'task_type'},
-                        suggestion="Specify a valid task type for this task"
+                        suggestion=f"Specify a valid task_type for this task, e.g. task_type: data_processing below task_id: {task_id}"
                     ))
                 elif task_type not in VALID_TASK_TYPES:  # Non-standard task type
                     self.lint_result.add_issue(create_issue(
@@ -222,7 +222,7 @@ class PlanLinter:
                             'valid_task_types': sorted(VALID_TASK_TYPES),
                             'actual_task_type': task_type
                         },
-                        suggestion="Consider using one of the standard task types or 'custom'"
+                        suggestion=f"Consider using one of the standard task types: {', '.join(sorted(VALID_TASK_TYPES))}, or 'custom' if needed."
                     ))
             
             # Validate description if present
@@ -234,7 +234,7 @@ class PlanLinter:
                         task_id=task_id,
                         field='description',
                         details={'type': 'empty_field', 'field': 'description'},
-                        suggestion="Add a meaningful description to explain what this task does"
+                        suggestion=f"Add a meaningful description for this task, e.g. description: Generate a summary report."
                     ))
                 elif not task['description'].strip():
                     self.lint_result.add_issue(create_issue(
@@ -243,7 +243,7 @@ class PlanLinter:
                         task_id=task_id,
                         field='description',
                         details={'type': 'whitespace_description'},
-                        suggestion="Consider adding a more descriptive text"
+                        suggestion="Consider adding a more descriptive text, e.g. description: Analyze input data and generate report."
                     ))
             
             # Validate content field if present
@@ -258,7 +258,7 @@ class PlanLinter:
                         'expected_type': 'dict',
                         'actual_type': type(task['content']).__name__
                     },
-                    suggestion="Ensure the content field is a valid YAML/JSON object"
+                    suggestion=f"Ensure the content field is a valid YAML/JSON object, e.g. content: {{ input: ... }} below task_id: {task_id}"
                 ))
             
             # Validate dependencies format if present
@@ -273,7 +273,7 @@ class PlanLinter:
                         'expected_type': 'list',
                         'actual_type': type(task['dependencies']).__name__
                     },
-                    suggestion="Ensure dependencies is a list of task_ids"
+                    suggestion=f"Ensure dependencies is a list of task_ids, e.g. dependencies: [task-001, task-002] below task_id: {task_id}"
                 ))
 
     def _validate_dependencies(self):
@@ -490,7 +490,31 @@ def main():
     """Main entry point for the plan linter CLI."""
     parser = argparse.ArgumentParser(
         description="Validate YAML plan files against the Bluelabel Agent OS schema",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        epilog="""
+Sample usage:
+  bluelabel lint plans/my-plan.yaml
+  bluelabel lint plans/my-plan.yaml --format json
+  bluelabel lint plans/my-plan.yaml --dry-run
+
+Sample output:
+  📌 Task: task-001
+    ❌ Task 'task-001' is missing required field: agent
+       field: agent
+       💡 Suggestion: Add the required 'agent:' field below task_id: task-001, e.g. agent: CC
+    ⚠️ Task 'task-001' has non-standard task_type: 'foo'
+       field: task_type
+       💡 Suggestion: Consider using one of the standard task types: data_processing, report_generation, ...
+
+  📄 Plan-level issues:
+    ❌ Plan is missing required 'tasks' field
+       💡 Suggestion: Ensure your plan has a 'tasks' list containing task definitions
+
+  📋 Lint Summary for my-plan.yaml
+    Tasks: 2 total, 1 with issues
+    Issues: 1 errors, 1 warnings, 0 info
+    ✅ No issues found! (if plan is valid)
+        """
     )
     
     # Required arguments
