@@ -1,0 +1,250 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DAG-Aware Task Log Schema",
+  "description": "Enhanced schema for task execution logs with DAG metadata and state transitions",
+  "$comment": "Schema version: 1.0.0 - Compatible with TASK-090C DAG-Aware Task Logger",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "plan_id", 
+    "task_id",
+    "agent",
+    "execution_metadata",
+    "state_transitions",
+    "timestamps"
+  ],
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "description": "Unique identifier for this task execution instance",
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "plan_id": {
+      "type": "string", 
+      "description": "Identifier of the plan this task belongs to"
+    },
+    "task_id": {
+      "type": "string",
+      "description": "Task identifier from the plan YAML",
+      "pattern": "^[A-Z0-9_-]+$"
+    },
+    "agent": {
+      "type": "string",
+      "enum": ["ARCH", "CA", "CC", "WA"],
+      "description": "Agent responsible for executing this task"
+    },
+    "execution_metadata": {
+      "type": "object",
+      "required": ["execution_layer", "dependencies", "task_type", "priority"],
+      "properties": {
+        "execution_layer": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Which execution layer this task belongs to in the DAG (0-based)"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_-]+$"
+          },
+          "description": "List of task_ids this task depends on"
+        },
+        "task_type": {
+          "type": "string",
+          "description": "Type of task being executed"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "description": "Task priority level"
+        },
+        "parallel_tasks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_-]+$"
+          },
+          "description": "Other tasks that can run in parallel with this one"
+        },
+        "depth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum depth from root nodes in the DAG"
+        }
+      },
+      "additionalProperties": false
+    },
+    "state_transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from_state", "to_state", "timestamp"],
+        "properties": {
+          "from_state": {
+            "type": "string",
+            "enum": ["pending", "waiting", "ready", "running", "completed", "failed", "timeout", "retrying"],
+            "description": "Previous state"
+          },
+          "to_state": {
+            "type": "string", 
+            "enum": ["pending", "waiting", "ready", "running", "completed", "failed", "timeout", "retrying"],
+            "description": "New state"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp when transition occurred"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Optional reason for the state transition"
+          },
+          "retry_count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Current retry attempt number"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Chronological list of state changes during task execution"
+    },
+    "timestamps": {
+      "type": "object",
+      "required": ["created", "last_updated"],
+      "properties": {
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the task log was first created"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date-time", 
+          "description": "When the task log was last modified"
+        },
+        "started": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When task execution actually began"
+        },
+        "completed": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When task execution finished (success or failure)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "execution_result": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["success", "failure", "timeout", "error"],
+          "description": "Final execution status"
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Quality score for task execution (0-100)"
+        },
+        "duration_sec": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total execution time in seconds"
+        },
+        "output_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of output files generated by this task"
+        },
+        "error_message": {
+          "type": ["string", "null"],
+          "description": "Error message if task failed"
+        },
+        "mcp_response": {
+          "type": "object",
+          "description": "Raw MCP response from the agent"
+        }
+      },
+      "additionalProperties": false
+    },
+    "retry_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["attempt", "timestamp", "result"],
+        "properties": {
+          "attempt": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Retry attempt number"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this retry was initiated"
+          },
+          "result": {
+            "type": "string",
+            "enum": ["success", "failure", "timeout", "error"],
+            "description": "Result of this retry attempt"
+          },
+          "error_message": {
+            "type": "string",
+            "description": "Error message for failed attempts"
+          },
+          "duration_sec": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Duration of this retry attempt"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "History of all retry attempts for this task"
+    },
+    "task_content": {
+      "type": "object",
+      "description": "Original task definition from the plan",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "Action to be performed"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Parameters for task execution"
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "System requirements for task execution"
+        },
+        "input_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Input files required by the task"
+        },
+        "output_files": {
+          "type": "array", 
+          "items": {
+            "type": "string"
+          },
+          "description": "Expected output files from the task"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

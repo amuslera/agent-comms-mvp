@@ -1,0 +1,76 @@
+metadata:
+  plan_id: "conditional-example"
+  version: "1.0.0"
+  description: "Example plan demonstrating conditional task execution with when/unless clauses"
+  author: "CC"
+  environment: "development"
+
+context:
+  environment: "production"
+  user_role: "admin"
+  max_retries: 3
+  debug_mode: false
+
+tasks:
+  - task_id: "VALIDATE_INPUT"
+    agent: "CA"
+    task_type: "validation"
+    description: "Validate input data"
+    content:
+      action: "validate_data"
+      parameters:
+        strict_mode: true
+    
+  - task_id: "PROCESS_DATA"
+    agent: "CA"
+    task_type: "data_processing"
+    description: "Process data if validation passed"
+    dependencies: ["VALIDATE_INPUT"]
+    when: "VALIDATE_INPUT_score > 0.8"
+    content:
+      action: "process_data"
+      parameters:
+        batch_size: 1000
+    
+  - task_id: "ADMIN_CLEANUP"
+    agent: "CC"
+    task_type: "custom"
+    description: "Admin-only cleanup task"
+    dependencies: ["PROCESS_DATA"]
+    when: "user_role == 'admin'"
+    unless: "environment == 'development'"
+    content:
+      action: "cleanup_temp_files"
+    
+  - task_id: "DEBUG_LOGGING"
+    agent: "WA"
+    task_type: "notification"
+    description: "Debug logging (only in development)"
+    dependencies: ["VALIDATE_INPUT"]
+    unless: "environment == 'production'"
+    content:
+      action: "log_debug_info"
+      parameters:
+        verbose: true
+    
+  - task_id: "RETRY_VALIDATION"
+    agent: "CA"
+    task_type: "validation"
+    description: "Retry validation if original failed"
+    when: "VALIDATE_INPUT_status == 'failed' and retry_count < max_retries"
+    content:
+      action: "validate_data"
+      parameters:
+        retry_mode: true
+    
+  - task_id: "FINAL_REPORT"
+    agent: "WA"
+    task_type: "report_generation"
+    description: "Generate final report"
+    dependencies: ["PROCESS_DATA"]
+    when: "PROCESS_DATA_completed"
+    content:
+      action: "generate_report"
+      parameters:
+        format: "pdf"
+        include_metrics: true

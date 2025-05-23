@@ -2,6 +2,90 @@
 
 ## Completed Tasks
 
+### TASK-100A: Plan Context Engine + Conditional Evaluator
+**Status**: ✅ Done  
+**Owner**: CC  
+**Description**: Implemented a plan context engine and conditional evaluator that enables per-task conditionals (when:/unless:) based on a shared plan_context dictionary for runtime branching logic in YAML plans.  
+**Details**:  
+- Created `PlanContextEngine` class for managing plan-wide context state  
+- Implemented safe expression evaluator with restricted globals for security  
+- Added `evaluate_conditions()` function supporting when/unless conditions  
+- Integrated conditional evaluation into plan_runner.py execution flow  
+- Enhanced logging to track conditional evaluations and skipped tasks  
+- Tasks can now be conditionally executed based on context variables  
+- Context is automatically updated with task results (scores, status, custom updates)  
+- Added comprehensive unit tests covering all conditional scenarios  
+**Files**:  
+- `/tools/arch/plan_utils.py` (Updated - added PlanContextEngine, safe_eval_expression, evaluate_conditions)  
+- `/tools/arch/plan_runner.py` (Updated - integrated conditional evaluation)  
+- `/tools/arch/tests/test_plan_context.py` (New - comprehensive test suite)  
+- `/schemas/PLAN_SCHEMA.json` (Updated - added when/unless fields and context section)  
+- `/TASK_CARDS.md` (this update)  
+**Branch**: `feat/TASK-100A-plan-context-engine`  
+**Completion Date**: 2025-05-22  
+**Time Spent**: 6 hours  
+**Dependencies**: Existing plan execution system  
+**Testing**:  
+- 25+ unit tests covering all conditional scenarios  
+- Tests for safe evaluation environment and security  
+- Integration tests with task dependencies  
+- Error handling and edge case validation  
+**Key Features**:  
+- Safe Python expression evaluation in sandboxed environment  
+- Support for complex conditional logic with when/unless clauses  
+- Automatic context updates from task results  
+- Comprehensive logging of all conditional evaluations  
+- Tasks marked as `skipped_due_to_condition` when conditions fail  
+**Security**: All expressions evaluated in restricted environment with no access to imports, file system, or dangerous operations  
+**ARCH Notification**: Task completed successfully with full conditional execution capability
+
+### TASK-100C: Plan Selector + Upload Widget
+**Status**: ✅ Done  
+**Owner**: WA  
+**Description**: Implemented a plan selector and upload widget for the plan execution page, allowing users to switch between different YAML plans or upload new ones.  
+**Details**:  
+- Created `PlanSelector` component with a dropdown for plan selection and file upload functionality  
+- Implemented file parsing for YAML plan uploads  
+- Added responsive design that works on all screen sizes  
+- Integrated with the existing plan execution view  
+- Added loading and error states for better user feedback  
+**Files**:  
+- `/apps/web/src/app/plan/page.tsx` (Updated)  
+- `/apps/web/src/components/plan/PlanSelector.tsx` (New)  
+- `/apps/web/src/utils/yamlUtils.ts` (New)  
+- `/TASK_CARDS.md` (this update)  
+**Branch**: `feat/TASK-100C-ui-plan-selector`  
+**Completion Date**: 2025-05-22  
+**Time Spent**: 4 hours  
+**Dependencies**: None  
+**Testing**:  
+- Verified file upload and parsing  
+- Tested plan switching  
+- Verified error handling for invalid files  
+- Confirmed responsive behavior  
+**ARCH Notification**: Sent 2025-05-22 21:26:33
+
+### TASK-090D: DAG UI for Plan Execution
+**Status**: ✅ Done  
+**Owner**: WA  
+**Description**: Implemented an interactive DAG (Directed Acyclic Graph) viewer for visualizing task dependencies and execution status in the plan execution view.  
+**Details**:  
+- Created `DagViewer` component with ReactFlow integration for interactive DAG visualization  
+- Implemented `TaskNode` component with status indicators and task details  
+- Added support for different task statuses with color coding and icons  
+- Integrated with existing PlanExecutionViewer in a tabbed interface  
+- Added responsive design that works on all screen sizes  
+- Implemented zoom and pan controls for navigating complex DAGs  
+- Added visual indicators for task dependencies and execution flow  
+- Ensured TypeScript type safety throughout the implementation  
+**Files**:  
+- `/apps/web/src/components/plan/DagViewer.tsx` (New)  
+- `/apps/web/src/components/plan/TaskNode.tsx` (New)  
+- `/apps/web/src/types/execution.ts` (Updated)  
+- `/apps/web/src/app/plan/page.tsx` (Updated)  
+- `/TASK_CARDS.md` (this update)  
+**Branch**: feat/TASK-090D-dag-ui
+
 ### TASK-080D: Plan Viewer UI
 **Status**: ✅ Done  
 **Owner**: WA  
@@ -1567,6 +1651,17 @@
 - [x] Clear structure and separation of responsibilities
 - [x] ARCH notified via outbox
 
+### TASK-090B: ARCH DAG Executor (Core Loop)
+- [x] Refactored plan_runner.py to use ExecutionDAG for dependency-aware, parallel task execution
+- [x] Tracks per-task state: waiting, ready, running, done, failed, skipped
+- [x] Begins execution with all root (dependency-free) tasks
+- [x] Dynamically dispatches new ready tasks as dependencies complete
+- [x] Supports parallel execution using asyncio.gather for all ready tasks
+- [x] Skips tasks with failed dependencies and logs all state transitions
+- [x] Preserves all retry, escalation, and logging logic
+- [x] Operates correctly on sample-plan-001.yaml and other DAG plans
+- [x] ARCH notified via outbox
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### 📘 Phase 5: UI & Visualization
@@ -1656,7 +1751,108 @@
 - `/schemas/PLAN_SCHEMA.json` - Complete JSON schema with validation rules
 - `/plans/sample-plan-001.yaml` - Comprehensive sample plan with all features
 
+### TASK-090A: DAG Plan Parser 
+**Status**: ✅ Done  
+**Owner**: CC  
+**Branch**: feat/TASK-090A-dag-parser  
+**Description**: Extended plan loader to support dependencies in YAML plans with cycle detection and execution graph generation for ARCH.  
+**Details**:  
+- Implemented comprehensive DAG (Directed Acyclic Graph) data structures with `TaskNode` and `ExecutionDAG` classes  
+- Added `build_execution_dag()` function to parse YAML plans into execution graphs with dependency validation  
+- Implemented cycle detection using topological sorting (Kahn's algorithm)  
+- Added dependency reference validation to ensure all referenced task_ids exist  
+- Created execution layer analysis for parallel task identification  
+- Implemented `get_ready_tasks()` and `get_execution_layers()` for dynamic task scheduling  
+- Added comprehensive validation with `validate_dag_integrity()` including statistics and warnings  
+- Created extensive unit test suite with 11 test scenarios covering linear, parallel, complex DAGs, and error conditions  
+- Enhanced PLAN_SCHEMA.json with robust dependency validation rules and runtime validation documentation  
+- Successfully tested with sample-plan-001.yaml (7 tasks, 6 execution layers, 2 parallel paths)  
+**Files**:  
+- `/tools/arch/plan_utils.py` - DAG classes and parser functions  
+- `/tests/test_dag_parser.py` - Comprehensive unit test suite  
+- `/schemas/PLAN_SCHEMA.json` - Enhanced with dependency validation rules  
+- `/TASK_CARDS.md` - This update  
+
+### TASK-090C: DAG-Aware Task Logger
+**Status**: ✅ Done  
+**Owner**: CC  
+**Branch**: feat/TASK-090C-task-logger  
+**Description**: Enhanced the existing logging system to include dependency and execution layer data for each task with structured metadata and state transitions.  
+**Details**:  
+- Designed comprehensive task logging schemas with DAG metadata including execution layers, dependencies, and parallel tasks  
+- Created `TASK_LOG_SCHEMA.json` and `EXECUTION_TRACE_SCHEMA.json` for structured, inspectable logs  
+- Enhanced `plan_utils.py` with DAG-aware logging functions: `create_enhanced_task_log()`, `update_task_log_state()`, `update_task_log_result()`, `add_retry_to_task_log()`  
+- Implemented `ExecutionTracer` class for central execution timeline logging with plan-level insights  
+- Updated `plan_runner.py` to integrate DAG-aware logging with state transitions (waiting → ready → running → completed/failed/timeout)  
+- Added comprehensive retry history tracking and error event logging  
+- Enhanced MCP message construction with full task context including dependencies, deadlines, and conditions  
+- Implemented layer-by-layer execution with parallel task identification and execution metadata  
+- Created structured logs in `/logs/tasks/{trace_id}.json` and central execution traces in `/logs/traces/execution_trace_{id}.json`  
+- Successfully tested all state transitions, retry scenarios, and schema validation with sample plan  
+- Logs are fully MCP-compatible and easily inspectable by UI/CLI tools  
+**Files**:  
+- `/tools/arch/plan_runner.py` - Enhanced with DAG-aware execution and logging  
+- `/tools/arch/plan_utils.py` - Added enhanced logging functions and ExecutionTracer class  
+- `/schemas/TASK_LOG_SCHEMA.json` - Comprehensive task log schema with DAG metadata  
+- `/schemas/EXECUTION_TRACE_SCHEMA.json` - Central execution trace schema with timeline  
+- `/TASK_CARDS.md` - This update  
+
 ### 🔮 Phase 6: Advanced Features (Future)
 - API gateway for external agent comms
 - Persistent task loops
 - Multi-session memory coordination
+
+### TASK-100B: Plan Linter + Dry Run CLI
+
+### Status: ✅ Completed
+
+### Description
+Implemented a new CLI tool for validating YAML plans and optionally performing dry runs to preview execution order.
+
+### Implementation Details
+- Created `/tools/cli/plan_linter.py` with comprehensive validation:
+  - Unique task IDs
+  - Valid dependencies
+  - No cycles in dependency graph
+  - No unreachable tasks
+  - DAG integrity checks
+- Added color-coded output for validation issues:
+  - ✅ Valid plans
+  - ⚠️ Warnings (e.g., unreachable tasks)
+  - ❌ Errors (e.g., cycles, missing dependencies)
+- Implemented dry run mode showing:
+  - Execution layers
+  - Parallel task groups
+  - Task dependencies
+  - Agent assignments
+- Integrated with CLI runner as a new subcommand:
+  ```bash
+  # Basic validation
+  bluelabel lint plans/sample.yaml
+  
+  # Validation with dry run
+  bluelabel lint plans/sample.yaml --dry-run
+  ```
+
+### Files Changed
+- `/tools/cli/plan_linter.py` (new)
+- `/tools/cli/cli_runner.py` (updated)
+
+### Testing
+- Validated against sample plans
+- Tested error cases:
+  - Duplicate task IDs
+  - Missing dependencies
+  - Circular dependencies
+  - Unreachable tasks
+- Verified dry run output matches execution order
+
+### Documentation
+- Added help text to CLI commands
+- Updated README with new lint command usage
+- Added examples of validation output
+
+### Notes
+- Leverages existing DAG implementation from `plan_utils.py`
+- Uses same schema validation as plan runner
+- Provides clear, actionable feedback for plan authors

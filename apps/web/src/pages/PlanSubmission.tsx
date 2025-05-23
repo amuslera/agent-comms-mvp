@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Textarea } from '../components/ui/textarea';
-import { useToast } from '../components/ui/use-toast';
+import toast from 'react-hot-toast';
 import { submitPlan } from '../api/planApi';
 
 export default function PlanSubmission() {
@@ -15,17 +15,13 @@ export default function PlanSubmission() {
     planId?: string;
   } | null>(null);
   
-  const { toast } = useToast();
+  // Using react-hot-toast directly
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!planContent.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Please enter a plan before submitting',
-        variant: 'destructive',
-      });
+      toast.error('Please enter a plan before submitting');
       return;
     }
 
@@ -40,10 +36,7 @@ export default function PlanSubmission() {
         planId: result.plan_id,
       });
       
-      toast({
-        title: 'Success',
-        description: 'Plan submitted successfully!',
-      });
+      toast.success('Plan submitted successfully!');
       
       // Clear the form after successful submission
       setPlanContent('');
@@ -54,11 +47,7 @@ export default function PlanSubmission() {
         message: errorMessage,
       });
       
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

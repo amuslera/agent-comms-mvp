@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Body, Query
 from typing import List, Optional, Dict, Any
-from ..models.plan import PlanRequest, PlanResponse, ExecutionPlan
-from ..services.plan_service import PlanService
+from models.plan import PlanRequest, PlanResponse, ExecutionPlan
+from services.plan_service import PlanService
 
 router = APIRouter(prefix="/plans", tags=["plans"])
 

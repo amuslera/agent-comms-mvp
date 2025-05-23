@@ -4,8 +4,8 @@ API routes for task and plan history endpoints.
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Query
 
-from ..models.history import PlanHistoryList, TaskRecentList
-from ..services.history_service import HistoryService
+from models.history import PlanHistoryList, TaskRecentList
+from services.history_service import HistoryService
 
 router = APIRouter(tags=["History"])
 

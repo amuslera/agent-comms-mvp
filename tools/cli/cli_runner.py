@@ -15,6 +15,7 @@ from typing import Dict, List, Optional
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from arch_orchestrator import ArchOrchestrator
+from tools.cli.plan_linter import PlanLinter
 
 class CLIRunner:
     """CLI interface for running ARCH plans."""
@@ -125,14 +126,49 @@ class CLIRunner:
             traceback.print_exc()
             return False
 
+    def lint_plan(self, dry_run: bool = False) -> bool:
+        """Validate the plan and optionally show execution order."""
+        if not self.plan_path:
+            print("Error: No plan loaded")
+            return False
+            
+        schema_path = Path("schemas/PLAN_SCHEMA.json")
+        if not schema_path.exists():
+            print(f"Error: Schema file not found: {schema_path}")
+            return False
+            
+        linter = PlanLinter(self.plan_path, schema_path)
+        is_valid = linter.validate()
+        
+        linter.print_issues()
+        
+        if is_valid and dry_run:
+            linter.print_dry_run()
+            
+        return is_valid
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description='ARCH Plan Runner CLI')
-    parser.add_argument('plan', help='Path to plan file (YAML)')
-    parser.add_argument('--summary', '-s', action='store_true', 
-                       help='Show plan summary without executing')
+    subparsers = parser.add_subparsers(dest='command', help='Command to execute')
+    
+    # Run command
+    run_parser = subparsers.add_parser('run', help='Run a plan')
+    run_parser.add_argument('plan', help='Path to plan file (YAML)')
+    run_parser.add_argument('--summary', '-s', action='store_true', 
+                          help='Show plan summary without executing')
+    
+    # Lint command
+    lint_parser = subparsers.add_parser('lint', help='Validate a plan')
+    lint_parser.add_argument('plan', help='Path to plan file (YAML)')
+    lint_parser.add_argument('--dry-run', action='store_true',
+                           help='Show execution order and parallel groups')
     
     args = parser.parse_args()
+    
+    if not args.command:
+        parser.print_help()
+        sys.exit(1)
     
     runner = CLIRunner()
     
@@ -140,13 +176,17 @@ def main():
     if not runner.load_plan(args.plan):
         sys.exit(1)
     
-    # Get and display task summary
-    tasks = runner.get_task_summary()
-    runner.print_summary(tasks)
-    
-    # Execute the plan unless --summary flag is set
-    if not args.summary:
-        success = runner.run_plan()
+    if args.command == 'run':
+        # Get and display task summary
+        tasks = runner.get_task_summary()
+        runner.print_summary(tasks)
+        
+        # Execute the plan unless --summary flag is set
+        if not args.summary:
+            success = runner.run_plan()
+            sys.exit(0 if success else 1)
+    elif args.command == 'lint':
+        success = runner.lint_plan(dry_run=args.dry_run)
         sys.exit(0 if success else 1)
     
     sys.exit(0)

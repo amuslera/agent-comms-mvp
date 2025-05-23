@@ -5,7 +5,7 @@ import yaml
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple, Union
 
-from ..models.plan import ExecutionPlan, PlanResponse
+from models.plan import ExecutionPlan, PlanResponse
 
 class PlanService:
     """Service for handling execution plans."""
