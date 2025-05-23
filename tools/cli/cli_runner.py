@@ -18,6 +18,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from arch_orchestrator import ArchOrchestrator
 from tools.cli.plan_linter import PlanLinter
+from tools.arch.plan_runner import run_plan as run_plan_with_trace
 
 class CLIRunner:
     """CLI interface for running ARCH plans."""
@@ -91,8 +92,13 @@ class CLIRunner:
         
         print("=" * 80 + "\n")
     
-    def run_plan(self) -> bool:
+    def run_plan(self, enable_trace_logging: bool = False) -> bool:
         """Execute the loaded plan and return success status."""
+        # If trace logging is enabled, use the plan_runner directly
+        if enable_trace_logging:
+            print("[INFO] Using plan_runner with trace logging enabled")
+            return run_plan_with_trace(self.plan_path, enable_trace_logging=True)
+        
         if not self.orchestrator:
             print("Error: No plan loaded")
             return False
@@ -161,6 +167,8 @@ def main():
                           help='Show one-line summary per task (with or without execution)')
     run_parser.add_argument('--dry-run', action='store_true',
                           help='Preview execution plan, DAG, routing, and approvals without running any tasks')
+    run_parser.add_argument('--log-trace', action='store_true',
+                          help='Enable execution trace logging to JSON files')
     
     # Lint command
     lint_parser = subparsers.add_parser('lint', help='Validate a plan')
@@ -254,7 +262,7 @@ def main():
             runner.print_summary(tasks)
         # Execute the plan unless --summary or --dry-run flag is set
         if not args.summary and not args.dry_run:
-            success = runner.run_plan()
+            success = runner.run_plan(enable_trace_logging=args.log_trace)
             sys.exit(0 if success else 1)
         sys.exit(0)
     elif args.command == 'lint':

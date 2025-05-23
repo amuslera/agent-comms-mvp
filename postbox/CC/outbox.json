@@ -940,5 +940,83 @@
       "tested": true,
       "ready_for_review": true
     }
+  },
+  {
+    "type": "task_status",
+    "id": "TASK-150K-status",
+    "timestamp": "2025-05-23T13:15:00Z",
+    "sender": "CC",
+    "recipient": "ARCH",
+    "version": "1.0.0",
+    "content": {
+      "task_id": "TASK-150K",
+      "status": "completed",
+      "progress": 100,
+      "details": "Successfully implemented execution trace logger for YAML plan runs. Created structured JSON logging that captures complete execution traces including DAG structure, timing, status, and context."
+    },
+    "metadata": {
+      "protocol_version": "1.0.0",
+      "branch": "core/execution-trace-logger-TASK-150K",
+      "files_created": [
+        "/core/execution_trace_logger.py"
+      ],
+      "files_updated": [
+        "/tools/arch/plan_runner.py",
+        "/tools/cli/cli_runner.py",
+        "/bluelabel",
+        "/TASK_CARDS.md"
+      ],
+      "trace_file_example": {
+        "location": "/logs/tasks/trace_<trace_id>.json",
+        "contents": {
+          "trace_id": "d3c0b10f-463b-4d35-a232-8aa5b7774617",
+          "plan_id": "DEMO-PLAN-001",
+          "plan_name": "Demo Plan",
+          "status": "partial",
+          "duration_sec": 45.2,
+          "total_tasks": 4,
+          "completed_tasks": 1,
+          "failed_tasks": 1,
+          "skipped_tasks": 1,
+          "dag_structure": "(nodes, edges, execution_layers)",
+          "tasks": "(detailed task execution info)",
+          "warnings": ["WA agent reported slow network"],
+          "errors": ["Task TASK-003: Network timeout"]
+        }
+      },
+      "integration_points": [
+        "plan_runner.py: Integrated at plan start, task execution, and completion",
+        "cli_runner.py: Added --log-trace flag handling",
+        "bluelabel: Added --log-trace to run command",
+        "Conditional execution: Logs skips with reasons",
+        "Retry logic: Tracks retry attempts",
+        "Context engine: Updates trace with context changes"
+      ],
+      "edge_cases_handled": [
+        "Missing task IDs: Gracefully handles missing data",
+        "Circular dependencies: Captured in DAG structure",
+        "Conditional skips: Logs with when/unless conditions",
+        "Task failures: Captures error messages and retry counts",
+        "Parallel tasks: Tracks execution layers",
+        "Empty plans: Handles gracefully with zero task count"
+      ],
+      "features": [
+        "Structured JSON format for easy parsing",
+        "Complete DAG structure capture",
+        "Task-level timing and duration tracking",
+        "Status tracking with enum types",
+        "Warning and error aggregation",
+        "Context tracking throughout execution",
+        "Summary export functionality",
+        "Trace file loading for analysis"
+      ],
+      "cli_usage": [
+        "bluelabel run plans/my-plan.yaml --log-trace",
+        "python tools/arch/plan_runner.py plans/my-plan.yaml --log-trace"
+      ],
+      "tested": true,
+      "demo_executed": true,
+      "ready_for_review": true
+    }
   }
 ]

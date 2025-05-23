@@ -73,6 +73,11 @@ Examples:
         default=0,
         help='Increase verbosity'
     )
+    run_parser.add_argument(
+        '--log-trace',
+        action='store_true',
+        help='Enable execution trace logging to JSON files'
+    )
     
     # Lint command
     lint_parser = subparsers.add_parser(
@@ -147,6 +152,8 @@ Examples:
             run_args.append('--no-branch')
         if args.verbose:
             run_args.extend(['-v'] * args.verbose)
+        if args.log_trace:
+            run_args.append('--log-trace')
         
         sys.argv = ['cli_runner.py'] + run_args
         run_plan()
