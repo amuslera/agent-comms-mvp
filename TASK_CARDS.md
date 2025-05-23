@@ -2,6 +2,69 @@
 
 ## Completed Tasks
 
+### TASK-100A: Plan Context Engine + Conditional Evaluator
+**Status**: ✅ Done  
+**Owner**: CC  
+**Description**: Implemented a plan context engine and conditional evaluator that enables per-task conditionals (when:/unless:) based on a shared plan_context dictionary for runtime branching logic in YAML plans.  
+**Details**:  
+- Created `PlanContextEngine` class for managing plan-wide context state  
+- Implemented safe expression evaluator with restricted globals for security  
+- Added `evaluate_conditions()` function supporting when/unless conditions  
+- Integrated conditional evaluation into plan_runner.py execution flow  
+- Enhanced logging to track conditional evaluations and skipped tasks  
+- Tasks can now be conditionally executed based on context variables  
+- Context is automatically updated with task results (scores, status, custom updates)  
+- Added comprehensive unit tests covering all conditional scenarios  
+**Files**:  
+- `/tools/arch/plan_utils.py` (Updated - added PlanContextEngine, safe_eval_expression, evaluate_conditions)  
+- `/tools/arch/plan_runner.py` (Updated - integrated conditional evaluation)  
+- `/tools/arch/tests/test_plan_context.py` (New - comprehensive test suite)  
+- `/schemas/PLAN_SCHEMA.json` (Updated - added when/unless fields and context section)  
+- `/TASK_CARDS.md` (this update)  
+**Branch**: `feat/TASK-100A-plan-context-engine`  
+**Completion Date**: 2025-05-22  
+**Time Spent**: 6 hours  
+**Dependencies**: Existing plan execution system  
+**Testing**:  
+- 25+ unit tests covering all conditional scenarios  
+- Tests for safe evaluation environment and security  
+- Integration tests with task dependencies  
+- Error handling and edge case validation  
+**Key Features**:  
+- Safe Python expression evaluation in sandboxed environment  
+- Support for complex conditional logic with when/unless clauses  
+- Automatic context updates from task results  
+- Comprehensive logging of all conditional evaluations  
+- Tasks marked as `skipped_due_to_condition` when conditions fail  
+**Security**: All expressions evaluated in restricted environment with no access to imports, file system, or dangerous operations  
+**ARCH Notification**: Task completed successfully with full conditional execution capability
+
+### TASK-100C: Plan Selector + Upload Widget
+**Status**: ✅ Done  
+**Owner**: WA  
+**Description**: Implemented a plan selector and upload widget for the plan execution page, allowing users to switch between different YAML plans or upload new ones.  
+**Details**:  
+- Created `PlanSelector` component with a dropdown for plan selection and file upload functionality  
+- Implemented file parsing for YAML plan uploads  
+- Added responsive design that works on all screen sizes  
+- Integrated with the existing plan execution view  
+- Added loading and error states for better user feedback  
+**Files**:  
+- `/apps/web/src/app/plan/page.tsx` (Updated)  
+- `/apps/web/src/components/plan/PlanSelector.tsx` (New)  
+- `/apps/web/src/utils/yamlUtils.ts` (New)  
+- `/TASK_CARDS.md` (this update)  
+**Branch**: `feat/TASK-100C-ui-plan-selector`  
+**Completion Date**: 2025-05-22  
+**Time Spent**: 4 hours  
+**Dependencies**: None  
+**Testing**:  
+- Verified file upload and parsing  
+- Tested plan switching  
+- Verified error handling for invalid files  
+- Confirmed responsive behavior  
+**ARCH Notification**: Sent 2025-05-22 21:26:33
+
 ### TASK-090D: DAG UI for Plan Execution
 **Status**: ✅ Done  
 **Owner**: WA  
@@ -1738,3 +1801,58 @@
 - API gateway for external agent comms
 - Persistent task loops
 - Multi-session memory coordination
+
+### TASK-100B: Plan Linter + Dry Run CLI
+
+### Status: ✅ Completed
+
+### Description
+Implemented a new CLI tool for validating YAML plans and optionally performing dry runs to preview execution order.
+
+### Implementation Details
+- Created `/tools/cli/plan_linter.py` with comprehensive validation:
+  - Unique task IDs
+  - Valid dependencies
+  - No cycles in dependency graph
+  - No unreachable tasks
+  - DAG integrity checks
+- Added color-coded output for validation issues:
+  - ✅ Valid plans
+  - ⚠️ Warnings (e.g., unreachable tasks)
+  - ❌ Errors (e.g., cycles, missing dependencies)
+- Implemented dry run mode showing:
+  - Execution layers
+  - Parallel task groups
+  - Task dependencies
+  - Agent assignments
+- Integrated with CLI runner as a new subcommand:
+  ```bash
+  # Basic validation
+  bluelabel lint plans/sample.yaml
+  
+  # Validation with dry run
+  bluelabel lint plans/sample.yaml --dry-run
+  ```
+
+### Files Changed
+- `/tools/cli/plan_linter.py` (new)
+- `/tools/cli/cli_runner.py` (updated)
+
+### Testing
+- Validated against sample plans
+- Tested error cases:
+  - Duplicate task IDs
+  - Missing dependencies
+  - Circular dependencies
+  - Unreachable tasks
+- Verified dry run output matches execution order
+
+### Documentation
+- Added help text to CLI commands
+- Updated README with new lint command usage
+- Added examples of validation output
+
+### Notes
+- Leverages existing DAG implementation from `plan_utils.py`
+- Uses same schema validation as plan runner
+- Provides clear, actionable feedback for plan authors

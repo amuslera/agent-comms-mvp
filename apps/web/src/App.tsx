@@ -61,6 +61,7 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary
 );
 
 export const App: React.FC = () => {
+  console.log('App component rendering');
   return (
     <ErrorBoundary
       fallback={
@@ -83,7 +84,7 @@ export const App: React.FC = () => {
             <Route path="arch/messages" element={<MessagesPage />} />
           </Route>
           <Route path="/plans/view/:planId" element={<SimplePlanView />} />
-          <Route path="/plan" element={<PlanPage />} />
+          <Route path="/plan/:planId" element={<PlanPage />} />
         </Routes>
       </Router>
     </ErrorBoundary>

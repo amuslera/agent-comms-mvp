@@ -28,8 +28,10 @@ export function PlanExecutionViewer({
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
       
+    const colorClass = statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800';
+      
     return (
-      <Badge className={cn('whitespace-nowrap', statusColors[status as keyof typeof statusColors])}>
+      <Badge className={cn('whitespace-nowrap', colorClass)}>
         {statusText}
       </Badge>
     );
@@ -74,53 +76,39 @@ export function PlanExecutionViewer({
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle>Plan Execution</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-auto max-h-[600px] pr-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Task ID</TableHead>
-                <TableHead>Agent</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Score</TableHead>
-                <TableHead>Retries</TableHead>
-                <TableHead>Started</TableHead>
-                <TableHead>Completed</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tasks.map((task) => (
-                <TableRow key={task.task_id}>
-                  <TableCell className="font-medium">{task.task_id}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{task.agent}</Badge>
-                  </TableCell>
-                  <TableCell className="capitalize">{task.type}</TableCell>
-                  <TableCell>{getStatusBadge(task.status)}</TableCell>
-                  <TableCell className="text-right">
-                    {task.score !== undefined ? `${task.score}%` : 'N/A'}
-                  </TableCell>
-                  <TableCell>{task.retry_count}</TableCell>
-                  <TableCell>{formatDate(task.started_at)}</TableCell>
-                  <TableCell>{formatDate(task.completed_at)}</TableCell>
-                </TableRow>
-              ))}
-              {tasks.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    No tasks found for this plan
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+    <div className={className}>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Task Details</h3>
+        {tasks.map((task) => (
+          <div key={task.task_id} className="border rounded-lg p-4 space-y-2">
+            <div className="flex justify-between items-start">
+              <h4 className="font-medium">{task.task_id}</h4>
+              <span className={cn('px-2 py-1 rounded text-xs', statusColors[task.status] || 'bg-gray-100 text-gray-800')}>
+                {task.status.replace('_', ' ').toUpperCase()}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+              <div>
+                <span className="text-muted-foreground">Agent:</span> {task.agent}
+              </div>
+              <div>
+                <span className="text-muted-foreground">Type:</span> {task.type}
+              </div>
+              <div>
+                <span className="text-muted-foreground">Score:</span> {task.score ? `${(task.score * 100).toFixed(1)}%` : 'N/A'}
+              </div>
+              <div>
+                <span className="text-muted-foreground">Retries:</span> {task.retry_count}
+              </div>
+            </div>
+            {task.dependencies && task.dependencies.length > 0 && (
+              <div className="text-sm">
+                <span className="text-muted-foreground">Dependencies:</span> {task.dependencies.join(', ')}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

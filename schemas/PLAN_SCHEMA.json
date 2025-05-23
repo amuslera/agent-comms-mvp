@@ -247,9 +247,27 @@
             "description": "Initial delay between retry attempts (for exponential_backoff and fixed_delay)",
             "examples": ["30s", "2m", "5m"]
           },
+          "when": {
+            "type": "string",
+            "description": "Python expression that must evaluate to True for task to execute. Has access to plan_context variables. Example: \"last_score > 0.8\"",
+            "examples": [
+              "last_score > 0.8",
+              "environment == 'production'",
+              "TASK_A_completed and data_quality == 'high'"
+            ]
+          },
+          "unless": {
+            "type": "string", 
+            "description": "Python expression that must evaluate to False for task to execute. Has access to plan_context variables. Example: \"mode == 'debug'\"",
+            "examples": [
+              "mode == 'debug'",
+              "skip_validation == True",
+              "retry_count >= max_retries"
+            ]
+          },
           "conditions": {
             "type": "object",
-            "description": "Conditional execution criteria",
+            "description": "Legacy conditional execution criteria (deprecated - use when/unless directly)",
             "properties": {
               "when": {
                 "type": "string",
@@ -270,6 +288,19 @@
         },
         "additionalProperties": false
       }
+    },
+    "context": {
+      "type": "object", 
+      "description": "Initial plan context variables accessible to conditional expressions in when/unless clauses",
+      "additionalProperties": true,
+      "examples": [
+        {
+          "environment": "production",
+          "mode": "normal",
+          "max_retries": 3,
+          "user_role": "admin"
+        }
+      ]
     },
     "variables": {
       "type": "object",

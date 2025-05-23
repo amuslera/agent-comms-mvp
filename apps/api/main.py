@@ -10,10 +10,10 @@ from fastapi import FastAPI, HTTPException, Query, Path
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from .models.agent import Agent, AgentList
-from .models.task import Task, TaskList, TaskStatus
-from .sample_data import AGENTS, AGENTS_BY_ID, TASKS, TASKS_BY_ID
-from .routers import plans, metrics, history, actions
+from models.agent import Agent, AgentList
+from models.task import Task, TaskList, TaskStatus
+from sample_data import AGENTS, AGENTS_BY_ID, TASKS, TASKS_BY_ID
+from routers import plans, metrics, history, actions
 
 # Create FastAPI application
 app = FastAPI(

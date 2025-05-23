@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from ..models.history import PlanHistoryItem, TaskRecentItem
+from models.history import PlanHistoryItem, TaskRecentItem
 
 
 class HistoryService:

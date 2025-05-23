@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 import glob
 
-from ..models.metrics import AgentMetrics, PlanMetrics
+from models.metrics import AgentMetrics, PlanMetrics
 
 
 class MetricsService:

@@ -5,8 +5,8 @@ This will be replaced with actual data in a production environment.
 from datetime import datetime, timedelta
 from typing import Dict, List
 
-from .models.agent import Agent, AgentStatus, AgentCapability
-from .models.task import Task, TaskStatus, TaskPriority
+from models.agent import Agent, AgentStatus, AgentCapability
+from models.task import Task, TaskStatus, TaskPriority
 
 # Current time for reference
 NOW = datetime.utcnow()

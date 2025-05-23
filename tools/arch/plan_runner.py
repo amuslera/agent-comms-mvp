@@ -5,7 +5,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, Set
 from tools.arch import plan_utils
-from tools.arch.plan_utils import ExecutionDAG, TaskNode, ExecutionTracer
+from tools.arch.plan_utils import ExecutionDAG, TaskNode, ExecutionTracer, PlanContextEngine, evaluate_conditions, log_conditional_skip
 
 import yaml
 from jsonschema import validate, ValidationError
@@ -89,7 +89,7 @@ def build_mcp_message(task_node: TaskNode, trace_id: str, plan_id: str, retry_co
 
 def execute_task_with_dag_logging(task_node: TaskNode, dag: ExecutionDAG, tracer: ExecutionTracer, 
                                   plan_id: str, task_index: int, execution_layer: int, 
-                                  parallel_tasks: list, depth: int) -> bool:
+                                  parallel_tasks: list, depth: int, plan_context: PlanContextEngine = None) -> bool:
     """Execute a single task with enhanced DAG-aware logging."""
     
     trace_id = plan_utils.generate_trace_id(plan_id, task_index)
@@ -114,6 +114,35 @@ def execute_task_with_dag_logging(task_node: TaskNode, dag: ExecutionDAG, tracer
     plan_utils.update_task_log_state(trace_id, LOGS_TASKS_DIR, "waiting", "ready", 
                                      "All dependencies satisfied")
     tracer.log_event("task_ready", task_node.task_id, task_node.agent, execution_layer)
+    
+    # Evaluate conditional execution (when/unless)
+    if plan_context:
+        # Create task dict from TaskNode for evaluation
+        # Support both direct metadata fields and nested conditions object
+        when_condition = task_node.metadata.get('when') or task_node.metadata.get('conditions', {}).get('when')
+        unless_condition = task_node.metadata.get('unless') or task_node.metadata.get('conditions', {}).get('unless')
+        
+        task_dict = {
+            'task_id': task_node.task_id,
+            'when': when_condition,
+            'unless': unless_condition
+        }
+        
+        should_execute, condition_reason = evaluate_conditions(task_dict, plan_context)
+        
+        if not should_execute:
+            print(f"[INFO] Skipping task {task_node.task_id}: {condition_reason}")
+            
+            # Log conditional skip
+            log_conditional_skip(trace_id, LOGS_TASKS_DIR, task_node.task_id, condition_reason)
+            tracer.log_event("task_skipped_condition", task_node.task_id, task_node.agent, 
+                           execution_layer, {"reason": condition_reason}, trace_id)
+            
+            return True  # Return True as this is a successful skip, not a failure
+        else:
+            print(f"[INFO] Task {task_node.task_id} passed conditional evaluation: {condition_reason}")
+            tracer.log_event("task_condition_passed", task_node.task_id, task_node.agent,
+                           execution_layer, {"reason": condition_reason}, trace_id)
     
     # Execute task with retries
     attempt = 0
@@ -154,6 +183,11 @@ def execute_task_with_dag_logging(task_node: TaskNode, dag: ExecutionDAG, tracer
             
             tracer.log_event("task_completed", task_node.task_id, task_node.agent, execution_layer,
                            {"duration_sec": duration, "score": result.get('payload', {}).get('content', {}).get('score')})
+            
+            # Update plan context with task result
+            if plan_context:
+                plan_context.update_from_task_result(task_node.task_id, result)
+                print(f"[INFO] Updated plan context from task {task_node.task_id}")
             
             print(f"[INFO] Task {task_node.task_id} completed successfully (layer {execution_layer})")
             return True
@@ -200,6 +234,11 @@ def run_plan(plan_path: Path) -> bool:
     tracer = ExecutionTracer(plan_dict, dag, LOGS_TRACES_DIR)
     tracer.log_event("plan_started", details={"plan_path": str(plan_path)})
     
+    # Initialize plan context engine
+    initial_context = plan_dict.get('context', {})
+    plan_context = PlanContextEngine(initial_context)
+    print(f"[INFO] Plan context initialized with: {list(plan_context.context.keys())}")
+    
     # Get execution layers for parallel processing
     execution_layers = dag.get_execution_layers()
     completed_tasks = set()
@@ -233,7 +272,7 @@ def run_plan(plan_path: Path) -> bool:
             # Execute the task
             success = execute_task_with_dag_logging(
                 task_node, dag, tracer, plan_id, task_index, 
-                layer_index, parallel_tasks, depth
+                layer_index, parallel_tasks, depth, plan_context
             )
             
             if success:
@@ -256,6 +295,24 @@ def run_plan(plan_path: Path) -> bool:
     # Finalize execution
     final_status = "success" if all_success else "partial_success" if completed_tasks else "failure"
     tracer.finalize_trace(final_status)
+    
+    # Save plan context evaluation log
+    if plan_context and plan_context.evaluation_log:
+        context_log_path = LOGS_TRACES_DIR / f"context_evaluation_{tracer.get_execution_id()}.json"
+        LOGS_TRACES_DIR.mkdir(parents=True, exist_ok=True)
+        
+        context_log = {
+            "execution_id": tracer.get_execution_id(),
+            "plan_id": plan_id,
+            "final_context": plan_context.context,
+            "evaluation_log": plan_context.evaluation_log,
+            "timestamp": plan_utils.now_iso()
+        }
+        
+        with open(context_log_path, 'w') as f:
+            json.dump(context_log, f, indent=2)
+        
+        print(f"[INFO] Context evaluation log saved: {context_log_path}")
     
     print(f"\n[INFO] Plan execution completed: {final_status}")
     print(f"[INFO] Tasks completed: {len(completed_tasks)}/{len(dag.nodes)}")

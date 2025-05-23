@@ -4,8 +4,8 @@ API routes for metrics endpoints.
 from typing import List
 from fastapi import APIRouter, HTTPException, Path
 
-from ..models.metrics import AgentMetrics, AgentMetricsList, PlanMetrics
-from ..services.metrics_service import MetricsService
+from models.metrics import AgentMetrics, AgentMetricsList, PlanMetrics
+from services.metrics_service import MetricsService
 
 router = APIRouter(prefix="/metrics", tags=["Metrics"])
 

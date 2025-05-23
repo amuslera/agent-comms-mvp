@@ -174,23 +174,4 @@ export default function AgentsPage() {
       )}
     </div>
   );
-}
-                        />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2 text-sm">{agent.retry_count != null ? agent.retry_count : 'N/A'}</td>
-                </tr>
-              ))}
-              {agents.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-gray-400">No agent metrics found.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
-  );
 } 

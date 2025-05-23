@@ -1,6 +1,8 @@
 import yaml
 import json
 import uuid
+import ast
+import operator
 from pathlib import Path
 from datetime import datetime
 from typing import Any, Dict, List, Set, Optional
@@ -566,3 +568,228 @@ class ExecutionTracer:
     def get_execution_id(self) -> str:
         """Get the execution ID for this trace."""
         return self.execution_id
+
+# Plan Context Engine and Conditional Evaluator
+
+class PlanContextEngine:
+    """Manages plan-wide context and conditional evaluation."""
+    
+    def __init__(self, initial_context: Dict[str, Any] = None):
+        """Initialize plan context with optional initial values."""
+        self.context = initial_context or {}
+        self.evaluation_log = []
+        
+    def update_context(self, key: str, value: Any) -> None:
+        """Update a context value."""
+        self.context[key] = value
+        
+    def update_from_task_result(self, task_id: str, result: Dict[str, Any]) -> None:
+        """Update context based on task execution result."""
+        payload_content = result.get('payload', {}).get('content', {})
+        
+        # Store task-specific results
+        self.context[f'{task_id}_status'] = payload_content.get('status', 'unknown')
+        if 'score' in payload_content:
+            self.context[f'{task_id}_score'] = payload_content.get('score')
+            self.context['last_score'] = payload_content.get('score')
+        
+        # Store general context updates
+        if 'context_updates' in payload_content:
+            for key, value in payload_content['context_updates'].items():
+                self.context[key] = value
+                
+        # Set flags for completed tasks
+        self.context[f'{task_id}_completed'] = True
+
+def create_safe_eval_environment() -> Dict[str, Any]:
+    """Create a safe evaluation environment for conditional expressions."""
+    safe_dict = {
+        '__builtins__': {},
+        # Mathematical operations
+        'abs': abs,
+        'max': max,
+        'min': min,
+        'round': round,
+        # Comparison operators  
+        'len': len,
+        'bool': bool,
+        'int': int,
+        'float': float,
+        'str': str,
+        # Safe constants
+        'True': True,
+        'False': False,
+        'None': None,
+    }
+    return safe_dict
+
+def safe_eval_expression(expression: str, context: Dict[str, Any]) -> Any:
+    """
+    Safely evaluate a Python expression with restricted globals.
+    
+    Args:
+        expression: Python expression string to evaluate
+        context: Dictionary containing available variables
+        
+    Returns:
+        Evaluation result
+        
+    Raises:
+        ValueError: If expression is invalid or contains forbidden operations
+    """
+    if not expression or not isinstance(expression, str):
+        raise ValueError("Expression must be a non-empty string")
+    
+    # Parse the expression to check for dangerous operations
+    try:
+        parsed = ast.parse(expression, mode='eval')
+    except SyntaxError as e:
+        raise ValueError(f"Invalid expression syntax: {e}")
+    
+    # Check for forbidden node types
+    forbidden_nodes = (
+        ast.Import, ast.ImportFrom, ast.Delete
+    )
+    
+    for node in ast.walk(parsed):
+        if isinstance(node, forbidden_nodes):
+            raise ValueError(f"Forbidden operation: {type(node).__name__}")
+        
+        # Check function calls more selectively
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name):
+                # Allow specific safe functions
+                allowed_functions = ['len', 'abs', 'max', 'min', 'round', 'bool', 'int', 'float', 'str']
+                if node.func.id not in allowed_functions:
+                    raise ValueError(f"Forbidden function call: {node.func.id}")
+            else:
+                # Disallow method calls or complex function references
+                raise ValueError(f"Forbidden function call: {type(node.func).__name__}")
+        
+        # Check attribute access - disallow all attribute access for security
+        if isinstance(node, ast.Attribute):
+            raise ValueError(f"Forbidden operation: attribute access")
+            
+        # Allow subscript access but in a controlled way
+        if isinstance(node, ast.Subscript):
+            # This is actually safe in our controlled environment
+            pass
+    
+    # Create safe evaluation environment
+    safe_globals = create_safe_eval_environment()
+    safe_locals = dict(context)
+    
+    try:
+        result = eval(expression, safe_globals, safe_locals)
+        return result
+    except Exception as e:
+        raise ValueError(f"Expression evaluation failed: {e}")
+
+def evaluate_conditions(task: Dict[str, Any], plan_context: PlanContextEngine) -> tuple[bool, str]:
+    """
+    Evaluate when/unless conditions for a task.
+    
+    Args:
+        task: Task dictionary containing when/unless conditions
+        plan_context: Plan context engine with current state
+        
+    Returns:
+        Tuple of (should_execute: bool, reason: str)
+    """
+    when_condition = task.get('when')
+    unless_condition = task.get('unless')
+    
+    evaluation_log = {
+        'task_id': task.get('task_id', 'unknown'),
+        'timestamp': now_iso(),
+        'when_condition': when_condition,
+        'unless_condition': unless_condition,
+        'context_snapshot': dict(plan_context.context),
+        'evaluations': []
+    }
+    
+    try:
+        # Evaluate 'when' condition (must be True to execute)
+        when_result = True
+        if when_condition:
+            when_result = safe_eval_expression(when_condition, plan_context.context)
+            evaluation_log['evaluations'].append({
+                'type': 'when',
+                'expression': when_condition,
+                'result': when_result
+            })
+            
+            if not when_result:
+                reason = f"when condition failed: '{when_condition}' evaluated to {when_result}"
+                evaluation_log['final_decision'] = False
+                evaluation_log['reason'] = reason
+                plan_context.evaluation_log.append(evaluation_log)
+                return False, reason
+        
+        # Evaluate 'unless' condition (must be False to execute)
+        unless_result = False
+        if unless_condition:
+            unless_result = safe_eval_expression(unless_condition, plan_context.context)
+            evaluation_log['evaluations'].append({
+                'type': 'unless', 
+                'expression': unless_condition,
+                'result': unless_result
+            })
+            
+            if unless_result:
+                reason = f"unless condition failed: '{unless_condition}' evaluated to {unless_result}"
+                evaluation_log['final_decision'] = False
+                evaluation_log['reason'] = reason
+                plan_context.evaluation_log.append(evaluation_log)
+                return False, reason
+        
+        # Both conditions passed
+        reason = "all conditions satisfied"
+        if when_condition and unless_condition:
+            reason = f"when='{when_condition}' -> {when_result}, unless='{unless_condition}' -> {unless_result}"
+        elif when_condition:
+            reason = f"when='{when_condition}' -> {when_result}"
+        elif unless_condition:
+            reason = f"unless='{unless_condition}' -> {unless_result}"
+        
+        evaluation_log['final_decision'] = True
+        evaluation_log['reason'] = reason
+        plan_context.evaluation_log.append(evaluation_log)
+        return True, reason
+        
+    except Exception as e:
+        reason = f"condition evaluation error: {str(e)}"
+        evaluation_log['final_decision'] = False
+        evaluation_log['reason'] = reason
+        evaluation_log['error'] = str(e)
+        plan_context.evaluation_log.append(evaluation_log)
+        return False, reason
+
+def log_conditional_skip(trace_id: str, logs_dir: Path, task_id: str, reason: str) -> None:
+    """Log a task skip due to conditional evaluation."""
+    log_path = logs_dir / f"{trace_id}.json"
+    
+    if not log_path.exists():
+        raise FileNotFoundError(f"Task log not found: {log_path}")
+    
+    with open(log_path, 'r') as f:
+        log_data = json.load(f)
+    
+    now = now_iso()
+    transition = {
+        "from_state": "ready",
+        "to_state": "skipped_due_to_condition",
+        "timestamp": now,
+        "reason": reason
+    }
+    
+    log_data["state_transitions"].append(transition)
+    log_data["timestamps"]["last_updated"] = now
+    log_data["timestamps"]["skipped"] = now
+    log_data["execution_result"] = {
+        "status": "skipped_due_to_condition",
+        "reason": reason
+    }
+    
+    with open(log_path, 'w') as f:
+        json.dump(log_data, f, indent=2)

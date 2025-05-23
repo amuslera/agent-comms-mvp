@@ -143,5 +143,23 @@
         "readiness": "All Phase 6.5 components production-ready"
       }
     }
+  },
+  {
+    "type": "task_result",
+    "protocol_version": "1.3",
+    "sender_id": "CC",
+    "recipient_id": "ARCH",
+    "timestamp": "2025-05-23T01:32:00Z",
+    "task_id": "TASK-090-MERGE+TAG",
+    "trace_id": "phase-6-6-complete",
+    "payload": {
+      "type": "task_result",
+      "payload": {
+        "status": "success",
+        "result": {
+          "output": "Phase 6.6 merged and tagged as v0.6.7. DAG execution is now fully supported across agents, UI, and CLI."
+        }
+      }
+    }
   }
 ]
