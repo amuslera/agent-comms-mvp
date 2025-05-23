@@ -1897,6 +1897,76 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 - ✅ Task logs created with proper state transitions
 - ❌ No automatic branch creation (manual creation required)
 - ❌ No automatic task card updates (manual updates needed)
+
+### TASK-150V: Agent Context File Updates (CLAUDE, CURSOR, WINDSURF)
+**Status**: ✅ Done
+**Owner**: CC
+**Branch**: meta/context-updates-TASK-150V
+**Description**: Updated long-term memory context files for agent reinitialization and phase continuity.
+**Details**:
+- Updated `/CLAUDE_CONTEXT.md` with Phase 6.10 summary and CC's contributions
+- Created `/CURSOR_CONTEXT.md` for CA's role and responsibilities
+- Created `/WINDSURF_CONTEXT.md` for WA's context with checklist compliance
+- Saved all files to `/docs/system/` directory for centralized access
+- Included reinitialization protocols for each agent
+- Added working patterns and technical stack details
+**Files**:
+- `/CLAUDE_CONTEXT.md` (Updated - v0.6.10 context)
+- `/CURSOR_CONTEXT.md` (New - CA agent context)
+- `/WINDSURF_CONTEXT.md` (New - WA agent context)
+- `/docs/system/CLAUDE_CONTEXT.md` (Copy)
+- `/docs/system/CURSOR_CONTEXT.md` (Copy)
+- `/docs/system/WINDSURF_CONTEXT.md` (Copy)
+**Completion Date**: 2025-05-23
+**Time Spent**: 1 hour
+
+### TASK-150E-REVIEW: WA Code Audit – DAG Validation Implementation
+**Status**: ✅ Done (Review Complete - Implementation Not Found)
+**Owner**: CC
+**Branch**: review/wa-dag-validation-TASK-150E-REVIEW
+**Description**: Conducted review of WA's implementation for TASK-150E DAG validation.
+**Review Findings**:
+- ❌ No implementation found - branch `fix/dag-validation-TASK-150E` does not exist
+- ❌ No TASK-150E entry in WA's outbox or TASK_CARDS.md
+- ❌ Task appears to be misassigned - TASK-150E is a CLI task that should go to CA
+**Root Cause**:
+- TASK-150E defined as "CLI lint output improvements" in Phase 6.9 postmortem
+- This is CLI work (bluelabel lint enhancements) which falls under CA's domain
+- WA handles UI tasks, not CLI improvements
+**Recommendation**: 
+- ❌ CANNOT MERGE - No implementation exists
+- Reassign TASK-150E to CA for proper implementation
+- Task scope: Improve `bluelabel lint` error messages and add fix hints
+**Completion Date**: 2025-05-23
+**Time Spent**: 30 minutes
+
+### TASK-150Y: Validate, Scope, or Discard WA's DAG Enhancements
+**Status**: ✅ Done (Work Preserved)
+**Owner**: CC
+**Branch**: review/wa-dag-actual-TASK-150Y
+**Description**: Evaluated uncommitted work found in plan_linter.py for retention or discard.
+**Findings**:
+- Found uncommitted changes to `/tools/cli/plan_linter.py` improving error messages
+- Changes add helpful examples and clearer suggestions (e.g., "task_id: task-001")
+- Work appears to be partial implementation of TASK-150E
+- Changes are useful and don't conflict with existing systems
+**Decision**: ✅ PRESERVED
+- Committed changes to preserve the improvements
+- Work is CLI-related and should be assigned to CA, not WA
+- No DAG validation UI work from WA was found
+**Details**:
+- Enhanced error messages with specific examples
+- Added epilog to CLI help with sample usage
+- Improved suggestion format with contextual examples
+- No conflicts with MCP schema or DAG core
+**Recommendation**:
+- Create new task TASK-150E-CA for CA to complete CLI lint improvements
+- Build upon the preserved changes in plan_linter.py
+**Files Modified**:
+- `/tools/cli/plan_linter.py` - Enhanced error messages
+**Completion Date**: 2025-05-23
+**Time Spent**: 20 minutes
+
 - ⚠️ MCP schema compliance issues (task_type vs type field)
 - ❌ No XX Reports generation
 - ❌ Agent response processing not fully automated
@@ -2181,6 +2251,7 @@ python tools/arch/plan_runner.py plans/my-plan.yaml --log-trace
 - `/docs/templates.md` (New documentation file)
 - `/TASK_CARDS.md` (This update)
 **Branch**: docs/plan-template-docs-TASK-150U
+**Completion Date**: 2025-05-23
 
 ### TASK-150R: Review and Merge Phase 6.10 Non-WA Branches
 **Status**: ✅ Done
@@ -2209,3 +2280,47 @@ python tools/arch/plan_runner.py plans/my-plan.yaml --log-trace
 - Sprint documentation infrastructure
 - WA operating protocol established
 **Testing**: All merged features tested and validated working correctly
+
+### TASK-150W: Create ARCH-AI Role Context File
+**Status**: ✅ Done
+**Owner**: CA
+**Branch**: meta/arch-ai-context-TASK-150W
+**Description**: Documented the role and responsibilities of ARCH-AI (Strategic Architect and Development Advisor LLM) for onboarding, handover, and reinitialization.
+**Details**:
+- Created /docs/system/ARCH_AI_CONTEXT.md with required sections: Role Overview, Responsibilities, Operating Protocol, Fallback/Restart Procedure, Tag and Maintenance Policy
+- Linked context file in /docs/system/AGENT_ORCHESTRATION_GUIDE.md under System Metadata
+- File to be updated by CC at every milestone tag
+**Files**:
+- /docs/system/ARCH_AI_CONTEXT.md (new)
+- /docs/system/AGENT_ORCHESTRATION_GUIDE.md (updated)
+- /TASK_CARDS.md (this update)
+**Completion Date**: 2025-05-23
+
+### TASK-150E: CLI Lint Output Improvements
+**Status**: ✅ Done
+**Owner**: CA
+**Branch**: cli/lint-feedback-enhancement-TASK-150E
+**Description**: Enhanced bluelabel lint error messaging and feedback UX for YAML plan validation.
+**Details**:
+- Improved actionable suggestions for missing/invalid fields (e.g., 'Missing agent: → Add agent: CC below the task ID')
+- Grouped issues by task ID for clarity
+- Clear error severity levels: error, warning, info
+- Maintained --format json for structured output
+- Updated CLI help text and usage documentation with sample output
+**Files**:
+- /tools/cli/plan_linter.py (enhanced)
+- /TASK_CARDS.md (this update)
+**Completion Date**: 2025-05-23
+
+### TASK-150Z: Update Agent Scorecard with TASK-150E Outcome
+**Status**: ✅ Done
+**Owner**: CA
+**Branch**: meta/update-scorecard-TASK-150Z
+**Description**: Updated the performance section for WA and CA in /docs/system/AGENT_SCORECARD.md based on the reassignment and resolution of TASK-150E.
+**Details**:
+- Added WA note: TASK-150E was incorrectly assigned, work not merged, score lowered for CLI ownership
+- Added CA note: TASK-150E reassigned, completed quickly, score increased for CLI clarity and execution speed
+**Files**:
+- /docs/system/AGENT_SCORECARD.md (updated)
+- /TASK_CARDS.md (this update)
+**Completion Date**: 2025-05-23
