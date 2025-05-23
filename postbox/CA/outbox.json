@@ -28,5 +28,14 @@
       "status": "completed",
       "details": "Added --dry-run and --summary flags to bluelabel run. Dry-run mode outputs execution order, DAG layers, agent routing, approvals/blockers. Summary mode gives one-liner per task. Tested with linear, parallel, diamond, approval-gated, and multi-agent plans. Cycles and missing dependencies flagged. No agent execution in dry-run. See TASK_CARDS.md for details."
     }
+  },
+  {
+    "timestamp": "2025-05-23T18:00:00Z",
+    "type": "task_status",
+    "content": {
+      "task_id": "TASK-150J",
+      "status": "completed",
+      "details": "Created ARCH_CONTINUITY.md and AGENT_SCORECARD.md in /docs/system/. Moved AGENT_ORCHESTRATION_GUIDE.md to /docs/system/ and updated with System Metadata section. Confirmed file contents, move, and references. Recommend updating at each sprint boundary and after major agent role changes. See TASK_CARDS.md for summary."
+    }
   }
 ]

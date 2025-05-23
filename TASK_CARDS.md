@@ -1989,3 +1989,69 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
   - /postbox/CA/outbox.json
 - Testing: CLI outputs validated for all templates and sample plans
 - Notes: CLI now supports safe debugging and preview of plan execution
+
+### TASK-150C: MCP Schema Compliance Fix
+**Status**: ✅ Done
+**Owner**: CC
+**Branch**: core/mcp-schema-fix-TASK-150C
+**Description**: Improved and enforced MCP schema compliance in plan execution with strict validation.
+**Details**:
+- Created comprehensive MCPSchemaValidator class in `/core/mcp_schema.py`
+- Fixed incorrect message type in plan_runner.py (was "task_result", now "task_assignment")
+- Added strict validation for all required fields: agent, task_id, action, parameters, etc.
+- Implemented clear error messages with field-specific details and suggestions
+- Created TASK_ASSIGNMENT_SCHEMA.json for proper task assignment validation
+- Added `bluelabel schema-check` CLI command for plan and message validation
+**Schema Issues Found**:
+- plan_runner was using wrong message type ("task_result" instead of "task_assignment")
+- No validation for required fields like agent, task_id, action
+- Missing enum validation for agents, priorities, task types
+- No format validation for task_id (uppercase alphanumeric)
+- No dependency validation (checking if referenced tasks exist)
+**Fixes Implemented**:
+- ✅ Strict field validation with helpful error messages
+- ✅ Enum validation for agents (CA, CC, WA), priorities, task types
+- ✅ Format validation for task_id, protocol_version, timestamps
+- ✅ Dependency existence and circular dependency checks
+- ✅ Separate schemas for task assignments vs results
+- ✅ CLI tool with auto-detection of file types
+**Files**:
+- `/core/mcp_schema.py` - Comprehensive MCP validator module
+- `/schemas/TASK_ASSIGNMENT_SCHEMA.json` - New schema for task assignments
+- `/tools/arch/plan_runner.py` - Updated to use correct message type and validation
+- `/tools/cli/schema_checker.py` - CLI tool for validation
+- `/bluelabel` - Main CLI entry point with schema-check command
+**CLI Examples**:
+```bash
+# Check a plan file
+bluelabel schema-check plans/my-plan.yaml
+
+# Check with verbose output
+bluelabel schema-check plans/my-plan.yaml --verbose
+
+# Check a message file
+bluelabel schema-check postbox/CC/outbox.json --type message
+```
+**Testing**: Validated with edge cases including invalid agents, missing fields, format violations
+
+### TASK-150J: ARCH Continuity & Agent Scorecard Infrastructure
+- Status: ✅ Done
+- Owner: CA
+- Branch: meta/arch-continuity-TASK-150J
+- Description: Created and organized orchestration support files for ARCH continuity and agent performance tracking.
+- Implementation:
+  - Created /docs/system/ARCH_CONTINUITY.md (current phase, agent-task map, preferences)
+  - Created /docs/system/AGENT_SCORECARD.md (agent strengths, reliability, autonomy, issues)
+  - Moved /AGENT_ORCHESTRATION_GUIDE.md → /docs/system/AGENT_ORCHESTRATION_GUIDE.md
+  - Added 'System Metadata' section to AGENT_ORCHESTRATION_GUIDE.md referencing new files
+- Files Added:
+  - /docs/system/ARCH_CONTINUITY.md
+  - /docs/system/AGENT_SCORECARD.md
+- Files Modified:
+  - /docs/system/AGENT_ORCHESTRATION_GUIDE.md
+  - /TASK_CARDS.md
+  - /postbox/CA/outbox.json
+- Files Moved:
+  - /AGENT_ORCHESTRATION_GUIDE.md → /docs/system/AGENT_ORCHESTRATION_GUIDE.md
+- Testing: Confirmed file contents, move, and reference updates
+- Notes: Recommend updating these files at each sprint boundary and after major agent role changes

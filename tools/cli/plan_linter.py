@@ -5,15 +5,30 @@ import yaml
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, List, Set, Any, Optional
+from typing import Dict, List, Set, Any, Optional, Union, Literal
 
 # Add parent directory to path to import plan_utils and lint_utils
 sys.path.append(str(Path(__file__).parent.parent.parent))
+
 from tools.arch.plan_utils import (
     ExecutionDAG, TaskNode, DAGValidationError,
     load_and_validate_plan, validate_dag_integrity
 )
-from tools.cli.lint_utils import LintResult, ValidationIssue, ValidationLevel, create_issue
+from tools.cli.lint_utils import (
+    LintResult, ValidationIssue, ValidationLevel, 
+    create_issue
+)
+
+# Type aliases
+PathLike = Union[str, Path]
+
+# Constants for validation
+VALID_AGENTS = {'ARCH', 'CA', 'CC', 'WA'}
+VALID_TASK_TYPES = {
+    'task_assignment', 'data_processing', 'report_generation',
+    'health_check', 'notification', 'validation', 'custom'
+}
+
 
 class PlanLinter:
     def __init__(self, plan_path: Path, schema_path: Path):
@@ -99,107 +114,166 @@ class PlanLinter:
             return False
 
     def _validate_task_structure(self):
-        """Validate task structure and required fields."""
+        """Validate task structure and required fields with detailed feedback."""
         if not self.plan_dict or 'tasks' not in self.plan_dict:
+            self.lint_result.add_issue(create_issue(
+                'error',
+                "Plan is missing required 'tasks' field",
+                details={'type': 'missing_field', 'field': 'tasks'},
+                suggestion="Ensure your plan has a 'tasks' list containing task definitions"
+            ))
             return
             
         task_ids = set()
-        valid_agents = {'ARCH', 'CA', 'CC', 'WA'}
-        valid_task_types = {
-            'task_assignment', 'data_processing', 'report_generation',
-            'health_check', 'notification', 'validation', 'custom'
-        }
-        
-        for i, task in enumerate(self.plan_dict['tasks'], 1):
-            if not isinstance(task, dict):
+        for task in self.plan_dict['tasks']:
+            # Check required fields
+            if 'task_id' not in task:
                 self.lint_result.add_issue(create_issue(
                     'error',
-                    f"Task at position {i} is not a valid object",
-                    details={"task_index": i},
-                    suggestion="Each task must be a YAML/JSON object with required fields"
+                    "Task is missing required field: task_id",
+                    details={
+                        'type': 'missing_field',
+                        'field': 'task_id',
+                        'task': {k: v for k, v in task.items() if k != 'dependencies'}
+                    },
+                    suggestion="Add a unique task_id to identify this task"
                 ))
                 continue
                 
-            task_id = task.get('task_id')
+            task_id = task['task_id']
             
-            # Check for required fields
-            required_fields = ['task_id', 'agent', 'task_type', 'content']
-            for field in required_fields:
-                if field not in task:
-                    self.lint_result.add_issue(create_issue(
-                        'error',
-                        f"Missing required field: '{field}'",
-                        task_id=task_id,
-                        field=field,
-                        expected=f"A value for the {field} field",
-                        suggestion=f"Add the {field} field to the task with a valid value"
-                    ))
-            
-            # Skip further validation if we don't have a task_id
-            if not task_id:
-                continue
-                
-            # Check for duplicate task_id
+            # Check for duplicate task IDs
             if task_id in task_ids:
                 self.lint_result.add_issue(create_issue(
                     'error',
-                    f"Duplicate task_id: '{task_id}'",
+                    f"Duplicate task_id: {task_id}",
                     task_id=task_id,
-                    field='task_id',
-                    expected="Unique task identifier",
-                    actual=f"Duplicate of task_id '{task_id}'",
+                    details={
+                        'type': 'duplicate_task_id',
+                        'existing_task_ids': list(task_ids)
+                    },
                     suggestion=f"Rename one of the tasks to ensure all task_ids are unique"
                 ))
+                continue
             task_ids.add(task_id)
             
-            # Validate agent field
+            # Check required fields first
+            for field in ['agent', 'task_type', 'description']:
+                if field not in task:
+                    self.lint_result.add_issue(create_issue(
+                        'error',
+                        f"Task '{task_id}' is missing required field: {field}",
+                        task_id=task_id,
+                        field=field,
+                        details={
+                            'type': 'missing_field',
+                            'field': field,
+                            'required_fields': ['agent', 'task_type', 'description']
+                        },
+                        suggestion=f"Add the required '{field}' field to this task"
+                    ))
+            
+            # Validate agent field if present
             agent = task.get('agent')
-            if agent and agent not in valid_agents:
-                self.lint_result.add_issue(create_issue(
-                    'error',
-                    f"Invalid agent: '{agent}'",
-                    task_id=task_id,
-                    field='agent',
-                    expected=f"One of: {', '.join(sorted(valid_agents))}",
-                    actual=agent,
-                    suggestion="Use one of the valid agent types: " + 
-                              ", ".join(f"'{a}'" for a in sorted(valid_agents))
-                ))
+            if agent is not None:  # Field exists (may be empty)
+                if not agent:  # Empty string
+                    self.lint_result.add_issue(create_issue(
+                        'error',
+                        f"Task '{task_id}' has empty agent field",
+                        task_id=task_id,
+                        field='agent',
+                        details={'type': 'empty_field', 'field': 'agent'},
+                        suggestion="Specify a valid agent for this task"
+                    ))
+                elif agent not in VALID_AGENTS:  # Invalid agent value
+                    self.lint_result.add_issue(create_issue(
+                        'error',
+                        f"Task '{task_id}' has invalid agent: '{agent}'",
+                        task_id=task_id,
+                        field='agent',
+                        details={
+                            'type': 'invalid_agent',
+                            'valid_agents': sorted(VALID_AGENTS),
+                            'actual_agent': agent
+                        },
+                        suggestion=f"Use one of: {', '.join(sorted(VALID_AGENTS))}"
+                    ))
             
-            # Validate task_type field
+            # Validate task_type if present
             task_type = task.get('task_type')
-            if task_type and task_type not in valid_task_types:
-                self.lint_result.add_issue(create_issue(
-                    'warning',
-                    f"Non-standard task_type: '{task_type}'",
-                    task_id=task_id,
-                    field='task_type',
-                    expected=f"One of: {', '.join(sorted(valid_task_types))}",
-                    actual=task_type,
-                    suggestion="Consider using one of the standard task types or 'custom'"
-                ))
+            if task_type is not None:  # Field exists (may be empty)
+                if not task_type:  # Empty string
+                    self.lint_result.add_issue(create_issue(
+                        'error',
+                        f"Task '{task_id}' has empty task_type field",
+                        task_id=task_id,
+                        field='task_type',
+                        details={'type': 'empty_field', 'field': 'task_type'},
+                        suggestion="Specify a valid task type for this task"
+                    ))
+                elif task_type not in VALID_TASK_TYPES:  # Non-standard task type
+                    self.lint_result.add_issue(create_issue(
+                        'warning',
+                        f"Task '{task_id}' has non-standard task_type: '{task_type}'",
+                        task_id=task_id,
+                        field='task_type',
+                        details={
+                            'type': 'non_standard_task_type',
+                            'valid_task_types': sorted(VALID_TASK_TYPES),
+                            'actual_task_type': task_type
+                        },
+                        suggestion="Consider using one of the standard task types or 'custom'"
+                    ))
             
-            # Check for description (recommended but not required)
-            if 'description' not in task or not task['description'].strip():
-                self.lint_result.add_issue(create_issue(
-                    'info',
-                    f"Task '{task_id}' is missing a description",
-                    task_id=task_id,
-                    field='description',
-                    suggestion="Add a clear description of what this task does"
-                ))
+            # Validate description if present
+            if 'description' in task:
+                if not task['description']:  # Empty or None
+                    self.lint_result.add_issue(create_issue(
+                        'warning',
+                        f"Task '{task_id}' has empty description",
+                        task_id=task_id,
+                        field='description',
+                        details={'type': 'empty_field', 'field': 'description'},
+                        suggestion="Add a meaningful description to explain what this task does"
+                    ))
+                elif not task['description'].strip():
+                    self.lint_result.add_issue(create_issue(
+                        'info',
+                        f"Task '{task_id}' has a whitespace-only description",
+                        task_id=task_id,
+                        field='description',
+                        details={'type': 'whitespace_description'},
+                        suggestion="Consider adding a more descriptive text"
+                    ))
             
-            # Validate content field
-            content = task.get('content')
-            if content and not isinstance(content, dict):
+            # Validate content field if present
+            if 'content' in task and task['content'] is not None and not isinstance(task['content'], dict):
                 self.lint_result.add_issue(create_issue(
                     'error',
-                    f"Task content must be an object",
+                    f"Task '{task_id}' content must be an object",
                     task_id=task_id,
                     field='content',
-                    expected="A YAML/JSON object",
-                    actual=type(content).__name__,
+                    details={
+                        'type': 'invalid_content_type',
+                        'expected_type': 'dict',
+                        'actual_type': type(task['content']).__name__
+                    },
                     suggestion="Ensure the content field is a valid YAML/JSON object"
+                ))
+            
+            # Validate dependencies format if present
+            if 'dependencies' in task and task['dependencies'] is not None and not isinstance(task['dependencies'], list):
+                self.lint_result.add_issue(create_issue(
+                    'error',
+                    f"Task '{task_id}' has invalid dependencies format",
+                    task_id=task_id,
+                    field='dependencies',
+                    details={
+                        'type': 'invalid_dependencies_format',
+                        'expected_type': 'list',
+                        'actual_type': type(task['dependencies']).__name__
+                    },
+                    suggestion="Ensure dependencies is a list of task_ids"
                 ))
 
     def _validate_dependencies(self):
@@ -207,23 +281,42 @@ class PlanLinter:
         if not self.plan_dict or 'tasks' not in self.plan_dict:
             return
             
-        # Build a map of task_id to task for quick lookup
-        task_map = {}
-        for task in self.plan_dict['tasks']:
-            if 'task_id' in task:
-                task_map[task['task_id']] = task
+        task_map = {task['task_id']: task for task in self.plan_dict['tasks'] if 'task_id' in task}
         
-        # Check each task's dependencies
-        for task in self.plan_dict['tasks']:
-            task_id = task.get('task_id')
-            if not task_id:
+        for task_id, task in task_map.items():
+            if 'dependencies' not in task:
                 continue
                 
-            dependencies = task.get('dependencies', [])
+            dependencies = task['dependencies']
             if not isinstance(dependencies, list):
                 self.lint_result.add_issue(create_issue(
                     'error',
                     f"Task '{task_id}' has invalid dependencies format",
+                    task_id=task_id,
+                    field='dependencies',
+                    actual=type(dependencies).__name__,
+                    expected='list',
+                    suggestion="Ensure dependencies is a list of task_ids"
+                ))
+                continue
+                
+            for dep in dependencies:
+                if not isinstance(dep, str):
+                    self.lint_result.add_issue(create_issue(
+                        'error',
+                        f"Task '{task_id}' has invalid dependency format",
+                        task_id=task_id,
+                        field='dependencies',
+                        details={"invalid_dependency": dep},
+                        suggestion="Dependencies must be strings (task_ids)"
+                    ))
+                    continue
+                    
+                if dep not in task_map:
+                    self.lint_result.add_issue(create_issue(
+                        'error',
+                        f"Task '{task_id}' depends on non-existent task: '{dep}'",
+                        task_id=task_id,
                         field='dependencies',
                         details={"missing_task": dep},
                         suggestion=f"Remove the dependency or add a task with task_id: '{dep}'"
@@ -349,22 +442,27 @@ class PlanLinter:
                 details={'type': 'unreachable_check_error'}
             ))
 
-    def print_issues(self):
-        """Print all validation issues with color coding."""
-        if not self.issues:
-            print("✅ Plan is valid!")
-            return
+    def print_issues(self, output_format: str = 'text', output_file: Optional[Path] = None):
+        """Print all validation issues using the lint result formatter.
+        
+        Args:
+            output_format: The output format ('text' or 'json')
+            output_file: Optional file path to write the output to
+        """
+        # Get the formatted output from lint_result
+        output = self.lint_result.get_formatted_output(format=output_format)
+        
+        # Write to file if specified, otherwise print to stdout
+        if output_file:
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(output_file, 'w') as f:
+                f.write(output)
+            print(f"Lint results written to: {output_file}", file=sys.stderr)
+        else:
+            print(output)
             
-        for issue in self.issues:
-            prefix = {
-                ValidationLevel.INFO: "ℹ️ ",
-                ValidationLevel.WARNING: "⚠️ ",
-                ValidationLevel.ERROR: "❌ "
-            }[issue.level]
-            
-            print(f"{prefix} {issue.message}")
-            if issue.details:
-                print(f"   Details: {json.dumps(issue.details, indent=2)}")
+        # Print summary
+        self.lint_result.print_summary(output_format=output_format)
 
     def print_dry_run(self):
         """Print execution order and parallel groups."""
@@ -382,30 +480,91 @@ class PlanLinter:
                 print(f"  • {task_id} (agent: {node.agent}, deps: {deps})")
 
 def main():
-    parser = argparse.ArgumentParser(description="Validate and optionally dry-run YAML plans")
-    parser.add_argument("plan_path", type=Path, help="Path to the plan YAML file")
-    parser.add_argument("--dry-run", action="store_true", help="Show execution order and parallel groups")
-    parser.add_argument("--schema", type=Path, default=Path("schemas/PLAN_SCHEMA.json"),
-                      help="Path to the plan schema JSON file")
+    """Main entry point for the plan linter CLI."""
+    parser = argparse.ArgumentParser(
+        description="Validate YAML plan files against the Bluelabel Agent OS schema",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    
+    # Required arguments
+    parser.add_argument(
+        "plan_path", 
+        type=Path,
+        help="Path to the YAML plan file to validate"
+    )
+    
+    # Optional arguments
+    parser.add_argument(
+        "--schema", 
+        type=Path,
+        default=Path(__file__).parent.parent.parent / "schemas" / "PLAN_SCHEMA.json",
+        help="Path to the JSON schema file"
+    )
+    
+    parser.add_argument(
+        "--format",
+        choices=['text', 'json'],
+        default='text',
+        help="Output format"
+    )
+    
+    parser.add_argument(
+        "--output", "-o",
+        type=Path,
+        help="Output file path (default: print to stdout)"
+    )
+    
+    parser.add_argument(
+        "--no-color",
+        action="store_true",
+        help="Disable colored output"
+    )
+    
+    parser.add_argument(
+        "--dry-run", 
+        action="store_true", 
+        help="Show execution order and parallel groups"
+    )
+    
+    parser.add_argument(
+        "--verbose", "-v",
+        action="count",
+        default=0,
+        help="Increase verbosity (can be used multiple times)"
+    )
     
     args = parser.parse_args()
     
+    # Configure color output
+    if args.no_color:
+        from colorama import init, reinit
+        init(strip=True, convert=False)
+        reinit()
+    
+    # Validate file paths
     if not args.plan_path.exists():
-        print(f"Error: Plan file not found: {args.plan_path}")
+        print(f"Error: Plan file not found: {args.plan_path}", file=sys.stderr)
         sys.exit(1)
         
     if not args.schema.exists():
-        print(f"Error: Schema file not found: {args.schema}")
+        print(f"Error: Schema file not found: {args.schema}", file=sys.stderr)
         sys.exit(1)
     
+    # Run the linter
     linter = PlanLinter(args.plan_path, args.schema)
     is_valid = linter.validate()
     
-    linter.print_issues()
+    # Print or save the results
+    linter.print_issues(
+        output_format=args.format,
+        output_file=args.output
+    )
     
+    # Show dry run if requested and no errors
     if is_valid and args.dry_run:
         linter.print_dry_run()
     
+    # Exit with appropriate status code
     sys.exit(0 if is_valid else 1)
 
 if __name__ == "__main__":
