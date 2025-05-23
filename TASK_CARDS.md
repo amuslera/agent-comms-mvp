@@ -1857,3 +1857,52 @@ Implemented a new CLI tool for validating YAML plans and optionally performing d
 - Leverages existing DAG implementation from `plan_utils.py`
 - Uses same schema validation as plan runner
 - Provides clear, actionable feedback for plan authors
+
+### TASK-140A: Test CLI Tools and Plan Validation
+**Status**: ✅ Done (No Changes)
+**Owner**: CA
+**Branch**: test/cli-and-plan-validation-TASK-140A
+**Description**: Test CLI tools and plan validation features for Phase 6.9.
+**Details**:
+- Branch created but no changes were made
+- All CLI tools and plan validation features already working correctly
+- No additional functionality or fixes needed
+**Files**: None - no changes made to branch
+
+### TASK-140B: UI & Metrics System Checks
+**Status**: ✅ Done (No Changes)
+**Owner**: WA  
+**Branch**: test/ui-metrics-checks-TASK-140B
+**Description**: Verify UI components and metrics system for Phase 6.9.
+**Details**:
+- Branch created but no changes were made
+- UI and metrics systems already functioning as expected
+- No issues found that required fixes
+**Files**: None - no changes made to branch
+
+### TASK-140C: End-to-End Workflow & Agent Output Testing
+**Status**: ✅ Done (Partial Success)
+**Owner**: CC
+**Branch**: test/system-e2e-TASK-140C
+**Description**: Ran end-to-end YAML plan execution to test system behavior and identify gaps.
+**Details**:
+- Executed test_retry_plan.yaml using both standard and enhanced plan runners
+- Verified basic agent routing and task assignment functionality
+- Discovered schema validation issues with MCP message format
+- Identified gaps in automated system features
+- Created comprehensive execution summary report
+- Updated CC outbox with task completion status
+**Findings/Gaps**:
+- ✅ Agent routing works (messages delivered to agent inboxes)
+- ✅ Task logs created with proper state transitions
+- ❌ No automatic branch creation (manual creation required)
+- ❌ No automatic task card updates (manual updates needed)
+- ⚠️ MCP schema compliance issues (task_type vs type field)
+- ❌ No XX Reports generation
+- ❌ Agent response processing not fully automated
+**Files**:
+- `/reports/TASK-140C-execution-summary.md` - Comprehensive execution report
+- `/logs/tasks/test_retry-0-675735fc.json` - Task execution log
+- `/postbox/CC/outbox.json` - Updated with task completion
+- `/TASK_CARDS.md` - This update
+**Recommendation**: System shows promise but needs automation features for production readiness
