@@ -1,0 +1,347 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Plan Schema",
+  "description": "Schema for YAML plan files used by the Bluelabel Agent OS orchestrator (ARCH)",
+  "$comment": "Schema version: 1.0.0 - Compatible with MCP message protocol and agent routing",
+  "type": "object",
+  "required": [
+    "metadata",
+    "tasks"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Plan-level metadata and configuration",
+      "required": [
+        "plan_id",
+        "version",
+        "description"
+      ],
+      "properties": {
+        "plan_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "description": "Unique identifier for this plan",
+          "examples": ["plan_001", "data-processing-pipeline", "system-health-check"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version of the plan format",
+          "examples": ["1.0.0", "2.1.3"]
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when the plan was created"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "Human-readable description of what this plan accomplishes"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "default": "medium",
+          "description": "Overall priority level for plan execution"
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^\\d+[smhd]$",
+          "description": "Maximum time for plan execution (e.g., '30m', '2h', '1d')",
+          "examples": ["30m", "2h", "1d"]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$"
+          },
+          "description": "Tags for categorizing and filtering plans",
+          "examples": [["data-processing", "automated"], ["health-check", "monitoring"]]
+        },
+        "author": {
+          "type": "string",
+          "description": "Author or creator of this plan"
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["development", "testing", "staging", "production"],
+          "description": "Target environment for plan execution"
+        }
+      },
+      "additionalProperties": false
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "description": "List of tasks to be executed by agents",
+      "items": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "agent",
+          "task_type",
+          "content"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_-]+$",
+            "description": "Unique identifier for this task within the plan (MCP compatible - uppercase letters, numbers, underscores, hyphens)",
+            "examples": ["TASK_001", "PROCESS_DATA", "HEALTH_CHECK"]
+          },
+          "agent": {
+            "type": "string",
+            "enum": ["ARCH", "CA", "CC", "WA"],
+            "description": "Target agent to execute this task"
+          },
+          "task_type": {
+            "type": "string",
+            "enum": ["task_assignment", "data_processing", "report_generation", "health_check", "notification", "validation", "custom"],
+            "description": "Type of task - determines message format and expected behavior"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Human-readable description of what this task does"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"],
+            "default": "medium",
+            "description": "Task execution priority"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp when this task must be completed"
+          },
+          "content": {
+            "type": "object",
+            "description": "Task-specific configuration and parameters",
+            "required": ["action"],
+            "properties": {
+              "action": {
+                "type": "string",
+                "description": "Specific action the agent should perform",
+                "examples": ["process_data", "generate_report", "health_check", "send_notification"]
+              },
+              "parameters": {
+                "type": "object",
+                "description": "Parameters specific to the action being performed",
+                "additionalProperties": true
+              },
+              "requirements": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of requirements or dependencies for task execution",
+                "examples": [["python>=3.8", "pandas>=1.3.0"]]
+              },
+              "input_files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of input files or paths required for the task"
+              },
+              "output_files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of expected output files or paths"
+              },
+              "environment_variables": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Environment variables to set for task execution"
+              }
+            },
+            "additionalProperties": true
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z0-9_-]+$"
+            },
+            "description": "List of task_ids that must complete successfully before this task starts",
+            "default": []
+          },
+          "max_retries": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10,
+            "default": 3,
+            "description": "Maximum number of retry attempts if the task fails"
+          },
+          "fallback_agent": {
+            "type": "string",
+            "enum": ["ARCH", "CA", "CC", "WA"],
+            "description": "Alternative agent to try if the primary agent fails after all retries"
+          },
+          "timeout": {
+            "type": "string",
+            "pattern": "^\\d+[smhd]$",
+            "description": "Maximum time for this task to complete",
+            "examples": ["5m", "30m", "2h"]
+          },
+          "notifications": {
+            "type": "object",
+            "description": "Notification configuration for task completion",
+            "properties": {
+              "on_success": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "description": "Email addresses to notify on successful completion"
+              },
+              "on_failure": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "description": "Email addresses to notify on task failure"
+              },
+              "on_retry": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "description": "Email addresses to notify when task is retried"
+              }
+            },
+            "additionalProperties": false
+          },
+          "retry_strategy": {
+            "type": "string",
+            "enum": ["immediate", "exponential_backoff", "fixed_delay"],
+            "default": "exponential_backoff",
+            "description": "Strategy for spacing retry attempts"
+          },
+          "retry_delay": {
+            "type": "string",
+            "pattern": "^\\d+[smh]$",
+            "description": "Initial delay between retry attempts (for exponential_backoff and fixed_delay)",
+            "examples": ["30s", "2m", "5m"]
+          },
+          "conditions": {
+            "type": "object",
+            "description": "Conditional execution criteria",
+            "properties": {
+              "when": {
+                "type": "string",
+                "description": "Boolean expression for when to execute this task"
+              },
+              "unless": {
+                "type": "string",
+                "description": "Boolean expression for when NOT to execute this task"
+              }
+            },
+            "additionalProperties": false
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional task-specific metadata",
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "variables": {
+      "type": "object",
+      "description": "Plan-level variables that can be referenced in tasks",
+      "additionalProperties": true
+    },
+    "notifications": {
+      "type": "object",
+      "description": "Plan-level notification configuration",
+      "properties": {
+        "on_start": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "email"
+          },
+          "description": "Email addresses to notify when plan execution starts"
+        },
+        "on_complete": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "email"
+          },
+          "description": "Email addresses to notify when plan execution completes"
+        },
+        "on_failure": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "email"
+          },
+          "description": "Email addresses to notify if plan execution fails"
+        }
+      },
+      "additionalProperties": false
+    },
+    "hooks": {
+      "type": "object",
+      "description": "Plan execution hooks for custom behavior",
+      "properties": {
+        "before_start": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Commands or scripts to run before plan execution starts"
+        },
+        "after_complete": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Commands or scripts to run after plan execution completes"
+        },
+        "on_failure": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Commands or scripts to run if plan execution fails"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "agent_id": {
+      "type": "string",
+      "enum": ["ARCH", "CA", "CC", "WA"],
+      "description": "Valid agent identifiers in the system"
+    },
+    "time_duration": {
+      "type": "string",
+      "pattern": "^\\d+[smhd]$",
+      "description": "Time duration format: number followed by s(econds), m(inutes), h(ours), or d(ays)"
+    },
+    "task_priority": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "Priority levels for task execution"
+    }
+  }
+}

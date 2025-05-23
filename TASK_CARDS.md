@@ -2,6 +2,43 @@
 
 ## Completed Tasks
 
+### TASK-080D: Plan Viewer UI
+**Status**: ✅ Done  
+**Owner**: WA  
+**Description**: Implemented a Plan Viewer UI to display the results of executed YAML plans with task details and status.  
+**Details**:  
+- Created `/apps/web/src/app/plan/page.tsx` for the main plan view  
+- Implemented `PlanExecutionViewer` component to display task execution details  
+- Added support for showing task status, agent, score, and retry count  
+- Integrated with existing `PlanControlBar` for plan actions  
+- Implemented loading and error states with retry functionality  
+- Added toast notifications for user feedback  
+- Ensured responsive design with Tailwind CSS  
+**Files**:  
+- `/apps/web/src/app/plan/page.tsx` (New)  
+- `/apps/web/src/components/plan/PlanExecutionViewer.tsx` (New)  
+- `/apps/web/src/components/plan/PlanControlBar.tsx` (Updated)  
+- `/apps/web/src/api/executionApi.ts` (New)  
+- `/apps/web/TASK_CARDS.md` (this update)  
+**Branch**: feat/TASK-080D-plan-ui
+
+### TASK-080C: CLI Runner for YAML Plan Execution
+**Status**: ✅ Done
+**Owner**: WA
+**Description**: Created a command-line utility for executing YAML plans with the ARCH orchestrator.
+**Details**:
+- Implemented `cli_runner.py` in `/tools/cli/`
+- Added support for running plans with a simple command: `python -m tools.cli.cli_runner plans/your-plan.yaml`
+- Includes summary view with task details (ID, agent, type, status, retries, score)
+- Added `--summary` flag to view plan details without execution
+- Updated README with usage instructions
+- Follows standard CLI conventions with proper exit codes (0 for success, 1 for failure)
+**Files**:
+- `/tools/cli/cli_runner.py`
+- `/README.md` (updated)
+- `/TASK_CARDS.md` (this update)
+**Branch**: feat/TASK-080C-cli-runner
+
 ### TASK-001: Create Agent Communication Protocol MVP
 **Status**: ✅ Done
 **Owner**: CA
@@ -1520,6 +1557,16 @@
 - [x] Table-based layout for scalability and future sorting/filtering
 - [x] ARCH notified via outbox
 
+### TASK-080B: ARCH Plan Runner
+- [x] Created plan_runner.py in /tools/arch/ to load and execute YAML plans from /plans/
+- [x] Validates plans against PLAN_SCHEMA.json
+- [x] For each task: assigns trace_id, timestamp, constructs MCP message, writes to agent inbox, waits for response, retries per phase_policy.yaml, logs results in /logs/tasks/{trace_id}.json
+- [x] Uses plan_utils.py for helpers (plan loading, trace_id, inbox writing, logging)
+- [x] Handles errors and escalates unrecoverable failures
+- [x] All messages and logs use MCP schema and include full metadata
+- [x] Clear structure and separation of responsibilities
+- [x] ARCH notified via outbox
+
 ## ⏭️ Planned Tasks (Backlog)
 
 ### 📘 Phase 5: UI & Visualization
@@ -1590,6 +1637,24 @@
 - `apps/web/src/App.tsx` (routing fix)
 - `apps/api/main.py` (router order and endpoints)
 - `apps/api/routers/plans.py` (plan history endpoint)
+
+### TASK-080A: YAML Plan Schema + Sample Plan
+**Status**: ✅ Done
+**Owner**: CC
+**Branch**: feat/TASK-080A-plan-schema
+**Description**: Created comprehensive JSON schema for plan YAML files with MCP-compatible sample plan.
+**Details**:
+- Defined complete JSON schema for YAML plan validation in `/schemas/PLAN_SCHEMA.json`
+- Created comprehensive sample plan demonstrating all schema features in `/plans/sample-plan-001.yaml`
+- Ensured full MCP message protocol compatibility (agent IDs, task IDs, field mapping)
+- Validated schema supports all required fields: plan_id, description, tasks with task_id, agent, task_type, content, parameters
+- Added extensive validation patterns, conditional execution, retry strategies, and notification systems
+- Implemented dependency management for task orchestration
+- Schema supports all four agents (ARCH, CA, CC, WA) and multiple task types
+- Comprehensive 7-task sample pipeline demonstrates data processing workflow with parallel execution
+**Files**:
+- `/schemas/PLAN_SCHEMA.json` - Complete JSON schema with validation rules
+- `/plans/sample-plan-001.yaml` - Comprehensive sample plan with all features
 
 ### 🔮 Phase 6: Advanced Features (Future)
 - API gateway for external agent comms

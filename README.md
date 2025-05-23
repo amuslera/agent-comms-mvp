@@ -44,6 +44,17 @@ A robust framework for building and orchestrating autonomous agents with built-i
 python -m tools.run_plan --help
 ```
 
+### Using the CLI Runner
+Run a plan:
+```bash
+python -m tools.cli.cli_runner plans/your-plan.yaml
+```
+
+View plan summary without executing:
+```bash
+python -m tools.cli.cli_runner plans/your-plan.yaml --summary
+```
+
 ### Generating Execution Summaries
 ```bash
 python -m tools.generate_execution_summary --help
