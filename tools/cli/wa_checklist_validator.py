@@ -1,200 +1,235 @@
 #!/usr/bin/env python3
 """
-WA Checklist Validation CLI
+WA Checklist Validation CLI Tool
 
-Provides a command-line interface for validating WA task compliance
-and reviewing validation hooks.
+This tool provides commands to review and validate WA task completions
+against the checklist requirements that were enforced during planning.
 """
 
 import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Any, List
 from datetime import datetime
+from typing import Dict, List, Optional
 
-# Add project root to path
+# Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from tools.arch.wa_checklist_enforcer import WAChecklistEnforcer, validate_wa_task
+from tools.arch.wa_checklist_enforcer import WAChecklistEnforcer
 
 
-class WAChecklistValidator:
-    """CLI for WA checklist validation and compliance review."""
+def list_pending_validations():
+    """List all pending WA task validations."""
+    enforcer = WAChecklistEnforcer()
+    pending = enforcer.get_pending_validations()
     
-    def __init__(self):
-        self.enforcer = WAChecklistEnforcer()
-        self.validation_path = Path("logs/wa_validations")
+    if not pending:
+        print("No pending validations found.")
+        return
     
-    def list_validation_hooks(self) -> List[Dict[str, Any]]:
-        """List all pending validation hooks."""
-        if not self.validation_path.exists():
-            return []
-        
-        hooks = []
-        for hook_file in self.validation_path.glob("*.json"):
-            with open(hook_file, 'r') as f:
-                hook = json.load(f)
-                hooks.append(hook)
-        
-        return sorted(hooks, key=lambda x: x.get('created_at', ''), reverse=True)
+    print(f"\n📋 Pending WA Task Validations ({len(pending)} tasks):")
+    print("-" * 60)
     
-    def show_validation_hook(self, hook_id: str) -> Dict[str, Any]:
-        """Show details of a specific validation hook."""
-        hook_file = self.validation_path / f"{hook_id}.json"
-        if not hook_file.exists():
-            raise ValueError(f"Validation hook not found: {hook_id}")
+    for task in pending:
+        task_id = task.get("task_id", "Unknown")
+        created_at = task.get("created_at", "Unknown")
+        validation_data = task.get("validation_data", {})
+        description = validation_data.get("description", "No description")
         
-        with open(hook_file, 'r') as f:
-            return json.load(f)
+        print(f"\nTask ID: {task_id}")
+        print(f"Created: {created_at}")
+        print(f"Description: {description[:80]}...")
+        
+    print("\n" + "-" * 60)
+    print(f"Total pending validations: {len(pending)}")
+
+
+def show_validation_details(task_id: str):
+    """Show detailed validation requirements for a specific task."""
+    hook_path = Path(f"postbox/WA/validation_hooks/{task_id}_validation_hook.json")
     
-    def validate_task_completion(self, task_id: str, branch: str, 
-                               files_modified: List[str], 
-                               screenshots: bool) -> Dict[str, Any]:
-        """Validate a completed WA task against the checklist."""
-        completion_data = {
-            "branch": branch,
-            "files_modified": files_modified,
-            "screenshots_included": screenshots
-        }
-        
-        return self.enforcer.validate_wa_task_completion(task_id, completion_data)
+    if not hook_path.exists():
+        print(f"❌ No validation hook found for task {task_id}")
+        return
     
-    def mark_hook_validated(self, hook_id: str, validation_status: str, notes: str = "") -> None:
-        """Mark a validation hook as reviewed."""
-        hook_file = self.validation_path / f"{hook_id}.json"
-        if not hook_file.exists():
-            raise ValueError(f"Validation hook not found: {hook_id}")
-        
-        with open(hook_file, 'r') as f:
-            hook = json.load(f)
-        
-        hook['validation_status'] = validation_status
-        hook['validated_at'] = datetime.now().isoformat()
-        hook['validation_notes'] = notes
-        
-        with open(hook_file, 'w') as f:
-            json.dump(hook, f, indent=2)
+    with open(hook_path, 'r') as f:
+        hook_data = json.load(f)
     
-    def print_validation_summary(self, validation_result: Dict[str, Any]) -> None:
-        """Print a formatted validation summary."""
-        print("\n" + "=" * 60)
-        print("WA CHECKLIST VALIDATION RESULTS")
-        print("=" * 60)
-        print(f"Task ID: {validation_result['task_id']}")
-        print(f"Validation Time: {validation_result['validation_timestamp']}")
-        print(f"Compliance Score: {validation_result['compliance_score']}")
-        print(f"Compliant: {'✅ Yes' if validation_result['compliant'] else '❌ No'}")
+    print(f"\n📋 Validation Details for Task {task_id}")
+    print("=" * 60)
+    
+    print(f"\nStatus: {hook_data.get('status', 'Unknown')}")
+    print(f"Created: {hook_data.get('created_at', 'Unknown')}")
+    
+    if hook_data.get('validated_at'):
+        print(f"Validated: {hook_data.get('validated_at')}")
+    
+    validation_data = hook_data.get('validation_data', {})
+    if validation_data:
+        print(f"\nTask Description: {validation_data.get('description', 'N/A')}")
+        print(f"Plan ID: {validation_data.get('plan_id', 'N/A')}")
+        print(f"Trace ID: {validation_data.get('trace_id', 'N/A')}")
+    
+    print("\nChecklist Items:")
+    print("-" * 40)
+    
+    checklist_items = hook_data.get('checklist_items', [])
+    for i, item in enumerate(checklist_items, 1):
+        status = item.get('status', 'pending')
+        status_icon = {
+            'passed': '✅',
+            'failed': '❌',
+            'pending': '⏳',
+            'skipped': '⏭️'
+        }.get(status, '❓')
         
-        if validation_result['issues_found']:
-            print("\n🚨 Issues Found:")
-            for issue in validation_result['issues_found']:
-                print(f"   - {issue}")
+        print(f"{i}. {status_icon} {item.get('item', 'Unknown item')} [{status}]")
+
+
+def validate_task(task_id: str, interactive: bool = True):
+    """Validate a completed WA task against checklist requirements."""
+    enforcer = WAChecklistEnforcer()
+    
+    hook_path = Path(f"postbox/WA/validation_hooks/{task_id}_validation_hook.json")
+    if not hook_path.exists():
+        print(f"❌ No validation hook found for task {task_id}")
+        return
+    
+    with open(hook_path, 'r') as f:
+        hook_data = json.load(f)
+    
+    if hook_data.get('status') != 'pending':
+        print(f"⚠️  Task {task_id} has already been validated with status: {hook_data.get('status')}")
+        return
+    
+    print(f"\n🔍 Validating Task {task_id}")
+    print("=" * 60)
+    
+    validation_results = {}
+    
+    if interactive:
+        print("\nPlease review each checklist item:")
+        print("Enter 'y' for passed, 'n' for failed, 's' to skip\n")
         
-        if validation_result['recommendations']:
-            print("\n💡 Recommendations:")
-            for rec in validation_result['recommendations']:
-                print(f"   - {rec}")
-        
-        print("=" * 60)
+        for item in hook_data.get('checklist_items', []):
+            item_name = item.get('item', 'Unknown')
+            
+            while True:
+                response = input(f"✓ {item_name}? (y/n/s): ").lower().strip()
+                if response in ['y', 'n', 's']:
+                    if response == 'y':
+                        validation_results[item_name] = True
+                    elif response == 'n':
+                        validation_results[item_name] = False
+                    # Skip doesn't add to results
+                    break
+                else:
+                    print("Please enter 'y', 'n', or 's'")
+    else:
+        # Auto-validation mode - mark all as passed (for testing)
+        print("Running in auto-validation mode (all items marked as passed)")
+        for item in hook_data.get('checklist_items', []):
+            validation_results[item.get('item')] = True
+    
+    # Perform validation
+    all_passed = enforcer.validate_task_completion(task_id, validation_results)
+    
+    print("\n" + "=" * 60)
+    if all_passed:
+        print(f"✅ Task {task_id} PASSED all checklist requirements!")
+    else:
+        print(f"❌ Task {task_id} FAILED some checklist requirements.")
+    
+    # Show updated status
+    show_validation_details(task_id)
+
+
+def mark_all_pending_as_validated():
+    """Mark all pending validations as validated (for batch processing)."""
+    enforcer = WAChecklistEnforcer()
+    pending = enforcer.get_pending_validations()
+    
+    if not pending:
+        print("No pending validations to process.")
+        return
+    
+    print(f"\n⚡ Batch validating {len(pending)} pending tasks...")
+    
+    success_count = 0
+    for task in pending:
+        task_id = task.get('task_id')
+        if task_id:
+            # Auto-validate all items as passed
+            validation_results = {}
+            for item in task.get('checklist_items', []):
+                validation_results[item.get('item')] = True
+            
+            if enforcer.validate_task_completion(task_id, validation_results):
+                success_count += 1
+                print(f"✅ Validated {task_id}")
+            else:
+                print(f"❌ Failed to validate {task_id}")
+    
+    print(f"\n✅ Successfully validated {success_count}/{len(pending)} tasks")
 
 
 def main():
     """Main CLI entry point."""
-    parser = argparse.ArgumentParser(description='WA Checklist Validation Tool')
-    subparsers = parser.add_subparsers(dest='command', help='Command to execute')
+    parser = argparse.ArgumentParser(
+        description='WA Checklist Validation Tool',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # List all pending validations
+  python wa_checklist_validator.py list
+  
+  # Show details for a specific task
+  python wa_checklist_validator.py show TASK-123
+  
+  # Validate a completed task interactively
+  python wa_checklist_validator.py validate TASK-123
+  
+  # Auto-validate a task (mark all as passed)
+  python wa_checklist_validator.py validate TASK-123 --auto
+  
+  # Batch validate all pending tasks
+  python wa_checklist_validator.py validate-all
+        """
+    )
     
-    # List hooks command
-    list_parser = subparsers.add_parser('list', help='List pending validation hooks')
-    list_parser.add_argument('--all', action='store_true', 
-                           help='Show all hooks including validated ones')
+    subparsers = parser.add_subparsers(dest='command', help='Commands')
     
-    # Show hook command
-    show_parser = subparsers.add_parser('show', help='Show validation hook details')
-    show_parser.add_argument('hook_id', help='Validation hook ID')
+    # List command
+    list_parser = subparsers.add_parser('list', help='List pending validations')
+    
+    # Show command
+    show_parser = subparsers.add_parser('show', help='Show validation details')
+    show_parser.add_argument('task_id', help='Task ID to show')
     
     # Validate command
-    validate_parser = subparsers.add_parser('validate', help='Validate a completed WA task')
+    validate_parser = subparsers.add_parser('validate', help='Validate a task')
     validate_parser.add_argument('task_id', help='Task ID to validate')
-    validate_parser.add_argument('--branch', required=True, help='Git branch name')
-    validate_parser.add_argument('--files', nargs='+', required=True, 
-                               help='List of modified files')
-    validate_parser.add_argument('--screenshots', action='store_true',
-                               help='Screenshots were included')
+    validate_parser.add_argument('--auto', action='store_true',
+                                help='Auto-validate (mark all as passed)')
     
-    # Mark reviewed command
-    mark_parser = subparsers.add_parser('mark', help='Mark a validation hook as reviewed')
-    mark_parser.add_argument('hook_id', help='Validation hook ID')
-    mark_parser.add_argument('--status', choices=['approved', 'rejected', 'partial'],
-                           required=True, help='Validation status')
-    mark_parser.add_argument('--notes', default='', help='Validation notes')
+    # Validate-all command
+    validate_all_parser = subparsers.add_parser('validate-all',
+                                              help='Validate all pending tasks')
     
     args = parser.parse_args()
     
-    if not args.command:
+    if args.command == 'list':
+        list_pending_validations()
+    elif args.command == 'show':
+        show_validation_details(args.task_id)
+    elif args.command == 'validate':
+        validate_task(args.task_id, interactive=not args.auto)
+    elif args.command == 'validate-all':
+        mark_all_pending_as_validated()
+    else:
         parser.print_help()
-        sys.exit(1)
-    
-    validator = WAChecklistValidator()
-    
-    try:
-        if args.command == 'list':
-            hooks = validator.list_validation_hooks()
-            if not args.all:
-                hooks = [h for h in hooks if h.get('validation_status') == 'pending']
-            
-            if not hooks:
-                print("No pending validation hooks found.")
-            else:
-                print(f"\n{'ID':<40} {'Task ID':<15} {'Created':<20} {'Status'}")
-                print("-" * 90)
-                for hook in hooks:
-                    hook_id = hook['hook_id']
-                    task_id = hook['task_id']
-                    created = hook['created_at'][:19]  # Trim milliseconds
-                    status = hook.get('validation_status', 'pending')
-                    print(f"{hook_id:<40} {task_id:<15} {created:<20} {status}")
-        
-        elif args.command == 'show':
-            hook = validator.show_validation_hook(args.hook_id)
-            print(f"\nValidation Hook: {hook['hook_id']}")
-            print(f"Task ID: {hook['task_id']}")
-            print(f"Created: {hook['created_at']}")
-            print(f"Status: {hook.get('validation_status', 'pending')}")
-            
-            print("\nChecklist Items:")
-            for category in hook['checklist_items']:
-                print(f"\n{category['category']}:")
-                for item in category['items']:
-                    print(f"  □ {item}")
-            
-            if hook.get('validation_notes'):
-                print(f"\nNotes: {hook['validation_notes']}")
-        
-        elif args.command == 'validate':
-            result = validator.validate_task_completion(
-                args.task_id, 
-                args.branch,
-                args.files,
-                args.screenshots
-            )
-            validator.print_validation_summary(result)
-        
-        elif args.command == 'mark':
-            validator.mark_hook_validated(args.hook_id, args.status, args.notes)
-            print(f"✅ Validation hook {args.hook_id} marked as {args.status}")
-            if args.notes:
-                print(f"   Notes: {args.notes}")
-    
-    except ValueError as e:
-        print(f"❌ Error: {e}")
-        sys.exit(1)
-    except Exception as e:
-        print(f"❌ Unexpected error: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

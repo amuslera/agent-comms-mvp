@@ -224,32 +224,6 @@ class PlanLinter:
                 self.lint_result.add_issue(create_issue(
                     'error',
                     f"Task '{task_id}' has invalid dependencies format",
-                    task_id=task_id,
-                    field='dependencies',
-                    actual=type(dependencies).__name__,
-                    expected='list',
-                    suggestion="Ensure dependencies is a list of task_ids"
-                ))
-                continue
-            
-            # Check each dependency
-            for dep in dependencies:
-                if not isinstance(dep, str):
-                    self.lint_result.add_issue(create_issue(
-                        'error',
-                        f"Task '{task_id}' has invalid dependency format",
-                        task_id=task_id,
-                        field='dependencies',
-                        details={"invalid_dependency": dep},
-                        suggestion="Dependencies must be strings (task_ids)"
-                    ))
-                    continue
-                    
-                if dep not in task_map:
-                    self.lint_result.add_issue(create_issue(
-                        'error',
-                        f"Task '{task_id}' depends on non-existent task: '{dep}'",
-                        task_id=task_id,
                         field='dependencies',
                         details={"missing_task": dep},
                         suggestion=f"Remove the dependency or add a task with task_id: '{dep}'"

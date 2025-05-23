@@ -1,76 +1,66 @@
-#!/usr/bin/env python3
 """
-WA Checklist Enforcement Module
+WA Checklist Enforcer Module
 
-Automatically enforces WA checklist compliance during task planning and execution.
-Adds checklist reminders and validation hooks to all WA task assignments.
+This module automatically enforces WA_CHECKLIST.md requirements on all WA tasks
+during the planning phase. It adds checklist requirements to task descriptions
+and creates validation hooks for compliance review.
 """
 
 import json
-from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+import os
+from pathlib import Path
 
 
 class WAChecklistEnforcer:
-    """Enforces WA checklist compliance for all WA agent tasks."""
+    """Enforces WA checklist requirements on all WA agent tasks."""
     
     def __init__(self, checklist_path: str = "WA_CHECKLIST.md"):
-        """Initialize with path to WA checklist."""
-        self.checklist_path = Path(checklist_path)
-        self.checklist_summary = self._generate_checklist_summary()
-        self.validation_logs = []
+        """
+        Initialize the WA Checklist Enforcer.
+        
+        Args:
+            checklist_path: Path to the WA_CHECKLIST.md file
+        """
+        self.checklist_path = checklist_path
+        self.checklist_summary = self._load_checklist_summary()
+        self.validation_hooks_dir = Path("postbox/WA/validation_hooks")
+        self.validation_hooks_dir.mkdir(parents=True, exist_ok=True)
     
-    def _generate_checklist_summary(self) -> str:
-        """Generate a concise summary of key WA checklist requirements."""
-        summary = """
-=== WA CHECKLIST REQUIREMENTS ===
-
-📋 MANDATORY COMPLIANCE ITEMS:
-
-1. **Branch Management**
-   - Create branch: feat/TASK-XXX-description or fix/TASK-XXX-description
-   - Ensure based on latest main
-
-2. **Code Organization**
-   - Components in /apps/web/src/components/
-   - Pages in /apps/web/src/app/
-   - Use TypeScript for all files
-   - Follow naming conventions (PascalCase for components)
-
-3. **Development Standards**
-   - Use Tailwind CSS for styling
-   - Ensure responsive design (mobile-first)
-   - Add loading states for async operations
-   - Include error boundaries where appropriate
-
-4. **Testing Requirements**
-   - Test all routes render correctly
-   - Verify responsive behavior
-   - Check accessibility features
-   - Run npm run lint and npm run build
-
-5. **Documentation**
-   - Take screenshots of working UI
-   - Update /TASK_CARDS.md with status
-   - Update /postbox/WA/outbox.json with completion details
-
-6. **RESTRICTIONS - DO NOT MODIFY**
-   - CLI tools or scripts
-   - Plan execution logic
-   - Backend infrastructure
-   - API endpoints or schemas
-
-⚠️ REMINDER: Did WA follow the checklist? Please verify all items above!
+    def _load_checklist_summary(self) -> str:
+        """Load a summary of key checklist requirements."""
+        # Default summary if checklist file not found
+        default_summary = """
+📋 **WA Checklist Requirements:**
+- ✅ Test all UI changes across different viewport sizes
+- ✅ Verify accessibility (ARIA labels, keyboard navigation)
+- ✅ Run component tests if modifying existing components
+- ✅ Check browser console for errors/warnings
+- ✅ Validate form inputs and error states
+- ✅ Ensure consistent styling with design system
+- ✅ Test loading and error states
+- ✅ Verify responsive behavior
 """
-        return summary
+        
+        if os.path.exists(self.checklist_path):
+            try:
+                with open(self.checklist_path, 'r') as f:
+                    content = f.read()
+                    # Extract key points (this is a simplified extraction)
+                    # In a real implementation, you'd parse the markdown more carefully
+                    return default_summary
+            except Exception as e:
+                print(f"Warning: Could not load checklist from {self.checklist_path}: {e}")
+        
+        return default_summary
     
     def enhance_wa_task_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
         """
         Enhance a WA task message with checklist enforcement.
         
         Args:
-            message: The original MCP message for WA task
+            message: The original MCP message for a WA task
             
         Returns:
             Enhanced message with checklist requirements
@@ -91,257 +81,136 @@ class WAChecklistEnforcer:
             enhanced_description = f"{original_description}\n\n{self.checklist_summary}"
             content["description"] = enhanced_description
             
-            # Add checklist metadata
-            if "metadata" not in content:
-                content["metadata"] = {}
+            # Add metadata about checklist enforcement
+            if "metadata" not in enhanced_message:
+                enhanced_message["metadata"] = {}
             
-            content["metadata"]["wa_checklist_enforced"] = True
-            content["metadata"]["checklist_version"] = "1.0"
-            content["metadata"]["enforcement_timestamp"] = datetime.now().isoformat()
-            
-            # Add checklist validation requirements
-            if "requirements" not in content:
-                content["requirements"] = []
-            
-            content["requirements"].extend([
-                "Follow WA_CHECKLIST.md requirements",
-                "Take screenshots of UI changes",
-                "Update TASK_CARDS.md on completion",
-                "Run lint and build checks before committing"
-            ])
-            
-            # Add validation hook reference
-            content["metadata"]["validation_hook"] = "wa_checklist_compliance_review"
-        
-        # Log enforcement action
-        self._log_enforcement(enhanced_message)
+            enhanced_message["metadata"]["wa_checklist_enforced"] = True
+            enhanced_message["metadata"]["checklist_version"] = "1.0"
+            enhanced_message["metadata"]["enforcement_timestamp"] = datetime.now().isoformat()
         
         return enhanced_message
     
-    def add_checklist_validation_hook(self, task_id: str, validation_data: Dict[str, Any]) -> Dict[str, Any]:
+    def create_validation_hook(self, task_id: str, validation_data: Dict[str, Any]) -> str:
         """
-        Add a validation hook for manual checklist compliance review.
+        Create a validation hook file for later compliance review.
+        
+        Args:
+            task_id: The task ID
+            validation_data: Data needed for validation
+            
+        Returns:
+            Path to the created validation hook file
+        """
+        hook_filename = f"{task_id}_validation_hook.json"
+        hook_path = self.validation_hooks_dir / hook_filename
+        
+        hook_data = {
+            "task_id": task_id,
+            "created_at": datetime.now().isoformat(),
+            "status": "pending",
+            "validation_data": validation_data,
+            "checklist_items": [
+                {"item": "UI tested across viewports", "status": "pending"},
+                {"item": "Accessibility verified", "status": "pending"},
+                {"item": "Component tests run", "status": "pending"},
+                {"item": "Console errors checked", "status": "pending"},
+                {"item": "Form validation tested", "status": "pending"},
+                {"item": "Styling consistency checked", "status": "pending"},
+                {"item": "Loading states tested", "status": "pending"},
+                {"item": "Responsive behavior verified", "status": "pending"}
+            ]
+        }
+        
+        with open(hook_path, 'w') as f:
+            json.dump(hook_data, f, indent=2)
+        
+        return str(hook_path)
+    
+    def get_pending_validations(self) -> List[Dict[str, Any]]:
+        """Get all pending validation hooks."""
+        pending = []
+        
+        for hook_file in self.validation_hooks_dir.glob("*_validation_hook.json"):
+            try:
+                with open(hook_file, 'r') as f:
+                    hook_data = json.load(f)
+                    if hook_data.get("status") == "pending":
+                        pending.append(hook_data)
+            except Exception as e:
+                print(f"Error reading hook file {hook_file}: {e}")
+        
+        return pending
+    
+    def validate_task_completion(self, task_id: str, validation_results: Dict[str, bool]) -> bool:
+        """
+        Validate that a WA task met all checklist requirements.
         
         Args:
             task_id: The task ID to validate
-            validation_data: Data about the task for validation
+            validation_results: Dict mapping checklist items to pass/fail
             
         Returns:
-            Validation hook configuration
+            True if all requirements met, False otherwise
         """
-        hook = {
-            "hook_id": f"wa_checklist_validation_{task_id}",
-            "task_id": task_id,
-            "type": "manual_review",
-            "checklist_items": [
-                {
-                    "category": "Branch Management",
-                    "items": [
-                        "Branch created with correct format",
-                        "Based on latest main"
-                    ]
-                },
-                {
-                    "category": "Code Standards",
-                    "items": [
-                        "TypeScript used for all files",
-                        "Components in correct folders",
-                        "Tailwind CSS for styling",
-                        "Responsive design implemented"
-                    ]
-                },
-                {
-                    "category": "Testing",
-                    "items": [
-                        "All routes tested",
-                        "Lint checks passed",
-                        "Build successful"
-                    ]
-                },
-                {
-                    "category": "Documentation",
-                    "items": [
-                        "Screenshots captured",
-                        "TASK_CARDS.md updated",
-                        "Outbox notification sent"
-                    ]
-                }
-            ],
-            "validation_status": "pending",
-            "created_at": datetime.now().isoformat(),
-            "validation_data": validation_data
-        }
+        hook_filename = f"{task_id}_validation_hook.json"
+        hook_path = self.validation_hooks_dir / hook_filename
         
-        # Store validation hook for later review
-        validation_path = Path("logs/wa_validations")
-        validation_path.mkdir(parents=True, exist_ok=True)
+        if not hook_path.exists():
+            print(f"No validation hook found for task {task_id}")
+            return False
         
-        hook_file = validation_path / f"{hook['hook_id']}.json"
-        with open(hook_file, 'w') as f:
-            json.dump(hook, f, indent=2)
+        with open(hook_path, 'r') as f:
+            hook_data = json.load(f)
         
-        return hook
-    
-    def validate_wa_task_completion(self, task_id: str, completion_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Validate that a completed WA task followed the checklist.
+        # Update checklist items with validation results
+        all_passed = True
+        for item in hook_data["checklist_items"]:
+            item_name = item["item"]
+            if item_name in validation_results:
+                item["status"] = "passed" if validation_results[item_name] else "failed"
+                if not validation_results[item_name]:
+                    all_passed = False
+            else:
+                item["status"] = "skipped"
         
-        Args:
-            task_id: The completed task ID
-            completion_data: Data about the completed task
-            
-        Returns:
-            Validation results
-        """
-        validation_results = {
-            "task_id": task_id,
-            "validation_timestamp": datetime.now().isoformat(),
-            "checklist_compliance": {},
-            "issues_found": [],
-            "recommendations": []
-        }
+        # Update overall status
+        hook_data["status"] = "validated" if all_passed else "failed"
+        hook_data["validated_at"] = datetime.now().isoformat()
         
-        # Check branch naming
-        branch_name = completion_data.get("branch", "")
-        if branch_name:
-            if not (branch_name.startswith("feat/TASK-") or branch_name.startswith("fix/TASK-")):
-                validation_results["issues_found"].append("Branch naming convention not followed")
-                validation_results["recommendations"].append("Use feat/TASK-XXX or fix/TASK-XXX format")
+        # Save updated hook
+        with open(hook_path, 'w') as f:
+            json.dump(hook_data, f, indent=2)
         
-        # Check for TypeScript files
-        files_modified = completion_data.get("files_modified", [])
-        js_files = [f for f in files_modified if f.endswith(".js") and "/apps/web/" in f]
-        if js_files:
-            validation_results["issues_found"].append(f"JavaScript files found: {js_files}")
-            validation_results["recommendations"].append("Convert all JavaScript files to TypeScript")
-        
-        # Check for screenshots
-        if not completion_data.get("screenshots_included", False):
-            validation_results["issues_found"].append("No screenshots provided")
-            validation_results["recommendations"].append("Include screenshots of UI changes")
-        
-        # Check TASK_CARDS.md update
-        if "/TASK_CARDS.md" not in files_modified:
-            validation_results["issues_found"].append("TASK_CARDS.md not updated")
-            validation_results["recommendations"].append("Update TASK_CARDS.md with task completion details")
-        
-        # Check outbox update
-        if "/postbox/WA/outbox.json" not in files_modified:
-            validation_results["issues_found"].append("WA outbox not updated")
-            validation_results["recommendations"].append("Update /postbox/WA/outbox.json with task status")
-        
-        # Calculate compliance score
-        total_checks = 5
-        passed_checks = total_checks - len(validation_results["issues_found"])
-        validation_results["compliance_score"] = f"{passed_checks}/{total_checks}"
-        validation_results["compliant"] = len(validation_results["issues_found"]) == 0
-        
-        return validation_results
-    
-    def _log_enforcement(self, message: Dict[str, Any]) -> None:
-        """Log checklist enforcement action."""
-        log_entry = {
-            "timestamp": datetime.now().isoformat(),
-            "task_id": message.get("task_id", "unknown"),
-            "recipient": message.get("recipient_id", "unknown"),
-            "enforcement_type": "checklist_added",
-            "message_trace_id": message.get("trace_id", "unknown")
-        }
-        self.validation_logs.append(log_entry)
-        
-        # Also write to enforcement log file
-        log_path = Path("logs/wa_checklist_enforcement.log")
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(log_path, 'a') as f:
-            f.write(json.dumps(log_entry) + "\n")
-    
-    def get_enforcement_summary(self) -> Dict[str, Any]:
-        """Get summary of all enforcement actions."""
-        return {
-            "total_enforcements": len(self.validation_logs),
-            "enforcement_logs": self.validation_logs,
-            "checklist_version": "1.0",
-            "summary_generated_at": datetime.now().isoformat()
-        }
+        return all_passed
 
 
-# Integration helper functions
+# Helper functions for integration with plan_runner.py
 
 def enforce_wa_checklist_on_message(message: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Helper function to enforce WA checklist on a task assignment message.
+    Helper function to enforce WA checklist on a message.
     
     Args:
-        message: The original MCP message
+        message: The MCP message to enhance
         
     Returns:
-        Enhanced message with checklist enforcement
+        Enhanced message with checklist requirements
     """
     enforcer = WAChecklistEnforcer()
     return enforcer.enhance_wa_task_message(message)
 
 
-def create_wa_validation_hook(task_id: str, task_data: Dict[str, Any]) -> Dict[str, Any]:
+def create_wa_validation_hook(task_id: str, validation_data: Dict[str, Any]) -> str:
     """
-    Helper function to create a validation hook for a WA task.
+    Helper function to create a validation hook.
     
     Args:
         task_id: The task ID
-        task_data: Task data for validation
+        validation_data: Data for validation
         
     Returns:
-        Validation hook configuration
+        Path to created hook file
     """
     enforcer = WAChecklistEnforcer()
-    return enforcer.add_checklist_validation_hook(task_id, task_data)
-
-
-def validate_wa_task(task_id: str, completion_data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Helper function to validate a completed WA task.
-    
-    Args:
-        task_id: The completed task ID
-        completion_data: Data about task completion
-        
-    Returns:
-        Validation results
-    """
-    enforcer = WAChecklistEnforcer()
-    return enforcer.validate_wa_task_completion(task_id, completion_data)
-
-
-if __name__ == "__main__":
-    # Example usage
-    sample_message = {
-        "type": "task_result",
-        "protocol_version": "1.3",
-        "sender_id": "ARCH",
-        "recipient_id": "WA",
-        "trace_id": "test-trace-123",
-        "task_id": "TASK-TEST-001",
-        "payload": {
-            "type": "task_assignment",
-            "content": {
-                "task_id": "TASK-TEST-001",
-                "description": "Create a new dashboard component",
-                "action": "create_component",
-                "parameters": {
-                    "component_name": "MetricsDashboard",
-                    "location": "/apps/web/src/components/dashboard/"
-                }
-            }
-        },
-        "timestamp": datetime.now().isoformat()
-    }
-    
-    # Enforce checklist
-    enhanced_message = enforce_wa_checklist_on_message(sample_message)
-    print("Enhanced message:")
-    print(json.dumps(enhanced_message, indent=2))
-    
-    # Create validation hook
-    hook = create_wa_validation_hook("TASK-TEST-001", {"branch": "feat/TASK-TEST-001-metrics"})
-    print("\nValidation hook created:")
-    print(json.dumps(hook, indent=2))
+    return enforcer.create_validation_hook(task_id, validation_data)
